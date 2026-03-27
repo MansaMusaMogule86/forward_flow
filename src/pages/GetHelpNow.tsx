@@ -9,6 +9,7 @@ import { AIPoweredHelpSection } from "@/components/help/AIPoweredHelpSection";
 import { SpecializedSupportSection } from "@/components/help/SpecializedSupportSection";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 export default function GetHelpNow() {
   const [showCrisisAI, setShowCrisisAI] = useState(false);
@@ -40,6 +41,7 @@ export default function GetHelpNow() {
         path="/help"
       />
       <StructuredData data={structuredData} />
+      <BreadcrumbSchema crumbs={[{ name: 'Get Help Now', path: '/help' }]} />
       
       <main id="main" className="min-h-screen">
         <HelpHeroSection />

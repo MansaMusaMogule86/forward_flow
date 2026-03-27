@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 interface SuccessStory {
   id: string;
@@ -103,6 +104,7 @@ export default function SuccessStories() {
         type="article"
       />
       <StructuredData data={structuredData} />
+      <BreadcrumbSchema crumbs={[{ name: 'Success Stories', path: '/success-stories' }]} />
       
       <main id="main" className="min-h-screen">
       {/* Hero Section */}

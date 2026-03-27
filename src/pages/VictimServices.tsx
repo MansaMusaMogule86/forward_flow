@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AiErrorBoundary } from "@/components/ui/AiErrorBoundary";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -168,6 +169,7 @@ export default function VictimServices() {
         path="/victim-services"
       />
       <StructuredData data={structuredData} />
+      <BreadcrumbSchema crumbs={[{ name: 'Victim Services', path: '/victim-services' }]} />
       
       <main id="main" className="min-h-screen bg-gradient-to-br from-background via-background to-osu-gray/5">
         {/* Hero Section */}

@@ -9,6 +9,7 @@ import { CoachKaySection } from "@/components/home/CoachKaySection";
 import FounderOnePager from "@/components/about/FounderOnePager";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 
 // Import images
@@ -34,6 +35,7 @@ export default function AboutUs() {
           serviceType: ["Healing Hub", "The Collective", "Focus Flow Elevation Hub", "AI & Life Transformation", "Trauma Recovery Support"]
         }}
       />
+      <BreadcrumbSchema crumbs={[{ name: 'About Us', path: '/about' }]} />
       <main id="main" className="bg-cream/30">
       {/* Hero Section */}
       <header className="relative bg-gradient-osu-primary text-white overflow-hidden">

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAnalyticsContext } from "@/components/layout/AnalyticsProvider";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SUPPORT_EMAIL } from "@/config/contact";
 import {
   CareerQuizGame,
@@ -73,6 +74,7 @@ export default function YouthFutures() {
         imageAlt="Youth Futures participants learning career and AI skills"
       />
       <StructuredData data={faqSchema} />
+      <BreadcrumbSchema crumbs={[{ name: 'Youth Futures', path: '/youth-futures' }]} />
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden bg-gradient-to-br from-osu-gray/10 via-cream/30 to-osu-gray/10">

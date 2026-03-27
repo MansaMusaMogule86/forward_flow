@@ -13,6 +13,7 @@ import { usePagination } from "@/hooks/usePagination";
 import { useDebounce } from "@/hooks/useDebounce";
 import { DataPagination } from "@/components/ui/data-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 // Import hero image
 import communitySearchResources from "@/assets/community-search-resources.jpg";
@@ -141,6 +142,7 @@ const Search = () => {
 
   return (
     <main id="main" className="min-h-screen bg-gradient-osu-subtle">
+      <BreadcrumbSchema crumbs={[{ name: 'Search Resources', path: '/search' }]} />
       <div className="bg-gradient-osu-primary border-b border-osu-scarlet/20 mb-12">
         <div className="container py-16">
           <div className="max-w-4xl mx-auto text-center">
