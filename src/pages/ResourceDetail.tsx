@@ -3,6 +3,10 @@ import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
+import { SEOHead } from "@/components/seo/SEOHead";
+import { SITE_CONFIG } from "@/config/site";
 
 const ResourceDetail = () => {
   const { id } = useParams();
@@ -54,6 +58,28 @@ const ResourceDetail = () => {
   }
 
   return (
+    <>
+      <SEOHead
+        title={resource.name}
+        description={resource.description || `${resource.name} - Resource details`}
+        path={`/resource/${id}`}
+      />
+      <StructuredData data={{
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: resource.name,
+        description: resource.description || '',
+        url: `${SITE_CONFIG.baseUrl}/resource/${id}`,
+        datePublished: resource.created_at,
+        dateModified: resource.updated_at || resource.created_at,
+        author: { '@type': 'Person', '@id': `${SITE_CONFIG.baseUrl}/#person-coach-kay` },
+        publisher: { '@type': 'Organization', '@id': `${SITE_CONFIG.baseUrl}/#organization` },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_CONFIG.baseUrl}/resource/${id}` },
+      }} />
+      <BreadcrumbSchema crumbs={[
+        { name: 'Search', path: '/search' },
+        { name: resource.name, path: `/resource/${id}` },
+      ]} />
     <main id="main" className="container py-16">
       <div className="max-w-4xl mx-auto">
         <header className="mb-10">
@@ -67,6 +93,7 @@ const ResourceDetail = () => {
         </Card>
       </div>
     </main>
+    </>
   );
 };
 export default ResourceDetail;
