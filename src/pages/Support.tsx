@@ -27,6 +27,7 @@ const Support = () => {
         description={`Support ${SITE_CONFIG.name} through donations, sponsorships, speaking engagements, or corporate training. Multiple ways to invest in second chances.`}
         path="/support"
       />
+      <BreadcrumbSchema crumbs={[{ name: 'Get Involved', path: '/support' }]} />
     <main id="main">
       {/* Hero Section */}
       <header className="relative bg-gradient-osu-primary text-white overflow-hidden">

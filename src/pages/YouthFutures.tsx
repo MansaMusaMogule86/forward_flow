@@ -74,6 +74,7 @@ export default function YouthFutures() {
         imageAlt="Youth Futures participants learning career and AI skills"
       />
       <StructuredData data={faqSchema} />
+      <BreadcrumbSchema crumbs={[{ name: 'Youth Futures', path: '/youth-futures' }]} />
 
       {/* Hero Section */}
       <section className="relative py-20 overflow-hidden bg-gradient-to-br from-osu-gray/10 via-cream/30 to-osu-gray/10">

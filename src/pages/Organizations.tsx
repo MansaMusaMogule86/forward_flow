@@ -23,6 +23,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { ContactAccessRequest } from "@/components/security/ContactAccessRequest";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 interface Organization {
   id: string;
@@ -190,6 +191,7 @@ const Organizations = () => {
 
   return (
     <main id="main" className="container py-8">
+      <BreadcrumbSchema crumbs={[{ name: 'Organizations', path: '/organizations' }]} />
       <div className="max-w-7xl mx-auto">
 
         {/* Stats */}

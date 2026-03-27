@@ -169,6 +169,7 @@ export default function VictimServices() {
         path="/victim-services"
       />
       <StructuredData data={structuredData} />
+      <BreadcrumbSchema crumbs={[{ name: 'Victim Services', path: '/victim-services' }]} />
       
       <main id="main" className="min-h-screen bg-gradient-to-br from-background via-background to-osu-gray/5">
         {/* Hero Section */}

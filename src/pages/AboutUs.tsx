@@ -35,6 +35,7 @@ export default function AboutUs() {
           serviceType: ["Healing Hub", "The Collective", "Focus Flow Elevation Hub", "AI & Life Transformation", "Trauma Recovery Support"]
         }}
       />
+      <BreadcrumbSchema crumbs={[{ name: 'About Us', path: '/about' }]} />
       <main id="main" className="bg-cream/30">
       {/* Hero Section */}
       <header className="relative bg-gradient-osu-primary text-white overflow-hidden">
