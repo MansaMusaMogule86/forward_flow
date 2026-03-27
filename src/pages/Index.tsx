@@ -9,7 +9,7 @@ import { CallToActionSection } from "@/components/home/CallToActionSection";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { SITE_CONFIG } from "@/config/site";
-import { NewsletterPopup } from "@/components/ui/NewsletterPopup";
+
 
 import { STATES } from "@/data/states";
 import diverseCommunityMeeting from "@/assets/diverse-community-meeting.jpg";
