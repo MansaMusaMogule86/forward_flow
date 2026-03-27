@@ -42,7 +42,7 @@ export const SpecializedSupportSection = () => {
                 <Users className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold">The Collective Hub</h3>
+                <h3 className="text-xl font-semibold">The Collective</h3>
                 <p className="text-foreground/70">Community support and growth programs</p>
               </div>
             </div>
