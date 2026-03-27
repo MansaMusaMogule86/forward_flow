@@ -6,6 +6,7 @@ import { HeroSection } from "@/components/home/HeroSection";
 import { TestimonialsSection } from "@/components/home/TestimonialsSection";
 import { PathwaysSection } from "@/components/home/PathwaysSection";
 import { CallToActionSection } from "@/components/home/CallToActionSection";
+import { HomeFAQSection } from "@/components/home/HomeFAQSection";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
 import { ServiceStructuredData } from "@/components/seo/ServiceStructuredData";
@@ -58,6 +59,7 @@ const Index = () => {
       <PathwaysSection />
       <TestimonialsSection />
       <CallToActionSection />
+      <HomeFAQSection />
       
       {/* Community Image Section */}
       <section className="py-16 bg-gradient-to-b from-background to-muted/20">
