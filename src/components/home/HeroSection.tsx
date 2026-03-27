@@ -57,7 +57,7 @@ export const HeroSection = ({ selectedState, onShowStateModal, onShowAIDiscovery
               asChild
             >
               <Link 
-                to="/about" 
+                to="/help" 
                 aria-label="Connect with Coach Kay"
                 onClick={() => trackClick('hero_connect_coach_kay', { location: 'hero_section' })}
               >
