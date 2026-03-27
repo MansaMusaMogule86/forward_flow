@@ -8,6 +8,7 @@ import { PathwaysSection } from "@/components/home/PathwaysSection";
 import { CallToActionSection } from "@/components/home/CallToActionSection";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { ServiceStructuredData } from "@/components/seo/ServiceStructuredData";
 import { SITE_CONFIG } from "@/config/site";
 
 
@@ -44,6 +45,7 @@ const Index = () => {
         path="/"
       />
       <StructuredData data={structuredData} />
+      <ServiceStructuredData />
       
       <main id="main" className="min-h-screen bg-background">
       <HeroSection 
