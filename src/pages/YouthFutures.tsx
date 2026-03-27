@@ -71,7 +71,8 @@ export default function YouthFutures() {
         title="Youth Futures Elevation Program | Empowerment for Justice-Impacted Youth"
         description="AI-powered career tools and mentorship for justice-impacted youth ages 14-26. 100% free participation powered by sponsors."
         path="/youth-futures"
-        imageAlt="Youth Futures participants learning career and AI skills"
+        image="/images/og-youth-futures.jpg"
+        imageAlt="Diverse young people learning career and technology skills together"
       />
       <StructuredData data={faqSchema} />
       <BreadcrumbSchema crumbs={[{ name: 'Youth Futures', path: '/youth-futures' }]} />

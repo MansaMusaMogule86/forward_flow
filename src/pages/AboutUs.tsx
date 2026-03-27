@@ -23,6 +23,8 @@ export default function AboutUs() {
         title="About Our Mission | Accredited AI Life Transformation Coaching"
         description="Meet Coach Kay, an Accredited AI Life Transformation Coach and Master Certified expert. We provide trauma-informed support and AI-driven second chances."
         path="/about"
+        image="/images/og-about.jpg"
+        imageAlt="Diverse community gathered together for transformation coaching"
       />
       <StructuredData
         data={{
