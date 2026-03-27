@@ -13,6 +13,7 @@ import ContactForm from "@/components/forms/ContactForm";
 import { useCalendlyPopup } from "@/hooks/useCalendlyPopup";
 import { SUPPORT_EMAIL, ORGANIZATION_NAME, CONTACT_CONFIG } from "@/config/contact";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { StructuredData } from "@/components/seo/StructuredData";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 
@@ -28,6 +29,29 @@ const Support = () => {
         path="/support"
       />
       <BreadcrumbSchema crumbs={[{ name: 'Get Involved', path: '/support' }]} />
+      <StructuredData data={{
+        '@context': 'https://schema.org',
+        '@type': 'Event',
+        name: 'Free Discovery Call with Coach Kay',
+        description: 'Book a free 30-minute discovery call to explore coaching, partnerships, or community support options with Coach Kay.',
+        startDate: new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0],
+        endDate: new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0],
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OnlineEventAttendanceMode',
+        location: {
+          '@type': 'VirtualLocation',
+          url: 'https://calendly.com/ffe_coach_kay/free-call',
+        },
+        organizer: { '@type': 'Organization', '@id': `${SITE_CONFIG.baseUrl}/#organization` },
+        performer: { '@type': 'Person', '@id': `${SITE_CONFIG.baseUrl}/#person-coach-kay` },
+        offers: {
+          '@type': 'Offer',
+          price: '0',
+          priceCurrency: 'USD',
+          availability: 'https://schema.org/InStock',
+          url: 'https://calendly.com/ffe_coach_kay/free-call',
+        },
+      }} />
     <main id="main">
       {/* Hero Section */}
       <header className="relative bg-gradient-osu-primary text-white overflow-hidden">
