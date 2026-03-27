@@ -8,7 +8,7 @@ const BreathingExercise = () => {
   const [seconds, setSeconds] = useState(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     if (isBreathing) {
       interval = setInterval(() => {

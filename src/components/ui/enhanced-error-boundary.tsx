@@ -83,7 +83,7 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
 
             <CardContent className="space-y-6">
               {/* Error Details (for development) */}
-              {process.env.NODE_ENV === 'development' && this.state.error && (
+              {import.meta.env.DEV && this.state.error && (
                 <Alert variant="destructive" className="animate-scale-in">
                   <Bug className="h-4 w-4" />
                   <AlertTitle>Error Details (Development Only)</AlertTitle>
