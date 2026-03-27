@@ -25,7 +25,7 @@ const FrequencyPlayer = ({ onUse }: FrequencyPlayerProps) => {
   const gainNodeRef = useRef<GainNode | null>(null);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
 
     if (timeLeft > 0) {
       interval = setInterval(() => {
