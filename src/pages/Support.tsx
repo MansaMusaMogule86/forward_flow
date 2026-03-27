@@ -63,7 +63,7 @@ const Support = () => {
         {/* Ways to Support Grid */}
         <section className="bg-secondary/5 py-16 rounded-2xl border-2 border-osu-scarlet/20 overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1 active:scale-95 cursor-pointer" onClick={() => setActiveDialog('donate')}>
+            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -82,7 +82,7 @@ const Support = () => {
                       Donate Now
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <DialogHeader>
                       <DialogTitle className="text-2xl">Choose Your Donation Amount</DialogTitle>
                       <DialogDescription className="sr-only">Select a donation amount to support the mission.</DialogDescription>
@@ -93,7 +93,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1 active:scale-95 cursor-pointer" onClick={() => setActiveDialog('donate')}>
+            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -106,13 +106,13 @@ const Support = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-0 flex-1 flex flex-col justify-between">
-                <Button className="get-involved-gold-button border-none w-full shadow-md mt-4">
+                <Button className="get-involved-gold-button border-none w-full shadow-md mt-4" onClick={() => setActiveDialog('donate')}>
                   Explore Sponsorship
                 </Button>
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1 active:scale-95 cursor-pointer" onClick={() => setActiveDialog('speaker')}>
+            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -131,7 +131,7 @@ const Support = () => {
                       Apply to Speak
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <DialogHeader className="sr-only">
                       <DialogTitle>Apply to Speak</DialogTitle>
                       <DialogDescription>Complete the speaker application form.</DialogDescription>
@@ -142,7 +142,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1 active:scale-95 cursor-pointer" onClick={() => setActiveDialog('consultation')}>
+            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -161,7 +161,7 @@ const Support = () => {
                       Request Consultation
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <DialogHeader className="sr-only">
                       <DialogTitle>Request Consultation</DialogTitle>
                       <DialogDescription>Submit an AI consultation request for your organization.</DialogDescription>
@@ -172,7 +172,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1 active:scale-95 cursor-pointer" onClick={() => setActiveDialog('grant')}>
+            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -191,7 +191,7 @@ const Support = () => {
                       Submit Grant Inquiry
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <DialogHeader className="sr-only">
                       <DialogTitle>Grant Inquiry</DialogTitle>
                       <DialogDescription>Submit a grant inquiry form.</DialogDescription>
@@ -202,7 +202,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1 active:scale-95 cursor-pointer" onClick={() => setActiveDialog('training')}>
+            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -221,7 +221,7 @@ const Support = () => {
                       Request Training
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                     <DialogHeader className="sr-only">
                       <DialogTitle>Corporate Training Request</DialogTitle>
                       <DialogDescription>Submit a request for corporate training services.</DialogDescription>
@@ -307,12 +307,10 @@ const Support = () => {
                    onClick={(e) => {
                      e.preventDefault();
                      e.stopPropagation();
-                     if (calendlyReady) {
-                       openCalendly('https://calendly.com/ffe_coach_kay/free-call');
-                     }
+                     openCalendly('https://calendly.com/ffe_coach_kay/free-call');
                    }}
                  >
-                   {calendlyReady ? 'Schedule Consultation →' : 'Loading...'}
+                   Schedule a Chat
                  </Button>
                </div>
             </div>
@@ -324,4 +322,5 @@ const Support = () => {
     </>
   );
 };
+
 export default Support;

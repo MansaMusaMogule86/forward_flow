@@ -24,10 +24,10 @@ interface ChatMessage {
 interface ChatRequest {
   messages: ChatMessage[];
   topic: string;
+  stream?: boolean;
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -38,42 +38,32 @@ serve(async (req) => {
       throw new Error('OPENAI_API_KEY is not configured');
     }
 
-    const { messages, topic }: ChatRequest = await req.json();
+    const { messages, topic, stream: shouldStream = true }: ChatRequest = await req.json();
 
-    // Validate topic
     if (!topic || !PROMPTS[topic as TopicType]) {
       return new Response(
         JSON.stringify({ 
-          error: 'Invalid or missing topic. Must be one of: resource-discovery, crisis-support, reentry-navigator, victim-support' 
+          error: 'Invalid or missing topic. Must be one of: resource-discovery, crisis-support, reentry-navigator, victim-support, youth-futures' 
         }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Validate messages
     if (!messages || !Array.isArray(messages)) {
       return new Response(
         JSON.stringify({ error: 'Messages array is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Prepare messages for OpenAI
     const systemPrompt = PROMPTS[topic as TopicType];
     const openAIMessages = [
       { role: "system", content: systemPrompt },
       ...messages
     ];
 
-    console.log(`Processing ${topic} chat request with ${messages.length} messages`);
+    console.log(`Processing ${topic} chat request with ${messages.length} messages (stream: ${shouldStream})`);
 
-    // Call OpenAI API with streaming
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -83,7 +73,7 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'gpt-4o-mini',
         messages: openAIMessages,
-        stream: true,
+        stream: shouldStream,
         temperature: 0.7,
         max_tokens: 1000,
       }),
@@ -93,6 +83,16 @@ serve(async (req) => {
       const error = await response.text();
       console.error('OpenAI API error:', error);
       throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    if (!shouldStream) {
+      // Return JSON response directly for non-streaming requests
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      return new Response(
+        JSON.stringify({ response: content }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // Return streaming response
@@ -111,10 +111,7 @@ serve(async (req) => {
       JSON.stringify({ 
         error: error instanceof Error ? error.message : 'Internal server error' 
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });

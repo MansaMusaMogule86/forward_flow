@@ -117,7 +117,7 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
       console.error('Victim Support AI error:', error);
       toast.error("I'm having trouble connecting. Showing offline resources.");
 
-      // Fallback: client-side victim services lookup so users still get help
+      // Fallback: update existing AI placeholder instead of adding new message
       try {
         const { data: resources } = await supabase
           .from('resources')
@@ -127,23 +127,25 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
           .limit(8);
 
         const content = "I'm having trouble connecting to the AI right now, but here are trauma-informed victim services I found that may help:";
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: 'ai',
-          content,
-          timestamp: new Date(),
-          resources: resources || []
-        };
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage.type === 'ai') {
+            lastMessage.content = content;
+            lastMessage.resources = resources || [];
+          }
+          return newMessages;
+        });
       } catch (fallbackError) {
         console.error('Victim fallback failed:', fallbackError);
-        const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: 'ai',
-          content: "I apologize for the technical difficulty. Let me connect you with local victim services that can provide direct support.\n\nPlease visit your nearest **Family Justice Center** or contact local law enforcement victim advocacy services.",
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, errorMessage]);
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage.type === 'ai') {
+            lastMessage.content = "I apologize for the technical difficulty. Let me connect you with local victim services that can provide direct support.\n\nPlease visit your nearest **Family Justice Center** or contact local law enforcement victim advocacy services.";
+          }
+          return newMessages;
+        });
       }
     }
   };
