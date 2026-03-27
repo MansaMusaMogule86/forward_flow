@@ -15,6 +15,27 @@ export const GlobalStructuredData = () => {
         logo: `${baseUrl}${SITE_CONFIG.logo.default}`,
         sameAs: SITE_CONFIG.social.sameAs,
         dateModified: new Date().toISOString(),
+        hasOfferCatalog: {
+          '@type': 'OfferCatalog',
+          name: `${SITE_CONFIG.name} Services`,
+          itemListElement: [
+            {
+              '@type': 'OfferCatalog',
+              name: SITE_CONFIG.services.healing,
+              itemListOrder: 'https://schema.org/ItemListUnordered',
+            },
+            {
+              '@type': 'OfferCatalog',
+              name: SITE_CONFIG.services.collective,
+              itemListOrder: 'https://schema.org/ItemListUnordered',
+            },
+            {
+              '@type': 'OfferCatalog',
+              name: SITE_CONFIG.services.skool,
+              itemListOrder: 'https://schema.org/ItemListUnordered',
+            },
+          ],
+        },
       },
       {
         '@type': 'Person',
@@ -26,6 +47,12 @@ export const GlobalStructuredData = () => {
           'Reentry support',
           'Victim services',
           'Community transformation',
+          'Reentry planning',
+          'Criminal justice reform',
+          'Trauma-informed coaching',
+          'Victim advocacy',
+          'Family reunification',
+          'Second chance employment',
         ],
         url: `${baseUrl}/about`,
         sameAs: SITE_CONFIG.social.sameAs,
