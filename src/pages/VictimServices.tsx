@@ -167,6 +167,8 @@ export default function VictimServices() {
         title={`Trauma-Informed Digital Sanctuary | ${SITE_CONFIG.services.healing}`}
         description="A safe, trauma-informed digital sanctuary providing somatic release, guided journaling, and Ohio trauma recovery tools. Empowering survivors on their healing journey."
         path="/victim-services"
+        image="/images/og-victim-services.jpg"
+        imageAlt="Hands cupping warm golden light representing healing and recovery"
       />
       <StructuredData data={structuredData} />
       <BreadcrumbSchema crumbs={[{ name: 'Victim Services', path: '/victim-services' }]} />
