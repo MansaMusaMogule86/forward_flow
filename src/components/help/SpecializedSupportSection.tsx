@@ -23,7 +23,7 @@ export const SpecializedSupportSection = () => {
                 <Shield className="h-6 w-6 text-secondary-foreground" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold">Healing & Safety Hub</h3>
+                <h3 className="text-xl font-semibold">Healing Hub</h3>
                 <p className="text-foreground/70">Trauma recovery and victim services</p>
               </div>
             </div>
@@ -42,7 +42,7 @@ export const SpecializedSupportSection = () => {
                 <Users className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold">Focus Flow Elevation Hub</h3>
+                <h3 className="text-xl font-semibold">The Collective Hub</h3>
                 <p className="text-foreground/70">Community support and growth programs</p>
               </div>
             </div>
