@@ -8,6 +8,8 @@ import { VettingQuestionnaire } from "@/components/learn/VettingQuestionnaire";
 import { PathwayVisual } from "@/components/learn/PathwayVisual";
 import ReentryNavigatorAI from "@/components/ai/ReentryNavigatorAI";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 
 export default function CommunityLearning() {
@@ -179,6 +181,19 @@ export default function CommunityLearning() {
         description="Welcome to The Collective. Access AI-powered life transformation tools, educational modules, and personalized coaching for justice-impacted individuals and families."
         path="/learn"
       />
+      <StructuredData data={{
+        '@context': 'https://schema.org',
+        '@type': 'WebPage',
+        headline: `${SITE_CONFIG.services.collective} | AI & Life Transformation Hub`,
+        description: 'Access AI-powered life transformation tools, educational modules, and personalized coaching for justice-impacted individuals and families.',
+        url: `${SITE_CONFIG.baseUrl}/learn`,
+        datePublished: '2025-01-15',
+        dateModified: new Date().toISOString(),
+        author: { '@type': 'Person', '@id': `${SITE_CONFIG.baseUrl}/#person-coach-kay` },
+        publisher: { '@type': 'Organization', '@id': `${SITE_CONFIG.baseUrl}/#organization` },
+        mainEntityOfPage: { '@type': 'WebPage', '@id': `${SITE_CONFIG.baseUrl}/learn` },
+      }} />
+      <BreadcrumbSchema crumbs={[{ name: 'Learn & Grow', path: '/learn' }]} />
       {/* Hero Section with Premium Branding */}
       <header className="relative bg-gradient-osu-primary text-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-muted/90 via-osu-scarlet/80 to-osu-scarlet-dark/70"></div>
