@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 interface SuccessStory {
   id: string;

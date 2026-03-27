@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAnalyticsContext } from "@/components/layout/AnalyticsProvider";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SUPPORT_EMAIL } from "@/config/contact";
 import {
   CareerQuizGame,

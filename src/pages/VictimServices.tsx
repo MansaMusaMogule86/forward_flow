@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AiErrorBoundary } from "@/components/ui/AiErrorBoundary";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 import type { LucideIcon } from "lucide-react";
 import {

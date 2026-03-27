@@ -13,6 +13,7 @@ import ContactForm from "@/components/forms/ContactForm";
 import { useCalendlyPopup } from "@/hooks/useCalendlyPopup";
 import { SUPPORT_EMAIL, ORGANIZATION_NAME, CONTACT_CONFIG } from "@/config/contact";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 
 const Support = () => {

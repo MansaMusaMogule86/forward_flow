@@ -9,6 +9,7 @@ import { CoachKaySection } from "@/components/home/CoachKaySection";
 import FounderOnePager from "@/components/about/FounderOnePager";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { StructuredData } from "@/components/seo/StructuredData";
+import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 
 // Import images
