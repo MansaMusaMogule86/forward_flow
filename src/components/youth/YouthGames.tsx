@@ -83,6 +83,7 @@ export const CareerQuizGame = () => {
       const { data, error } = await supabase.functions.invoke('chat', {
         body: {
           topic: 'youth-futures',
+          stream: false,
           messages: [
             { role: 'user', content: `I enjoy ${finalAnswers[0]}, I'm excited about ${finalAnswers[1]}, and I'm ${finalAnswers[2]}. What AI-enhanced careers should I explore?` }
           ]
@@ -91,10 +92,7 @@ export const CareerQuizGame = () => {
 
       if (error) throw error;
 
-      const content =
-        data?.choices?.[0]?.message?.content ??
-        data?.response ??
-        (typeof data === 'string' ? data : null);
+      const content = data?.response ?? (typeof data === 'string' ? data : null);
 
       if (!content) {
         throw new Error('Unexpected AI response format from chat function');

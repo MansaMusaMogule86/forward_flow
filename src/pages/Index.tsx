@@ -85,7 +85,7 @@ const Index = () => {
         location={stateForAI} 
       />
 
-      <NewsletterPopup />
+      
       
       <StateModal 
         isOpen={showStateModal} 

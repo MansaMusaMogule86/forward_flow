@@ -70,20 +70,18 @@ const Register = () => {
           });
         }
       } else {
-        // Send welcome email using session JWT if available
+        // Send welcome email using anon key (no session exists yet before email confirmation)
         try {
-          const { supabase } = await import("@/integrations/supabase/client");
-          const { data: sessionData } = await supabase.auth.getSession();
-          
-          const token = sessionData?.session?.access_token;
-          if (token) {
+          const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          if (anonKey && supabaseUrl) {
             await fetch(
-              `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-auth-email`,
+              `${supabaseUrl}/functions/v1/send-auth-email`,
               {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`,
+                  'Authorization': `Bearer ${anonKey}`,
                 },
                 body: JSON.stringify({
                   email: email.trim().toLowerCase(),
@@ -100,14 +98,14 @@ const Register = () => {
         }
 
         toast({
-          title: "Registration Successful!",
-          description: "Welcome! Check your email for a welcome message and important next steps.",
+          title: "Check Your Email",
+          description: "We've sent a verification link to your email. Please verify your account to get started.",
         });
         // Clear form
         setEmail("");
         setPassword("");
         setConfirmPassword("");
-        // Redirect to auth page instead of home
+        // Redirect to auth page
         navigate("/auth");
       }
     } catch (error: any) {

@@ -143,23 +143,25 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
           .limit(8);
 
         const content = "I'm experiencing technical difficulties, but your safety is my priority.\n\nFor immediate support:\n\n*   **Emergency:** Call 911\n*   **Suicide & Crisis:** Call 988\n*   **Crisis Text Line:** Text HOME to 741741\n\nHere are crisis resources I found:";
-        const aiMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: 'ai',
-          content,
-          timestamp: new Date(),
-          resources: resources || []
-        };
-        setMessages(prev => [...prev, aiMessage]);
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage.type === 'ai') {
+            lastMessage.content = content;
+            lastMessage.resources = resources || [];
+          }
+          return newMessages;
+        });
       } catch (fallbackError) {
         console.error('Crisis fallback failed:', fallbackError);
-        const errorMessage: Message = {
-          id: (Date.now() + 1).toString(),
-          type: 'ai',
-          content: "I'm experiencing technical difficulties. For immediate crisis support:\n\n*   Call **911** for emergencies\n*   Call **988** for suicide crisis support\n*   Text **HOME** to **741741**",
-          timestamp: new Date(),
-        };
-        setMessages(prev => [...prev, errorMessage]);
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage.type === 'ai') {
+            lastMessage.content = "I'm experiencing technical difficulties. For immediate crisis support:\n\n*   Call **911** for emergencies\n*   Call **988** for suicide crisis support\n*   Text **HOME** to **741741**";
+          }
+          return newMessages;
+        });
       }
     }
   };

@@ -84,9 +84,9 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
     resetConversation();
   };
 
-  const handleCloseRequest = () => {
+  const handleCloseRequest = (fromXButton = false) => {
     const hasUserMessages = messages.some((m) => m.type === 'user');
-    if (hasUserMessages) {
+    if (fromXButton && hasUserMessages) {
       pendingCloseRef.current = true;
       setShowEmailModal(true);
     } else {
@@ -324,7 +324,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
   if (!isOpen) return null;
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleCloseRequest(); }}>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleCloseRequest(false); }}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 flex flex-col overflow-hidden">
         <div className="sr-only">
           <h2 id="reentry-navigator-dialog-title">Reentry Navigator AI Chat</h2>
@@ -348,7 +348,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
           <Button
             variant="ghost" 
             size="sm"
-            onClick={handleCloseRequest}
+            onClick={() => handleCloseRequest(true)}
             className="text-secondary-foreground hover:bg-secondary-foreground/20"
           >
             <X className="h-4 w-4" />
