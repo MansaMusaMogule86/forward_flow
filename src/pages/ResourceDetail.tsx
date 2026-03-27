@@ -93,6 +93,7 @@ const ResourceDetail = () => {
         </Card>
       </div>
     </main>
+    </>
   );
 };
 export default ResourceDetail;
