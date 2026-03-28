@@ -18,11 +18,7 @@ const donationOptions = [
   { name: "Change Starter", amount: 11, description: "Start positive change", price_id: "price_1SAXVNPKfeSn0LlRAF25adRh" }
 ];
 
-interface DonationBoxesProps {
-  // Updated to use integrated Stripe payments
-}
-
-export default function DonationBoxes({}: DonationBoxesProps) {
+export default function DonationBoxes() {
   const [loadingOption, setLoadingOption] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [lastAttemptedOption, setLastAttemptedOption] = useState<typeof donationOptions[0] | null>(null);

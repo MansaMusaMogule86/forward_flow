@@ -57,7 +57,7 @@ const SubmitReferral = () => {
 
     // Validate contact info (email or phone)
     const isEmail = sanitizedContactInfo.includes('@');
-    const isPhone = /^\+?[\d\s\-\(\)\.]{10,}$/.test(sanitizedContactInfo);
+    const isPhone = /^\+?[\d\s\-().]{10,}$/.test(sanitizedContactInfo);
     if (!isEmail && !isPhone) {
       toast({
         title: "Error",

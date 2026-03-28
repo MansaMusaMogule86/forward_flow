@@ -1,4 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
+import logo from "@/assets/images/branding/logo-transparent.png";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Home, Search, ArrowLeft } from "lucide-react";
@@ -34,8 +35,8 @@ const NotFound = () => {
         {/* Logo */}
         <div className="mb-8 flex justify-center">
           <img 
-            src="/logo-new.png"
-            alt="Forward Focus Elevation" 
+            src={logo}
+            alt="Forward Focus Elevation"
             className="h-20 w-auto"
           />
         </div>

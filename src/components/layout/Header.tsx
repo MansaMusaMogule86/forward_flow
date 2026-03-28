@@ -1,4 +1,5 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import logo from "@/assets/images/branding/logo-transparent.png";
 import { useState, useEffect } from "react";
 import { Menu, User, LogOut, Search, Globe, Phone, ChevronDown, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,15 +62,10 @@ const Header = ({
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-osu-gray-light/30 via-cream/50 to-osu-gray-light/20 border-b">
-      {/* Crisis Ribbon - removed */}
-
-      {/* Top Utility Bar - removed, replaced with crisis popup */}
-
+    <header className="sticky top-0 z-50 bg-white border-b border-border/50 shadow-sm">
       {/* Main Navigation */}
-      <div className="bg-gradient-to-r from-osu-gray-light/30 via-cream/50 to-osu-gray-light/20 backdrop-blur-sm border-b border-border/50 shadow-sm">
-        <div className="container mx-auto px-6">
-          <div className="grid grid-cols-12 gap-4 items-center py-0 max-w-full">
+      <div className="container mx-auto px-6">
+          <div className="grid grid-cols-12 gap-4 items-center py-2 max-w-full">
             {/* Mobile menu button - Column 1 */}
             <div className="col-span-1 md:hidden">
               <Sheet open={open} onOpenChange={setOpen}>
@@ -147,10 +143,10 @@ const Header = ({
             {/* Logo - Columns 2-4 on mobile, 1-2 on desktop */}
             <div className="col-span-10 md:col-span-2 flex justify-center md:justify-start">
               <NavLink to="/" className="flex items-center md:hover:scale-105 transition-all duration-300 group">
-                <img 
-                  src="/logo-new.png"
-                  alt="Forward Focus Elevation" 
-                  className="h-32 w-auto drop-shadow-2xl filter brightness-105 contrast-105 group-hover:scale-105 group-hover:drop-shadow-2xl transition-all duration-300" 
+                <img
+                  src={logo}
+                  alt="Forward Focus Elevation"
+                  className="h-14 w-auto mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
                 />
               </NavLink>
             </div>
@@ -286,9 +282,7 @@ const Header = ({
               </Button>
             </div>
           </div>
-        </div>
       </div>
-
     </header>
   );
 };

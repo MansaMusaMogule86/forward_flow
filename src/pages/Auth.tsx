@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
 import { Navigate, Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
-import communityImage from "@/assets/diverse-families-healing.jpg";
+import communityImage from "@/assets/images/community/families-healing.jpg";
 import AuthLayout from "@/components/layout/AuthLayout";
 import { supabase } from "@/integrations/supabase/client";
 import { PasswordStrengthIndicator } from "@/components/security/PasswordStrengthIndicator";

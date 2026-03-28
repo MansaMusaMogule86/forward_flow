@@ -42,7 +42,7 @@ const SignupModal = ({
         <div className="p-6">
           <div className="mb-6 flex items-center justify-between">
             <div>
-              <h3 className="text-xl font-semibold text-foreground">                       GET STARTED</h3>
+              <h3 className="text-xl font-semibold text-foreground">GET STARTED</h3>
               <p className="mt-2 text-sm text-muted-foreground">
                 We believe in personalized, secure support — and that starts with understanding your journey.
                 Join our community to unlock tools, guides, and resources tailored just for you.

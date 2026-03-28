@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx eslint:*)",
+      "Bash(grep -v \"^$\")",
+      "Bash(dir /b src\\\\assets)",
+      "Bash(grep -r \"backgroundImage\\\\|bg-\\\\[url\" c:UsersmehdiDesktopDESKTOP02_PROJECTSforwardfocus-foundationsrc --include=*.tsx --include=*.ts)",
+      "Bash(grep -r src= c:UsersmehdiDesktopDESKTOP02_PROJECTSforwardfocus-foundationsrc --include=*.tsx)",
+      "Bash(mkdir -p public/images/seo)",
+      "Bash(mv public/images/og-about.jpg public/images/seo/og-about.jpg)",
+      "Bash(mv public/images/og-victim-services.jpg public/images/seo/og-victim-services.jpg)",
+      "Bash(mv public/images/og-youth-futures.jpg public/images/seo/og-youth-futures.jpg)",
+      "Bash(rm \"src/assets/images/branding/logo-transparent - Copy.svg\")",
+      "Bash(mv \"src/assets/images/branding/logo_white.png\" \"src/assets/images/branding/logo-white.png\")",
+      "Bash(mv public/Logo_new.png public/logo-new.png)",
+      "Bash(cp public/logo-new.png src/assets/images/branding/logo-transparent.png)",
+      "Bash(mv public/logo-new.png public/apple-touch-icon.png)",
+      "Bash(mv public/lovable-uploads/coach_k.png src/assets/images/team/coach-k.png)",
+      "Bash(rmdir public/lovable-uploads)",
+      "Bash(rm public/images/families-collage.jpg)",
+      "Bash(rm public/placeholder.svg)"
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-expect-error - test file uses dynamic mocking patterns not known to TS
 import { expect, test, describe, beforeEach, afterEach, mock } from "bun:test";
 
 // Mock dompurify before importing security.ts
@@ -12,7 +12,7 @@ mock.module("dompurify", () => {
 
 // Mock crypto if needed (though Bun should have it)
 if (!globalThis.crypto) {
-  // @ts-ignore
+  // @ts-expect-error - assigning crypto for test environments that lack it
   globalThis.crypto = {
     getRandomValues: (arr: Uint8Array) => {
       for (let i = 0; i < arr.length; i++) arr[i] = Math.floor(Math.random() * 256);

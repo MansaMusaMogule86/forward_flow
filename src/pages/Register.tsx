@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import AuthLayout from "@/components/layout/AuthLayout";
 import { PasswordStrengthIndicator } from "@/components/security/PasswordStrengthIndicator";
 import { registrationFormSchema } from "@/lib/validationSchemas";
-import learningCommunityImage from "@/assets/learning-community-diverse.jpg";
+import learningCommunityImage from "@/assets/images/community/learning-community.jpg";
 
 const Register = () => {
   const [email, setEmail] = useState("");

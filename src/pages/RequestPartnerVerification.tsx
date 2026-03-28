@@ -93,7 +93,7 @@ const RequestPartnerVerification = () => {
     }
 
     // Validate phone format (basic validation)
-    const phoneRegex = /^[\d\s\-\(\)\+\.ext]+$/;
+    const phoneRegex = /^[\d\s\-()+.ext]+$/;
     if (!phoneRegex.test(formData.contactPhone)) {
       toast({
         title: "Invalid Phone Number",

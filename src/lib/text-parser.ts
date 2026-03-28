@@ -10,7 +10,7 @@ export function parseTextForLinks(text: string): ParsedTextSegment[] {
   // Enhanced regex patterns for better detection
   const phoneRegex = /(\(?([0-9]{3})\)?[-.\s]?([0-9]{3})[-.\s]?([0-9]{4})|\b(911|988|211|\d{1}-800-\d{3}-\d{4})\b)/g;
   const emailRegex = /\b([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\b/g;
-  const websiteRegex = /(https?:\/\/[^\s<>"'\[\]()]+(?:\([^\s<>"'\[\]()]*\))?[^\s<>"'\[\]()]*|(?:www\.)?[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s<>"'\[\]()]*)?)/g;
+  const websiteRegex = /(https?:\/\/[^\s<>"'[\]()]+(?:\([^\s<>"'[\]()]*\))?[^\s<>"'[\]()]*|(?:www\.)?[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s<>"'[\]()]*)?)/g;
   
   let lastIndex = 0;
   const matches: { index: number; length: number; type: 'phone' | 'email' | 'website'; content: string; href: string }[] = [];
@@ -103,7 +103,7 @@ export function formatAIResponse(text: string): string {
     // Enhanced bullet point formatting
     .replace(/^[\s]*[-*+]\s/gm, '• ')
     // Enhanced numbered list formatting  
-    .replace(/^[\s]*(\d+)[\.\)]\s/gm, '$1. ')
+    .replace(/^[\s]*(\d+)[.)]\s/gm, '$1. ')
     // Format phone numbers
     .replace(/\b(\d{3}[-.\s]?\d{3}[-.\s]?\d{4})\b/g, '$1')
     // Clean up extra whitespace while preserving intentional breaks

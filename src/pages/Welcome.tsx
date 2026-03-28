@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 
 // Import existing images
-import diverseFamilies from "@/assets/diverse-families-healing.jpg";
-import communitySupport from "@/assets/diverse-community-support.jpg";
-import learningEnvironment from "@/assets/diverse-learning-environment.jpg";
+import diverseFamilies from "@/assets/images/community/families-healing.jpg";
+import communitySupport from "@/assets/images/community/community-support.jpg";
+import learningEnvironment from "@/assets/images/community/learning-environment.jpg";
 
 const Welcome = () => {
   const navigate = useNavigate();

@@ -22,13 +22,13 @@ export const StateProvider = ({ children }: { children: React.ReactNode }) => {
         const valid = STATES.find((s) => s.code === parsed.code);
         if (valid) setSelectedState(valid);
       }
-    } catch {}
+    } catch (_e) { /* localStorage unavailable */ }
   }, []);
 
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedState));
-    } catch {}
+    } catch (_e) { /* localStorage unavailable */ }
   }, [selectedState]);
 
   const value = useMemo(() => ({ selectedState, setSelectedState }), [selectedState]);

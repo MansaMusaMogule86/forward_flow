@@ -29,7 +29,7 @@ import { PartnerVerificationStatus } from "@/components/partner/PartnerVerificat
 import { PartnerSupportChatbot } from "@/components/ai/PartnerSupportChatbot";
 
 // Import hero image
-import partnershipCollaboration from "@/assets/partnership-collaboration.jpg";
+import partnershipCollaboration from "@/assets/images/community/partnership-collaboration.jpg";
 
 interface PartnerStats {
   totalReferrals: number;

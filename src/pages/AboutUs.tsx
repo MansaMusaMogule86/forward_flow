@@ -13,8 +13,7 @@ import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 import { SITE_CONFIG } from "@/config/site";
 
 // Import images
-import coachKayProfessional from "@/assets/coach-kay-professional.jpg";
-import diverseCommunityMeeting from "@/assets/diverse-community-meeting.jpg";
+import diverseCommunityMeeting from "@/assets/images/community/community-meeting.jpg";
 
 export default function AboutUs() {
   const [showConsultation, setShowConsultation] = useState(false);
@@ -23,8 +22,6 @@ export default function AboutUs() {
         title="About Our Mission | Accredited AI Life Transformation Coaching"
         description="Meet Coach Kay, an Accredited AI Life Transformation Coach and Master Certified expert. We provide trauma-informed support and AI-driven second chances."
         path="/about"
-        image="/images/og-about.jpg"
-        imageAlt="Diverse community gathered together for transformation coaching"
       />
       <StructuredData
         data={{

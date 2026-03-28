@@ -1,6 +1,6 @@
-import youngBlackSupport from "@/assets/young-black-community-support.jpg";
-import youngBlackLearning from "@/assets/young-black-learning-environment.jpg"; 
-import youngBlackSuccess from "@/assets/young-black-success-stories.jpg";
+import youngBlackSupport from "@/assets/images/community/youth-support.jpg";
+import youngBlackLearning from "@/assets/images/community/youth-learning.jpg";
+import youngBlackSuccess from "@/assets/images/community/youth-success.jpg";
 
 export const PathwayVisual = ({ pathway }: { pathway: string }) => {
   const getImage = () => {

@@ -3,9 +3,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
-import testimonialSarah from "@/assets/testimonial-sarah-diverse.jpg";
-import testimonialMichael from "@/assets/testimonial-michael-diverse.jpg";
-import testimonialJessica from "@/assets/testimonial-jessica-diverse.jpg";
+import testimonialSarah from "@/assets/images/testimonials/sarah.jpg";
+import testimonialMichael from "@/assets/images/testimonials/michael.jpg";
+import testimonialJessica from "@/assets/images/testimonials/jessica.jpg";
 
 interface Testimonial {
   quote: string;

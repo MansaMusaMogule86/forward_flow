@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { BreadcrumbSchema } from "@/components/seo/BreadcrumbSchema";
 
 // Import hero image
-import communitySearchResources from "@/assets/community-search-resources.jpg";
+import communitySearchResources from "@/assets/images/community/search-resources.jpg";
 
 type QuickFilter = "all" | "emergency" | "ongoing" | "new" | "partner";
 

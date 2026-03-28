@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Bot, Sparkles, ArrowLeft } from "lucide-react";
 
 // Import hero image
-import communitySearchResources from "@/assets/community-search-resources.jpg";
+import communitySearchResources from "@/assets/images/community/search-resources.jpg";
 
 
 const Discover = () => {

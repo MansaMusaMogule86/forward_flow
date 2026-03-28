@@ -20,14 +20,14 @@ const EmergencyBar = () => {
           localStorage.removeItem(DISMISS_KEY);
         }
       }
-    } catch {}
+    } catch (_e) { /* localStorage unavailable */ }
   }, []);
 
   const handleDismiss = () => {
     setIsDismissed(true);
     try {
       localStorage.setItem(DISMISS_KEY, Date.now().toString());
-    } catch {}
+    } catch (_e) { /* localStorage unavailable */ }
   };
 
   if (isDismissed) return null;

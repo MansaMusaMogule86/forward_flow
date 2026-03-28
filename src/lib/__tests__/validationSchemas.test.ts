@@ -1,4 +1,4 @@
-// @ts-nocheck
+// @ts-expect-error - test file uses dynamic patterns not fully typed
 import { expect, test, describe } from "vitest";
 import {
   authFormSchema,

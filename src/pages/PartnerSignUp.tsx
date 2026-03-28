@@ -53,7 +53,7 @@ const PartnerSignUp = () => {
     }
 
     // Validate phone format
-    const phoneRegex = /^[\d\s\-\(\)\+\.ext]+$/;
+    const phoneRegex = /^[\d\s\-()+.ext]+$/;
     if (!phoneRegex.test(phone)) {
       toast({
         title: "Invalid Phone Number",

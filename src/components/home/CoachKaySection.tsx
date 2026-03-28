@@ -1,4 +1,5 @@
 import { Calendar, Award } from "lucide-react";
+import coachKay from "@/assets/images/about/coach-kay.png";
 import { Button } from "@/components/ui/button";
 import AskCoachKay from "@/components/ui/AskCoachKay";
 import { useCalendlyPopup } from "@/hooks/useCalendlyPopup";
@@ -56,7 +57,7 @@ export const CoachKaySection = () => {
             <div className="relative">
               <div className="relative rounded-2xl overflow-hidden shadow-2xl">
                 <img 
-                  src="/lovable-uploads/fad5cdf5-77d8-4054-93a4-6e6af3cf8099.png" 
+                  src={coachKay}
                   alt="Coach Kay, founder of Forward Focus Elevation, sitting professionally in a modern office setting" 
                   className="w-full h-96 lg:h-[500px] object-contain" 
                 />

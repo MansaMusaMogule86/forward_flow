@@ -14,7 +14,7 @@ import { SITE_CONFIG } from "@/config/site";
 
 
 import { STATES } from "@/data/states";
-import diverseCommunityMeeting from "@/assets/diverse-community-meeting.jpg";
+import diverseCommunityMeeting from "@/assets/images/community/community-meeting.jpg";
 
 const Index = () => {
   const [showAIDiscovery, setShowAIDiscovery] = useState(false);

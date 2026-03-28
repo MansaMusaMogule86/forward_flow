@@ -17,8 +17,8 @@ export const isValidEmail = (email: string): boolean => {
 
 // Validate phone number format
 export const isValidPhone = (phone: string): boolean => {
-  const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
-  const cleanPhone = phone.replace(/[\s\-\(\)\.]/g, '');
+  const phoneRegex = /^[+]?[1-9][\d]{0,15}$/;
+  const cleanPhone = phone.replace(/[\s\-().]/g, '');
   return phoneRegex.test(cleanPhone);
 };
 
@@ -71,8 +71,8 @@ export const maskContactInfo = (contact: string): string => {
   }
   
   // Phone masking
-  if (/^\+?[\d\s\-\(\)\.]{10,}$/.test(contact)) {
-    const cleanPhone = contact.replace(/[\s\-\(\)\.]/g, '');
+  if (/^\+?[\d\s\-().]{10,}$/.test(contact)) {
+    const cleanPhone = contact.replace(/[\s\-().]/g, '');
     if (cleanPhone.length > 6) {
       return cleanPhone.substring(0, 3) + '***' + cleanPhone.slice(-2);
     }
