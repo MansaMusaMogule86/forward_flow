@@ -18,7 +18,13 @@
       "Bash(mv public/lovable-uploads/coach_k.png src/assets/images/team/coach-k.png)",
       "Bash(rmdir public/lovable-uploads)",
       "Bash(rm public/images/families-collage.jpg)",
-      "Bash(rm public/placeholder.svg)"
+      "Bash(rm public/placeholder.svg)",
+      "Bash(sed 's/.tsx//')",
+      "Bash(while read:*)",
+      "Bash(do if:*)",
+      "Bash(then echo:*)",
+      "Bash(bun run:*)",
+      "Bash(~/.bun/bin/bun run:*)"
     ]
   }
 }

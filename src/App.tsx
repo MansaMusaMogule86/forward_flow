@@ -65,7 +65,7 @@ const App = () => {
         <SecurityProvider>
           <SessionSecurityProvider>
             <AuthProvider>
-              {/* <AntiWhiteLabelProtection /> */}
+              {/* <AntiWhiteLabelProtection /> — disabled: monitorTampering() overrides console.log globally; re-enable after verifying production domain */}
               <Toaster />
               <Sonner />
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -90,7 +90,7 @@ const App = () => {
                           <Route path="/about" element={<AboutUs />} />
                           <Route path="/support" element={<Support />} />
                           <Route path="/auth" element={<Auth />} />
-                          <Route path="/auth-debug" element={<AuthDebug />} />
+                          <Route path="/auth-debug" element={<ProtectedRoute requiredRole="admin"><AuthDebug /></ProtectedRoute>} />
                           <Route path="/register" element={<Register />} />
                           <Route path="/partner-signin" element={<PartnerSignIn />} />
                           <Route path="/partner-signup" element={<PartnerSignUp />} />
@@ -108,6 +108,7 @@ const App = () => {
                           <Route path="/search" element={<Search />} />
                           <Route path="/discover" element={<Discover />} />
                           <Route path="/youth-futures" element={<YouthFutures />} />
+                          <Route path="/youth-elevation" element={<YouthElevation />} />
                           <Route path="/youth" element={<Navigate to="/youth-futures" replace />} />
                           <Route path="/partners" element={<Partners />} />
                           <Route path="/partners/submit-referral" element={<SubmitReferral />} />
