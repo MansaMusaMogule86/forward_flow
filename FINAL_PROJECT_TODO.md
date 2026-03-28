@@ -85,7 +85,7 @@ Scope: full repo pass (folder-by-folder + file-by-file hotspot review + md-by-md
 
 ## 6) Markdown-by-Markdown Status (md-by-md)
 
-- [ ] `README.md` -> UPDATE (currently generic Lovable intro; add project-specific setup/deploy links)
+- [ ] `README.md` -> UPDATE (currently generic Forward Focus intro; add project-specific setup/deploy links)
 - [ ] `LAUNCH_TONIGHT_CHECKLIST.md` -> EXECUTE + CHECK OFF (primary launch checklist; many unchecked items)
 - [ ] `EDGE_FUNCTIONS_TEST.md` -> EXECUTE + UPDATE DATE/RESULTS (currently older test date references)
 - [ ] `CRON_JOB_SETUP.md` -> EXECUTE + CHECK OFF (remaining operational checks are open)

@@ -1,18 +1,13 @@
 /**
  * Centralized site configuration
  * Single source of truth for all domain and site-related settings
- * 
- * To switch between preview and production:
- * 1. Set IS_PRODUCTION to true for production deployment
- * 2. Set IS_PRODUCTION to false for Lovable preview
  */
 
-// Toggle this flag for production vs preview
 const IS_PRODUCTION = true;
 
 // Domain configurations
 const DOMAINS = {
-  preview: 'forwardfocus.lovable.app',
+  preview: 'localhost',
   production: 'forward-focus-elevation.org',
 } as const;
 
@@ -85,9 +80,6 @@ export const SITE_CONFIG = {
   allowedDomains: [
     'localhost',
     '127.0.0.1',
-    'lovable.app',
-    'lovable.dev',
-    'forwardfocus.lovable.app',
     'forward-focus-elevation.org',
     'www.forward-focus-elevation.org',
   ],

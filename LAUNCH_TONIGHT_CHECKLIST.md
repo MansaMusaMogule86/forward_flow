@@ -24,7 +24,7 @@
 [ ] Real email delivery checks (welcome/reminder/unsubscribe)
 [ ] Live AI chatbot end-to-end checks in deployed environment
 [ ] Mobile device validation on physical devices
-[ ] Final launch operator checks in Lovable publish flow
+[ ] Final launch operator checks in Forward Focus publish flow
 ```
 
 ---
@@ -219,7 +219,7 @@ Resolve any HIGH or CRITICAL findings
 
 ### LAUNCH TIME (00:00):
 ```
-1. [ ] Click "Update" in Lovable publish dialog
+1. [ ] Click "Update" in Forward Focus publish dialog
 2. [ ] Wait for deployment (2-3 minutes)
 3. [ ] Test live site immediately
 4. [ ] Send launch announcement to newsletter subscribers

@@ -277,7 +277,7 @@ export function ApiKeyRotationManager() {
               <p className="font-medium">Before marking as rotated, ensure you have:</p>
               <ul className="list-disc list-inside text-muted-foreground space-y-1">
                 <li>Generated a new key in the service provider's dashboard</li>
-                <li>Updated the secret in Lovable Cloud</li>
+                <li>Updated the secret in Supabase Dashboard</li>
                 <li>Tested that the application works with the new key</li>
                 <li>Revoked or scheduled deletion of the old key</li>
               </ul>

@@ -12,8 +12,6 @@ const AUTHORIZED_CONFIG: DomainConfig = {
   allowedDomains: [
     'localhost',
     '127.0.0.1',
-    'lovable.app',
-    'lovableproject.com',
     'forward-focus-elevation.org',
     'www.forward-focus-elevation.org',
     'mdwkkgancoocvkmecwkm.supabase.co'

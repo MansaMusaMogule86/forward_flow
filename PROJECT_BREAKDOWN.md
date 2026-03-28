@@ -10,7 +10,7 @@ _Analysis date: 2026-03-28_
 | Frontend | React 18 + TypeScript + Vite + Tailwind CSS + shadcn/ui |
 | Backend | Supabase (PostgreSQL + Auth + Realtime + Storage) |
 | Edge Functions | Supabase Edge Functions (Deno) |
-| AI | Claude via Lovable AI Gateway |
+| AI | Claude via Forward Focus AI Gateway |
 | Email | Resend |
 | Payments | Stripe (create-donation-payment function) |
 | Analytics | Web Vitals + custom hooks |

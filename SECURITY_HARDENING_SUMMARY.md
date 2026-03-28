@@ -21,7 +21,7 @@ This document summarizes the security fixes applied to address findings from the
 - URL: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/coach-k`
 - Key: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`
 
-**Verification:** Component now correctly uses Lovable Cloud configuration. No further action needed.
+**Verification:** Component now correctly uses Supabase Dashboard configuration. No further action needed.
 
 ---
 
@@ -124,8 +124,8 @@ Checks user passwords against databases of known breached passwords (e.g., Have 
 
 ### How to Enable (Manual Steps):
 
-1. **Open Lovable Cloud Backend**
-   - In your Lovable project, click "View Backend" or use the backend access link
+1. **Open Supabase Dashboard Backend**
+   - In your Forward Focus project, click "View Backend" or use the backend access link
 
 2. **Navigate to Authentication Settings**
    - Go to: **Authentication** → **Settings** (or **Policies**)

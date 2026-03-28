@@ -309,7 +309,7 @@ The Supabase database linter found no security warnings. This indicates:
    - Status: **EXCELLENT**
 
 2. **AI API Calls**
-   - Limit: Lovable AI gateway manages
+   - Limit: Forward Focus AI gateway manages
    - Enforcement: 429 and 402 error handling
    - User Feedback: Toast notifications
    - Status: **EXCELLENT**

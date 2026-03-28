@@ -13,7 +13,7 @@
 
 ## 2. Deploy Steps
 
-1. Open the project in Lovable publish flow.
+1. Open the project in Forward Focus publish flow.
 2. Click Update/Publish.
 3. Wait for deployment to complete.
 4. Confirm production URL loads successfully.

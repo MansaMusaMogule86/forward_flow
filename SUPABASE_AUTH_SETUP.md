@@ -6,8 +6,8 @@ To enable leaked password protection in your Supabase project:
 
 ### Steps:
 
-1. **Open Lovable Cloud Backend**
-   - Click "View Backend" in your Lovable project
+1. **Open Supabase Dashboard Backend**
+   - Click "View Backend" in your Forward Focus project
    - Navigate to Authentication → Settings
 
 2. **Locate Security Settings**

@@ -31,7 +31,7 @@ export const LaunchInstructions = () => {
                 <div className="text-xs bg-white p-3 rounded border border-red-200 mb-2 space-y-1">
                   <p><strong>Steps:</strong></p>
                   <ol className="list-decimal list-inside space-y-1 text-red-700">
-                    <li>Go to Lovable Cloud → Authentication → Settings</li>
+                    <li>Go to Supabase Dashboard → Authentication → Settings</li>
                     <li>Find "Leaked Password Protection" section</li>
                     <li>Enable "Warning Mode" first for monitoring</li>
                     <li>After 1 week, enable "Strict Mode" to block leaked passwords</li>

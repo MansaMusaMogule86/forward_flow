@@ -26,7 +26,7 @@ This document provides step-by-step procedures for rotating API keys used in the
 ### During Rotation
 
 1. Generate new key in the service provider's dashboard
-2. Update the secret in Lovable Cloud / Supabase Secrets
+2. Update the secret in Supabase Dashboard / Supabase Secrets
 3. Verify the application works with the new key
 4. Monitor logs for any errors
 
@@ -48,7 +48,7 @@ This document provides step-by-step procedures for rotating API keys used in the
 2. Navigate to API Keys section
 3. Click "Create new secret key"
 4. Copy the new key immediately (it won't be shown again)
-5. Update in Lovable Cloud Secrets
+5. Update in Supabase Dashboard Secrets
 6. Test by sending a message in any AI chat feature
 7. Delete the old key from OpenAI Platform
 
@@ -63,7 +63,7 @@ This document provides step-by-step procedures for rotating API keys used in the
 1. Log in to Resend Dashboard
 2. Go to API Keys section
 3. Create a new API key with same permissions
-4. Update in Lovable Cloud Secrets
+4. Update in Supabase Dashboard Secrets
 5. Test by sending a test email from Admin Dashboard
 6. Delete the old key from Resend
 
@@ -81,7 +81,7 @@ This document provides step-by-step procedures for rotating API keys used in the
 2. Navigate to Developers > API Keys
 3. Click "Roll key" on the Secret key
 4. Stripe will create a new key while keeping the old one active
-5. Update in Lovable Cloud Secrets
+5. Update in Supabase Dashboard Secrets
 6. Test a small donation (use test mode if available)
 7. After verification, expire the old key in Stripe
 
@@ -96,7 +96,7 @@ This document provides step-by-step procedures for rotating API keys used in the
 1. Log in to Perplexity
 2. Go to API Settings
 3. Generate a new API key
-4. Update in Lovable Cloud Secrets
+4. Update in Supabase Dashboard Secrets
 5. Test AI resource discovery features
 6. Revoke the old key
 
@@ -112,7 +112,7 @@ This document provides step-by-step procedures for rotating API keys used in the
    ```bash
    openssl rand -base64 32
    ```
-2. Update in Lovable Cloud Secrets
+2. Update in Supabase Dashboard Secrets
 3. Update any cron job configurations that use this token
 4. Test scheduled jobs are still working
 
@@ -124,7 +124,7 @@ If you suspect a key has been compromised:
 
 1. **Immediately revoke the compromised key** at the service provider
 2. Generate a new key
-3. Update in Lovable Cloud Secrets
+3. Update in Supabase Dashboard Secrets
 4. Monitor logs for suspicious activity
 5. Check for unauthorized usage in the service provider's dashboard
 6. Document the incident

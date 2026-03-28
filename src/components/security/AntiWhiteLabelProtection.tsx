@@ -9,12 +9,10 @@ interface AntiWhiteLabelConfig {
 const config: AntiWhiteLabelConfig = {
   allowedDomains: [
     'localhost',
-    '127.0.0.1', 
+    '127.0.0.1',
     'forward-focus-elevation.org',
     'www.forward-focus-elevation.org',
     'mdwkkgancoocvkmecwkm.supabase.co',
-    'lovable.app', // Allow Lovable preview domains
-    'lovableproject.com' // Allow all Lovable project domains
   ],
   brandName: 'Forward Focus Elevation',
   copyrightNotice: '© 2025 Forward Focus Elevation. All rights reserved. Unauthorized use prohibited.'
@@ -23,11 +21,9 @@ const config: AntiWhiteLabelConfig = {
 export const AntiWhiteLabelProtection = () => {
   useEffect(() => {
     const currentDomain = window.location.hostname;
-    const isAllowedDomain = config.allowedDomains.some(domain => 
-      currentDomain === domain || 
-      currentDomain.endsWith('.' + domain) ||
-      currentDomain.endsWith('.lovable.app') ||
-      currentDomain.endsWith('.lovableproject.com')
+    const isAllowedDomain = config.allowedDomains.some(domain =>
+      currentDomain === domain ||
+      currentDomain.endsWith('.' + domain)
     );
 
     if (!isAllowedDomain) {
