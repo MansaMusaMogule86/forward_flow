@@ -3,7 +3,7 @@ import { Award, CheckCircle, Target, Users, Shield, Star, Zap, Brain, Sparkles, 
 
 const FounderOnePager = () => {
   return (
-    <div className="founder-one-pager bg-white p-8 md:p-12 border border-osu-gray/10 shadow-2xl max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
+    <div className="founder-one-pager bg-white p-8 md:p-12 border border-osu-gray-light/70 shadow-sm max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
       <style>{`
         @media print {
           body * { visibility: hidden; }
@@ -20,7 +20,7 @@ const FounderOnePager = () => {
           <p className="text-xl font-semibold text-osu-scarlet uppercase tracking-widest">AI Life Transformation Coach</p>
           <p className="text-sm text-muted-foreground mt-1 font-medium">Founder, Forward Focus Elevation</p>
         </div>
-        <div className="bg-osu-scarlet text-white p-4 rounded-xl text-center md:w-48 shadow-lg">
+        <div className="bg-osu-scarlet text-white p-4 rounded-xl text-center md:w-48 shadow-sm">
           <p className="text-[10px] uppercase font-bold tracking-tighter opacity-80 mb-1">Accredited Expertise</p>
           <p className="text-sm font-bold leading-tight">Master Certified Coach & AI Consultant</p>
         </div>
@@ -62,28 +62,28 @@ const FounderOnePager = () => {
         </div>
 
         {/* Right Column: Accreditations & Experience */}
-        <div className="bg-cream/20 p-8 rounded-2xl border border-osu-gray/5 space-y-8">
+        <div className="bg-background p-8 rounded-2xl border border-osu-gray-light/70 space-y-8">
           <section>
             <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-osu-scarlet mb-4 flex items-center gap-2">
               <Award className="h-4 w-4" /> Professional Certifications
             </h2>
             <div className="space-y-4">
               <div className="flex gap-3 items-start">
-                <div className="p-2 bg-white rounded-lg shadow-sm"><Sparkles className="h-4 w-4 text-osu-scarlet" /></div>
+                <div className="p-2 bg-white rounded-lg border border-osu-gray-light/60"><Sparkles className="h-4 w-4 text-osu-scarlet" /></div>
                 <div>
                   <p className="text-sm font-bold text-foreground">Master Certified Coach</p>
                   <p className="text-[10px] text-muted-foreground leading-tight">Transformation, Mindfulness, Life Purpose, Goal Setting, & Happiness</p>
                 </div>
               </div>
               <div className="flex gap-3 items-start">
-                <div className="p-2 bg-white rounded-lg shadow-sm"><Brain className="h-4 w-4 text-osu-scarlet" /></div>
+                <div className="p-2 bg-white rounded-lg border border-osu-gray-light/60"><Brain className="h-4 w-4 text-osu-scarlet" /></div>
                 <div>
                   <p className="text-sm font-bold text-foreground">Accredited AI Consultant</p>
                   <p className="text-[10px] text-muted-foreground leading-tight">Strategic Implementation for Nonprofits & Social Enterprise</p>
                 </div>
               </div>
               <div className="flex gap-3 items-start">
-                <div className="p-2 bg-white rounded-lg shadow-sm"><Zap className="h-4 w-4 text-osu-scarlet" /></div>
+                <div className="p-2 bg-white rounded-lg border border-osu-gray-light/60"><Zap className="h-4 w-4 text-osu-scarlet" /></div>
                 <div>
                   <p className="text-sm font-bold text-foreground">Accredited AI Prompt Engineer</p>
                   <p className="text-[10px] text-muted-foreground leading-tight">Human-Centric AI Design & Interactive Support Logic</p>

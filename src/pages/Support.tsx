@@ -54,27 +54,26 @@ const Support = () => {
       }} />
     <main id="main">
       {/* Hero Section */}
-      <header className="relative bg-gradient-osu-primary text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-osu-scarlet/90 via-osu-gray/85 to-osu-scarlet-dark/80"></div>
+      <header className="relative bg-white overflow-hidden border-b border-osu-gray-light/60">
         <div className="relative container py-24 md:py-32">
           <div className="max-w-5xl mx-auto text-center">
-            <h1 className="font-heading text-4xl md:text-5xl font-bold mb-8 leading-tight">
+            <h1 className="font-heading text-4xl md:text-5xl font-bold mb-8 leading-tight text-foreground">
               Multiple Ways to Invest in Second Chances
             </h1>
-            <p className="text-lg md:text-xl mb-12 text-white/90 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-lg md:text-xl mb-12 text-foreground/80 leading-relaxed max-w-3xl mx-auto">
               Choose how you want to support our AI-powered digital education hub that transforms lives and builds stronger communities
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Button 
                 size="lg" 
-                className="get-involved-gold-button border-none shadow-xl px-12"
+                className="get-involved-gold-button border-none px-12"
                 onClick={() => setActiveDialog('donate')}
               >
                 Donate
               </Button>
               <Button 
                 size="lg" 
-                className="bg-osu-gray hover:bg-osu-gray-dark text-white shadow-xl px-12"
+                className="bg-white/80 border border-primary/35 text-foreground hover:bg-white px-12"
                 onClick={() => setActiveDialog('donate')}
               >
                 Sponsor
@@ -87,9 +86,9 @@ const Support = () => {
       <div className="container py-16 md:py-20">
         <div className="max-w-6xl mx-auto space-y-24">
         {/* Ways to Support Grid */}
-        <section className="bg-secondary/5 py-16 rounded-2xl border-2 border-osu-scarlet/20 overflow-hidden">
+        <section className="bg-white py-16 rounded-2xl border border-osu-gray-light/70 overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
+            <Card className="bg-white rounded-xl p-6 h-full border border-osu-gray-light/70 transition-shadow duration-200 hover:shadow-md">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -119,7 +118,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
+            <Card className="bg-white rounded-xl p-6 h-full border border-osu-gray-light/70 transition-shadow duration-200 hover:shadow-md">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -138,7 +137,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
+            <Card className="bg-white rounded-xl p-6 h-full border border-osu-gray-light/70 transition-shadow duration-200 hover:shadow-md">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -168,7 +167,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
+            <Card className="bg-white rounded-xl p-6 h-full border border-osu-gray-light/70 transition-shadow duration-200 hover:shadow-md">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -198,7 +197,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
+            <Card className="bg-white rounded-xl p-6 h-full border border-osu-gray-light/70 transition-shadow duration-200 hover:shadow-md">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -228,7 +227,7 @@ const Support = () => {
               </CardContent>
             </Card>
 
-            <Card className="bg-background rounded-xl p-6 h-full border-2 border-osu-scarlet/30 shadow-lg hover:shadow-xl hover:shadow-osu-scarlet/20 transition-all duration-300 md:hover:scale-105 md:hover:-translate-y-1">
+            <Card className="bg-white rounded-xl p-6 h-full border border-osu-gray-light/70 transition-shadow duration-200 hover:shadow-md">
               <CardHeader className="pb-4">
                 <div className="flex items-center gap-3 mb-3">
                   <div className="p-3 bg-osu-scarlet/10 rounded-full">
@@ -274,53 +273,85 @@ const Support = () => {
         </section>
 
         {/* Contact Section */}
-        <section className="bg-secondary/5 py-24 rounded-2xl">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <section className="bg-white py-16 rounded-2xl border border-osu-gray-light/70">
+          <div className="max-w-6xl mx-auto px-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-stretch">
+
               {/* Contact Form */}
-              <div>
-                <h2 className="font-heading text-4xl md:text-5xl font-bold text-foreground mb-8">Get In Touch</h2>
-                <ContactForm type="contact" />
+              <div className="flex flex-col">
+                <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-6">Get In Touch</h2>
+                <ContactForm type="contact" className="flex-1" />
               </div>
 
               {/* Contact Info */}
-              <div>
-                <h2 className="font-heading text-4xl md:text-5xl font-bold text-foreground mb-8">Other Ways to Reach Us</h2>
-                <Card className="bg-background shadow-lg">
-                  <CardContent className="p-8">
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-4 text-lg">
-                        <Mail className="h-6 w-6 text-muted-foreground" />
-                        <span className="text-foreground">{SUPPORT_EMAIL}</span>
+              <div className="flex flex-col">
+                <h2 className="font-heading text-3xl md:text-4xl font-bold text-foreground mb-6">Other Ways to Reach Us</h2>
+                <Card className="bg-white border border-osu-gray-light/70 flex-1 flex flex-col">
+                  <CardContent className="p-8 flex flex-col flex-1">
+                    <div className="space-y-5 flex-1">
+                      <div className="flex items-center gap-4 p-4 rounded-lg bg-osu-scarlet/5 border border-osu-scarlet/10">
+                        <div className="p-2 bg-osu-scarlet/10 rounded-full flex-shrink-0">
+                          <Mail className="h-5 w-5 text-osu-scarlet" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-0.5">Email</p>
+                          <span className="text-foreground font-medium">{SUPPORT_EMAIL}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-lg">
-                        <Phone className="h-6 w-6 text-muted-foreground" />
-                        <span className="text-foreground">{CONTACT_CONFIG.phone.main}</span>
+                      <div className="flex items-center gap-4 p-4 rounded-lg bg-osu-scarlet/5 border border-osu-scarlet/10">
+                        <div className="p-2 bg-osu-scarlet/10 rounded-full flex-shrink-0">
+                          <Phone className="h-5 w-5 text-osu-scarlet" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-0.5">Phone</p>
+                          <span className="text-foreground font-medium">{CONTACT_CONFIG.phone.main}</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-lg">
-                        <MapPin className="h-6 w-6 text-muted-foreground" />
-                        <span className="text-foreground">Columbus, Ohio</span>
+                      <div className="flex items-center gap-4 p-4 rounded-lg bg-osu-scarlet/5 border border-osu-scarlet/10">
+                        <div className="p-2 bg-osu-scarlet/10 rounded-full flex-shrink-0">
+                          <MapPin className="h-5 w-5 text-osu-scarlet" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-0.5">Location</p>
+                          <span className="text-foreground font-medium">Columbus, Ohio</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-4 text-lg">
-                        <Clock className="h-6 w-6 text-muted-foreground" />
-                        <span className="text-foreground">Mon-Fri, 9AM-5PM EST</span>
+                      <div className="flex items-center gap-4 p-4 rounded-lg bg-osu-scarlet/5 border border-osu-scarlet/10">
+                        <div className="p-2 bg-osu-scarlet/10 rounded-full flex-shrink-0">
+                          <Clock className="h-5 w-5 text-osu-scarlet" />
+                        </div>
+                        <div>
+                          <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-0.5">Hours</p>
+                          <span className="text-foreground font-medium">Mon–Fri, 9AM–5PM EST</span>
+                        </div>
                       </div>
+                    </div>
+
+                    <div className="mt-auto pt-6 border-t border-osu-gray-light/60">
+                      <p className="text-sm text-muted-foreground mb-4">Prefer to talk directly? Book a free discovery call.</p>
+                      <Button
+                        className="w-full get-involved-gold-button border-none"
+                        onClick={() => setActiveDialog('donate')}
+                      >
+                        Schedule a Free Call
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
               </div>
+
             </div>
           </div>
         </section>
 
         {/* Final CTA */}
-        <section className="bg-gradient-to-br from-primary via-accent to-secondary text-primary-foreground rounded-2xl overflow-hidden shadow-2xl">
+        <section className="bg-background text-foreground rounded-2xl overflow-hidden border border-osu-gray-light/70">
           <div className="px-8 py-24 md:py-32">
             <div className="max-w-4xl mx-auto text-center">
               <h2 className="font-heading text-4xl md:text-6xl font-bold mb-12">
                 Not Sure Which Option Fits?
               </h2>
-              <p className="text-lg md:text-xl leading-relaxed mb-12 text-primary-foreground/95 max-w-2xl mx-auto">
+              <p className="text-lg md:text-xl leading-relaxed mb-12 text-foreground/80 max-w-2xl mx-auto">
                 Let's talk! Schedule a 15-minute consultation to explore how you can invest in transforming lives through innovative digital education.
               </p>
                <div className="flex justify-center">
@@ -328,7 +359,7 @@ const Support = () => {
                    type="button"
                    size="lg" 
                    variant="secondary" 
-                   className="px-8 text-lg bg-white text-primary hover:bg-white/90"
+                   className="px-8 text-lg bg-primary text-primary-foreground hover:bg-primary/90"
                    disabled={!calendlyReady}
                    onClick={(e) => {
                      e.preventDefault();

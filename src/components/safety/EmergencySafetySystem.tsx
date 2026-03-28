@@ -165,7 +165,6 @@ export const EmergencySafetySystem = () => {
       {/* Safety Dock */}
       <div className="fixed right-4 bottom-24 z-[10001]">
         <Button
-          className="bg-destructive hover:bg-destructive/90 text-destructive-foreground rounded-full px-4 py-2 pr-12 shadow-2xl flex items-center gap-2 h-auto relative"
           onMouseDown={startLongPress}
           onMouseUp={stopLongPress}
           onMouseLeave={stopLongPress}
@@ -174,51 +173,68 @@ export const EmergencySafetySystem = () => {
           onTouchCancel={stopLongPress}
           onClick={(e) => {
             e.stopPropagation();
-            // Open chat directly instead of action sheet
             setShowAIDiscovery(true);
           }}
           aria-label="Emergency chat"
+          className="rounded-full h-auto relative border-0 p-0 overflow-visible bg-transparent hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0"
+          style={{ boxShadow: 'none' }}
         >
-          <div className="relative w-11 h-11 rounded-full bg-white/10 flex items-center justify-center">
-            <Phone className="h-5 w-5" />
-            {/* Progress ring */}
-            <svg 
-              className="absolute inset-0 w-11 h-11 -rotate-90"
-              viewBox="0 0 44 44"
+          <div
+            className="flex items-center gap-2.5 rounded-full transition-all duration-200"
+            style={{
+              background: 'rgba(27,27,27,0.96)',
+              backdropFilter: 'blur(14px)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              boxShadow: '0 6px 28px rgba(0,0,0,0.32), 0 1px 6px rgba(0,0,0,0.22)',
+              padding: '6px 40px 6px 6px',
+            }}
+          >
+            {/* Scarlet icon circle with progress ring */}
+            <div
+              className="relative flex-shrink-0 rounded-full flex items-center justify-center"
+              style={{ width: 40, height: 40, background: '#BB0000' }}
             >
-              <circle
-                cx="22"
-                cy="22"
-                r="20"
-                fill="none"
-                stroke="rgba(255,255,255,0.3)"
-                strokeWidth="2"
-              />
-              <circle
-                cx="22"
-                cy="22"
-                r="20"
-                fill="none"
-                stroke="rgba(255,255,255,0.8)"
-                strokeWidth="2"
-                strokeDasharray="125.6"
-                strokeDashoffset={125.6 - (ringProgress * 125.6)}
-                className="transition-all duration-75 linear"
-              />
-            </svg>
+              <Phone className="h-4 w-4 text-white" />
+              <svg
+                className="absolute inset-0 -rotate-90"
+                width="40" height="40"
+                viewBox="0 0 40 40"
+              >
+                <circle cx="20" cy="20" r="18" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="2"/>
+                <circle
+                  cx="20" cy="20" r="18"
+                  fill="none" stroke="rgba(255,255,255,0.85)" strokeWidth="2"
+                  strokeDasharray="113.1"
+                  strokeDashoffset={113.1 - (ringProgress * 113.1)}
+                  className="transition-all duration-75"
+                  style={{ transitionTimingFunction: 'linear' }}
+                />
+              </svg>
+            </div>
+
+            {isLabelVisible && (
+              <span
+                style={{
+                  fontFamily: 'Outfit, sans-serif',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: 'rgba(255,255,255,0.90)',
+                  letterSpacing: '0.01em',
+                  userSelect: 'none',
+                }}
+              >
+                Chat
+              </span>
+            )}
           </div>
-          {isLabelVisible && (
-            <span className="font-semibold text-sm">Chat</span>
-          )}
-          
-          {/* Embedded kebab menu inside the pill */}
+
+          {/* Three-dot menu trigger */}
           <div
             onClick={(e) => {
               e.stopPropagation();
               handleTripleTap();
               setIsSheetOpen(!isSheetOpen);
             }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-slate-900 text-white border border-white/20 shadow-lg flex items-center justify-center text-sm font-bold hover:bg-slate-800 hover:saturate-110 focus:outline-2 focus:outline-white/45 focus:outline-offset-2 transition-all cursor-pointer"
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
@@ -229,6 +245,19 @@ export const EmergencySafetySystem = () => {
               }
             }}
             aria-label="Open emergency actions"
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center rounded-full cursor-pointer transition-all duration-150"
+            style={{
+              width: 28,
+              height: 28,
+              background: 'rgba(255,255,255,0.07)',
+              border: '1px solid rgba(255,255,255,0.13)',
+              color: 'rgba(255,255,255,0.65)',
+              fontSize: '15px',
+              fontWeight: 700,
+              lineHeight: 1,
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'rgba(187,0,0,0.55)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.07)')}
           >
             ⋮
           </div>
@@ -245,10 +274,10 @@ export const EmergencySafetySystem = () => {
             className="absolute right-4 bottom-20 w-80 max-w-[calc(100vw-2rem)] backdrop-blur-md rounded-3xl p-4 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
             style={{ 
-              background: 'linear-gradient(to bottom right, rgba(17,24,39,.72), rgba(17,24,39,.45))',
+              background: 'rgba(43,43,43,0.94)',
               border: '1px solid rgba(255,255,255,.08)',
               boxShadow: '0 12px 30px rgba(0,0,0,.25)',
-              color: '#e5e7eb',
+              color: '#F4F4F4',
               animation: 'slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
               animationFillMode: 'both'
             }}
@@ -261,8 +290,8 @@ export const EmergencySafetySystem = () => {
                 <span 
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #fb7185 0%, #e11d48 55%, #7f1d1d 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#BB0000',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white opacity-95">
@@ -271,7 +300,7 @@ export const EmergencySafetySystem = () => {
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">Call</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">{EMERGENCY}</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">{EMERGENCY}</em>
                 </span>
               </button>
               
@@ -282,8 +311,8 @@ export const EmergencySafetySystem = () => {
                 <span 
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #fdba74 0%, #ea580c 55%, #7c2d12 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#666666',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white opacity-95">
@@ -293,7 +322,7 @@ export const EmergencySafetySystem = () => {
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">Mental</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">{MENTAL}</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">{MENTAL}</em>
                 </span>
               </button>
               
@@ -304,8 +333,8 @@ export const EmergencySafetySystem = () => {
                 <span 
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #a78bfa 0%, #7c3aed 55%, #4c1d95 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#BB0000',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white opacity-95">
@@ -316,7 +345,7 @@ export const EmergencySafetySystem = () => {
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">Community</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">{COMMUNITY}</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">{COMMUNITY}</em>
                 </span>
               </button>
               
@@ -327,8 +356,8 @@ export const EmergencySafetySystem = () => {
                 <span 
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #93c5fd 0%, #2563eb 55%, #1e3a8a 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#2B2B2B',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white opacity-95">
@@ -340,7 +369,7 @@ export const EmergencySafetySystem = () => {
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">SMS</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">Help</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">Help</em>
                 </span>
               </button>
               
@@ -351,8 +380,8 @@ export const EmergencySafetySystem = () => {
                 <span 
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #6ee7b7 0%, #059669 55%, #064e3b 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#666666',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white opacity-95">
@@ -362,7 +391,7 @@ export const EmergencySafetySystem = () => {
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">Share</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">Location</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">Location</em>
                 </span>
               </button>
               
@@ -373,8 +402,8 @@ export const EmergencySafetySystem = () => {
                 <span 
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #a5b4fc 0%, #4f46e5 55%, #1e1b4b 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#BB0000',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white opacity-95">
@@ -384,7 +413,7 @@ export const EmergencySafetySystem = () => {
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">Emergency</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">Chat</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">Chat</em>
                 </span>
               </button>
               
@@ -395,15 +424,15 @@ export const EmergencySafetySystem = () => {
                 <span
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #6366f1 0%, #4338ca 55%, #312e81 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#666666',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <Users className="w-7 h-7 text-white opacity-95" />
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">The</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">Collective</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">Collective</em>
                 </span>
               </button>
 
@@ -414,15 +443,15 @@ export const EmergencySafetySystem = () => {
                 <span
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #ec4899 0%, #db2777 55%, #831843 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#BB0000',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <Heart className="w-7 h-7 text-white opacity-95" />
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">Healing</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">Hub</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">Hub</em>
                 </span>
               </button>
 
@@ -433,8 +462,8 @@ export const EmergencySafetySystem = () => {
                 <span 
                   className="w-20 h-20 rounded-full flex items-center justify-center relative transition-all duration-200 md:hover:translate-y-[-2px] md:hover:scale-105"
                   style={{
-                    background: 'radial-gradient(120% 120% at 30% 20%, #9ca3af 0%, #111827 70%, #0b0f17 100%)',
-                    boxShadow: 'inset 0 -10px 24px rgba(255,255,255,.08), 0 10px 22px rgba(0,0,0,.25)'
+                    background: '#2B2B2B',
+                    boxShadow: '0 2px 8px rgba(43,43,43,0.16)'
                   }}
                 >
                   <svg viewBox="0 0 24 24" fill="none" className="w-7 h-7 text-white opacity-95">
@@ -444,7 +473,7 @@ export const EmergencySafetySystem = () => {
                 </span>
                 <span className="text-center leading-tight">
                   <strong className="block font-bold text-sm text-white">Quick</strong>
-                  <em className="block font-semibold text-xs text-blue-300 opacity-90 not-italic">Exit</em>
+                  <em className="block font-semibold text-xs text-[#F4F4F4] opacity-90 not-italic">Exit</em>
                 </span>
               </button>
             </div>
@@ -458,26 +487,20 @@ export const EmergencySafetySystem = () => {
         </div>
       )}
 
+      {/* Keyframes always present */}
+      <style>{`
+        @keyframes slideInUp {
+          0%   { opacity: 0; transform: translateY(20px) scale(0.96); }
+          100% { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+      `}</style>
+
       {/* Body padding for crisis bar */}
       {isTopBarVisible && (
-        <style>
-          {`
-            body { padding-top: 52px !important; }
-            @media (max-width: 480px) {
-              body { padding-top: 64px !important; }
-            }
-            @keyframes slideInUp {
-              0% {
-                opacity: 0;
-                transform: translateY(20px) scale(0.95);
-              }
-              100% {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-              }
-            }
-          `}
-      </style>
+        <style>{`
+          body { padding-top: 52px !important; }
+          @media (max-width: 480px) { body { padding-top: 64px !important; } }
+        `}</style>
       )}
 
       {/* AI Resource Discovery Modal */}

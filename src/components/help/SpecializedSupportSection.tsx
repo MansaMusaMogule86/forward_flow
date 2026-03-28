@@ -17,40 +17,40 @@ export const SpecializedSupportSection = () => {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          <Card className="p-6 hover:shadow-lg transition-all">
+          <Card className="pro-card p-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-secondary rounded-xl flex items-center justify-center">
-                <Shield className="h-6 w-6 text-secondary-foreground" />
+              <div className="pro-icon-chip">
+                <Shield className="h-6 w-6" />
               </div>
               <div>
                 <h3 className="text-xl font-semibold">Healing Hub</h3>
                 <p className="text-foreground/70">Trauma recovery and victim services</p>
               </div>
             </div>
-            <Button asChild size="lg" variant="outline" className="w-full">
+            <Button asChild size="lg" className="w-full rounded-md border border-primary/30 bg-white/85 text-foreground hover:bg-white text-base font-semibold">
               <Link to="/victim-services">
-                <Shield className="h-5 w-5 mr-2" />
+                <Shield className="h-4 w-4 mr-2" />
                 Access Healing Hub
-                <ArrowRight className="h-5 w-5 ml-2" />
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
           </Card>
 
-          <Card className="p-6 hover:shadow-lg transition-all">
+          <Card className="pro-card p-6">
             <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
-                <Users className="h-6 w-6 text-primary-foreground" />
+              <div className="pro-icon-chip">
+                <Users className="h-6 w-6" />
               </div>
               <div>
                 <h3 className="text-xl font-semibold">The Collective</h3>
                 <p className="text-foreground/70">Community support and growth programs</p>
               </div>
             </div>
-            <Button asChild size="lg" variant="outline" className="w-full">
+            <Button asChild size="lg" className="w-full rounded-md border border-primary/30 bg-white/85 text-foreground hover:bg-white text-base font-semibold">
               <Link to="/learn">
-                <Users className="h-5 w-5 mr-2" />
+                <Users className="h-4 w-4 mr-2" />
                 Join Community
-                <ArrowRight className="h-5 w-5 ml-2" />
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Link>
             </Button>
           </Card>

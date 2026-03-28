@@ -1,287 +1,348 @@
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import logo from "@/assets/images/branding/logo-transparent.png";
 import { useState, useEffect } from "react";
-import { Menu, User, LogOut, Search, Globe, Phone, ChevronDown, X } from "lucide-react";
+import { Menu, User, LogOut, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "@/components/ui/navigation-menu";
+import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "@/components/ui/navigation-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
-import { CrisisEmergencyBot } from "@/components/ai/CrisisEmergencyBot";
 
-const linkCls = ({
-  isActive
-}: {
-  isActive?: boolean;
-} | any) => isActive ? "text-foreground font-medium" : "text-foreground hover:text-foreground/80";
+const DISMISS_KEY = "ffe-emergency-bar-dismissed";
+const DISMISS_TTL = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 interface HeaderProps {
   showUtility?: boolean;
   showCrisis?: boolean;
 }
 
-const Header = ({
-  showUtility = true,
-  showCrisis = true
-}: HeaderProps) => {
-  const {
-    user,
-    signOut
-  } = useAuth();
+const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
+  const { user, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
   const [hasScrolled, setHasScrolled] = useState(false);
+  const [emergencyDismissed, setEmergencyDismissed] = useState(false);
   const { isAdmin } = useAdminCheck(user);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setHasScrolled(window.scrollY > 0);
-    };
-    
+    const handleScroll = () => setHasScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll, { passive: true });
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Hide header on auth pages
-  if (location.pathname === '/auth' || location.pathname === '/register') {
-    return null;
-  }
+  useEffect(() => {
+    try {
+      const t = localStorage.getItem(DISMISS_KEY);
+      if (t && Date.now() - parseInt(t, 10) < DISMISS_TTL) setEmergencyDismissed(true);
+    } catch { /* noop */ }
+  }, []);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
-    }
+  if (location.pathname === '/auth' || location.pathname === '/register') return null;
+
+  const dismissEmergency = () => {
+    setEmergencyDismissed(true);
+    try { localStorage.setItem(DISMISS_KEY, Date.now().toString()); } catch { /* noop */ }
   };
 
+  const navLinkCls = ({ isActive }: { isActive: boolean }) =>
+    `text-sm transition-colors duration-150 ${
+      isActive
+        ? 'text-[#BB0000]'
+        : 'text-foreground/65 hover:text-foreground'
+    }`;
+
+  const dropdownItemCls =
+    "block select-none rounded-md p-3 text-sm leading-none no-underline outline-none transition-colors duration-150 text-foreground/75 hover:text-foreground hover:bg-accent/60 focus:bg-accent/60";
+
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-border/50 shadow-sm">
-      {/* Main Navigation */}
-      <div className="container mx-auto px-6">
-          <div className="grid grid-cols-12 gap-4 items-center py-2 max-w-full">
-            {/* Mobile menu button - Column 1 */}
-            <div className="col-span-1 md:hidden">
+    <header
+      className="sticky top-0 z-50"
+      style={{ fontFamily: 'Outfit, sans-serif' }}
+    >
+      {/* ── Emergency bar ── */}
+      {!emergencyDismissed && (
+        <div
+          className="relative w-full flex items-center justify-center px-6"
+          style={{
+            background: '#BB0000',
+            minHeight: '40px',
+            paddingTop: '6px',
+            paddingBottom: '6px'
+          }}
+        >
+          <p
+            style={{
+              fontFamily: 'DM Mono, monospace',
+              fontSize: '10px',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'rgba(255,255,255,0.92)'
+            }}
+          >
+            <Phone className="inline h-3 w-3 mr-2 opacity-80" aria-hidden />
+            Crisis line &nbsp;·&nbsp;{' '}
+            <a href="tel:988" className="underline font-bold hover:no-underline">988</a>
+            {' '}Suicide & Crisis &nbsp;·&nbsp;{' '}
+            <a href="tel:18007997233" className="underline font-bold hover:no-underline">1-800-799-7233</a>
+            {' '}DV Hotline &nbsp;·&nbsp;{' '}
+            <a href="tel:211" className="underline font-bold hover:no-underline">211</a>
+            {' '}Local Services
+          </p>
+          <button
+            onClick={dismissEmergency}
+            aria-label="Dismiss emergency bar"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+          >
+            <X className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* ── Main nav ── */}
+      <div
+        className="w-full transition-all duration-300"
+        style={{
+          background: hasScrolled
+            ? 'rgba(255,255,255,0.88)'
+            : 'rgba(255,255,255,0.82)',
+          borderBottom: '1px solid rgba(214,214,214,0.9)',
+          backdropFilter: hasScrolled ? 'blur(12px)' : 'none'
+        }}
+      >
+        <div className="container mx-auto px-6">
+          <div className="flex items-center justify-between py-3">
+
+            {/* Mobile hamburger */}
+            <div className="flex md:hidden">
               <Sheet open={open} onOpenChange={setOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-2 hover:bg-white/10">
-                    <Menu className="h-5 w-5 text-foreground" />
-                  </Button>
+                  <button
+                    className="p-2 text-foreground/60 hover:text-foreground transition-colors"
+                    aria-label="Open menu"
+                  >
+                    <Menu className="h-5 w-5" />
+                  </button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-[300px]">
-                  <SheetTitle className="font-heading text-foreground">Menu</SheetTitle>
-                  <div className="py-4 space-y-3">
-                     {/* Mobile Navigation */}
-                    <nav className="space-y-2">
-                      <Button variant="ghost" size="sm" asChild className="justify-start w-full">
-                        <NavLink to="/" onClick={() => setOpen(false)}>Home</NavLink>
-                      </Button>
-                      <Button variant="ghost" size="sm" asChild className="justify-start w-full">
-                        <NavLink to="/help" onClick={() => setOpen(false)}>Get Help Now</NavLink>
-                      </Button>
-                      <Button variant="ghost" size="sm" asChild className="justify-start w-full">
-                        <NavLink to="/victim-services" onClick={() => setOpen(false)}>Healing Hub</NavLink>
-                      </Button>
-                      <Button variant="ghost" size="sm" asChild className="justify-start w-full">
-                        <NavLink to="/youth-futures" onClick={() => setOpen(false)}>Youth Futures</NavLink>
-                      </Button>
-                      
-                      {/* About Dropdown */}
-                      <div className="border-t pt-2 mt-2">
-                        <p className="text-xs text-muted-foreground px-3 mb-1">About</p>
-                        <Button variant="ghost" size="sm" asChild className="justify-start w-full pl-6">
-                          <NavLink to="/about" onClick={() => setOpen(false)}>About Us</NavLink>
-                        </Button>
-                        <Button variant="ghost" size="sm" asChild className="justify-start w-full pl-6">
-                          <NavLink to="/learn" onClick={() => setOpen(false)}>The Collective</NavLink>
-                        </Button>
-                      </div>
-
-                      {/* Portal Dropdown */}
-                      <div className="border-t pt-2 mt-2">
-                        <p className="text-xs text-muted-foreground px-3 mb-1">Portal</p>
-                        <Button variant="ghost" size="sm" asChild className="justify-start w-full pl-6">
-                          <NavLink to="/auth" onClick={() => setOpen(false)}>Client Portal</NavLink>
-                        </Button>
-                        <Button variant="ghost" size="sm" asChild className="justify-start w-full pl-6">
-                          <NavLink to="/partners" onClick={() => setOpen(false)}>Partner Portal</NavLink>
-                        </Button>
-                      </div>
-                    </nav>
-
-                      {/* Mobile Auth */}
-                    {user ? <>
-                        <div className="flex items-center gap-2 py-2 text-sm text-foreground border-t border-border pt-3 mt-2">
-                          <User className="h-4 w-4" />
+                <SheetContent
+                  side="left"
+                  className="w-[300px] border-r"
+                  style={{
+                    background: '#FFFFFF',
+                    borderColor: 'rgba(214,214,214,0.9)'
+                  }}
+                >
+                  <SheetTitle
+                    style={{
+                      fontFamily: 'Cormorant Garamond, serif',
+                      fontWeight: 300,
+                      fontSize: '22px',
+                      color: 'rgba(41,27,16,0.92)',
+                      letterSpacing: '-0.01em'
+                    }}
+                  >
+                    Navigation
+                  </SheetTitle>
+                  <nav className="mt-6 space-y-1">
+                    {[
+                      { to: '/',                label: 'Home' },
+                      { to: '/help',            label: 'Get Help Now' },
+                      { to: '/victim-services', label: 'Healing Hub' },
+                      { to: '/youth-futures',   label: 'Youth Futures' },
+                      { to: '/about',           label: 'About Us' },
+                      { to: '/learn',           label: 'The Collective' },
+                      { to: '/auth',            label: 'Client Portal' },
+                      { to: '/partners',        label: 'Partner Portal' },
+                    ].map(({ to, label }) => (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) =>
+                          `block px-4 py-2.5 rounded-sm text-sm transition-colors ${
+                            isActive
+                              ? 'text-[#BB0000]'
+                              : 'text-foreground/65 hover:text-foreground hover:bg-accent/40'
+                          }`
+                        }
+                        style={{ fontFamily: 'Outfit, sans-serif' }}
+                      >
+                        {label}
+                      </NavLink>
+                    ))}
+                    {user && (
+                      <>
+                        <div
+                          className="mt-4 pt-4 flex items-center gap-2 px-4 text-sm text-foreground/45"
+                          style={{ borderTop: '1px solid rgba(214,214,214,0.9)' }}
+                        >
+                          <User className="h-3.5 w-3.5" />
                           <span className="truncate">{user.email}</span>
                         </div>
-                        {isAdmin && <Button variant="ghost" size="sm" asChild className="justify-start w-full">
-                            <NavLink to="/admin" onClick={() => setOpen(false)}>Admin Dashboard</NavLink>
-                          </Button>}
-                        <Button variant="ghost" size="sm" asChild className="justify-start w-full">
-                          <NavLink to="/partner-dashboard" onClick={() => setOpen(false)}>Partner Dashboard</NavLink>
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => {
-                      signOut();
-                      setOpen(false);
-                    }} className="justify-start w-full">
-                          <LogOut className="mr-2 h-4 w-4" />
+                        {isAdmin && (
+                          <NavLink
+                            to="/admin"
+                            onClick={() => setOpen(false)}
+                            className="block px-4 py-2.5 text-sm text-foreground/65 hover:text-foreground"
+                          >
+                            Admin Dashboard
+                          </NavLink>
+                        )}
+                        <button
+                          onClick={() => { signOut(); setOpen(false); }}
+                          className="flex items-center gap-2 px-4 py-2.5 text-sm text-foreground/65 hover:text-foreground w-full text-left"
+                        >
+                          <LogOut className="h-3.5 w-3.5" />
                           Sign Out
-                        </Button>
-                      </> : null}
-                  </div>
+                        </button>
+                      </>
+                    )}
+                  </nav>
                 </SheetContent>
               </Sheet>
             </div>
 
-            {/* Logo - Columns 2-4 on mobile, 1-2 on desktop */}
-            <div className="col-span-10 md:col-span-2 flex justify-center md:justify-start">
-              <NavLink to="/" className="flex items-center md:hover:scale-105 transition-all duration-300 group">
-                <img
-                  src={logo}
-                  alt="Forward Focus Elevation"
-                  className="h-14 w-auto mix-blend-multiply group-hover:scale-105 transition-transform duration-300"
-                />
-              </NavLink>
-            </div>
+            {/* Logo */}
+            <NavLink to="/" className="flex items-center group flex-shrink-0">
+              <img
+                src={logo}
+                alt="Forward Focus Elevation"
+                className="h-12 w-auto transition-opacity duration-300 group-hover:opacity-80"
+                style={{ filter: 'brightness(1.1)' }}
+              />
+            </NavLink>
 
-            {/* Main Navigation - Desktop - Columns 3-9 */}
-            <nav className="hidden md:flex col-span-7 items-center justify-end pr-4">
+            {/* Desktop navigation */}
+            <nav className="hidden md:flex items-center gap-6">
               <NavigationMenu>
-                <NavigationMenuList className="flex items-center space-x-6">
+                <NavigationMenuList className="flex items-center gap-6">
                   <NavigationMenuItem>
-                    <NavLink to="/" className={linkCls}>Home</NavLink>
+                    <NavLink to="/" className={navLinkCls}>Home</NavLink>
                   </NavigationMenuItem>
-                  
                   <NavigationMenuItem>
-                    <NavLink to="/help" className={linkCls}>Get Help Now</NavLink>
+                    <NavLink to="/help" className={navLinkCls}>Get Help Now</NavLink>
                   </NavigationMenuItem>
-                  
                   <NavigationMenuItem>
-                    <NavLink to="/victim-services" className={linkCls}>Healing Hub</NavLink>
+                    <NavLink to="/victim-services" className={navLinkCls}>Healing Hub</NavLink>
                   </NavigationMenuItem>
-                  
                   <NavigationMenuItem>
-                    <NavLink to="/youth-futures" className={linkCls}>Youth Futures</NavLink>
+                    <NavLink to="/youth-futures" className={navLinkCls}>Youth Futures</NavLink>
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-foreground hover:bg-gray-100 data-[state=open]:text-red-700 data-[state=open]:bg-red-100 bg-transparent h-auto px-3 py-2 text-sm font-medium rounded-md transition-all duration-150">
-                      About
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent className="z-[60]">
-                      <ul className="grid w-[200px] gap-1 p-2 bg-white rounded-md shadow-lg border border-border">
-                        <li>
-                          <NavigationMenuLink asChild>
-                            <NavLink
-                              to="/about"
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-all duration-150 hover:bg-gray-100 focus:bg-gray-100"
-                            >
-                              <div className="text-sm font-medium leading-none">About Us</div>
-                            </NavLink>
-                          </NavigationMenuLink>
-                        </li>
-                        <li>
-                          <NavigationMenuLink asChild>
-                            <NavLink
-                              to="/learn"
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-all duration-150 hover:bg-gray-100 focus:bg-gray-100"
-                            >
-                              <div className="text-sm font-medium leading-none">The Collective</div>
-                            </NavLink>
-                          </NavigationMenuLink>
-                        </li>
-                      </ul>
-                    </NavigationMenuContent>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        className="text-sm text-foreground/65 hover:text-foreground outline-none font-normal"
+                        style={{ fontFamily: 'Outfit, sans-serif' }}
+                      >
+                        About ▾
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        className="z-[60] w-[180px] rounded-md p-1"
+                        style={{ background: '#FFFFFF', border: '1px solid rgba(214,214,214,0.9)' }}
+                      >
+                        <DropdownMenuItem asChild>
+                          <NavLink to="/about" className={dropdownItemCls}>About Us</NavLink>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <NavLink to="/learn" className={dropdownItemCls}>The Collective</NavLink>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </NavigationMenuItem>
-                  
+
                   <NavigationMenuItem>
-                    <NavigationMenuTrigger className="text-foreground hover:bg-gray-100 data-[state=open]:text-red-700 data-[state=open]:bg-red-100 bg-transparent h-auto px-3 py-2 text-sm font-medium rounded-md transition-all duration-150">
-                      Portal
-                    </NavigationMenuTrigger>
-                    <NavigationMenuContent className="z-[60]">
-                      <ul className="grid w-[200px] gap-1 p-2 bg-white rounded-md shadow-lg border border-border">
-                        <li>
-                          <NavigationMenuLink asChild>
-                            <NavLink
-                              to="/auth"
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-all duration-150 hover:bg-gray-100 focus:bg-gray-100"
-                            >
-                              <div className="text-sm font-medium leading-none">Client Portal</div>
-                            </NavLink>
-                          </NavigationMenuLink>
-                        </li>
-                        <li>
-                          <NavigationMenuLink asChild>
-                            <NavLink
-                              to="/partners"
-                              className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-all duration-150 hover:bg-gray-100 focus:bg-gray-100"
-                            >
-                              <div className="text-sm font-medium leading-none">Partner Portal</div>
-                            </NavLink>
-                          </NavigationMenuLink>
-                        </li>
-                      </ul>
-                    </NavigationMenuContent>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger
+                        className="text-sm text-foreground/65 hover:text-foreground outline-none font-normal"
+                        style={{ fontFamily: 'Outfit, sans-serif' }}
+                      >
+                        Portal ▾
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="start"
+                        className="z-[60] w-[180px] rounded-md p-1"
+                        style={{ background: '#FFFFFF', border: '1px solid rgba(214,214,214,0.9)' }}
+                      >
+                        <DropdownMenuItem asChild>
+                          <NavLink to="/auth" className={dropdownItemCls}>Client Portal</NavLink>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <NavLink to="/partners" className={dropdownItemCls}>Partner Portal</NavLink>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </NavigationMenuItem>
                 </NavigationMenuList>
               </NavigationMenu>
             </nav>
 
-            {/* Auth Links - Columns 10-12 */}
-            <div className="hidden md:flex col-span-3 items-center justify-end">
-              <div className="flex items-center gap-2">
-                {!user && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={() => navigate('/auth')}
-                    className="mr-2 text-foreground font-medium"
+            {/* Right side: auth + CTA */}
+            <div className="hidden md:flex items-center gap-3">
+              {!user && (
+                <button
+                  onClick={() => navigate('/auth')}
+                  className="text-sm text-foreground/55 hover:text-foreground transition-colors"
+                  style={{ fontFamily: 'Outfit, sans-serif' }}
+                >
+                  Sign In
+                </button>
+              )}
+              {user && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex items-center gap-1.5 text-sm text-foreground/55 hover:text-foreground transition-colors"
+                      style={{ fontFamily: 'DM Mono, monospace', fontSize: '11px', letterSpacing: '0.05em' }}
+                    >
+                      <User className="h-3.5 w-3.5" />
+                      <span className="max-w-[100px] truncate">{user.email}</span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="z-[60] rounded-md"
+                    style={{ background: '#FFFFFF', border: '1px solid rgba(214,214,214,0.9)' }}
                   >
-                    Sign In
-                  </Button>
-                )}
-                {user ? <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-foreground font-medium">
-                        <User className="mr-2 h-4 w-4" />
-                        <span className="max-w-[120px] truncate">{user.email}</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="z-[60] bg-background border border-border shadow-lg">
-                      {isAdmin && <DropdownMenuItem asChild>
-                          <NavLink to="/admin">Admin Dashboard</NavLink>
-                        </DropdownMenuItem>}
+                    {isAdmin && (
                       <DropdownMenuItem asChild>
-                        <NavLink to="/partner-dashboard">Partner Dashboard</NavLink>
+                        <NavLink to="/admin" className={dropdownItemCls}>Admin Dashboard</NavLink>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={signOut}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu> : null}
+                    )}
+                    <DropdownMenuItem asChild>
+                      <NavLink to="/partner-dashboard" className={dropdownItemCls}>Partner Dashboard</NavLink>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={signOut}
+                      className="text-foreground/65 hover:text-foreground focus:text-foreground"
+                    >
+                      <LogOut className="mr-2 h-3.5 w-3.5" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
 
-                  {/* Get Involved CTA - 3D Gold Styling */}
-                  <Button size="sm" asChild className="get-involved-gold-button">
-                    <NavLink to="/support">Get Involved</NavLink>
-                  </Button>
-                </div>
+              <NavLink to="/support" className="cipher-btn-gold" style={{ padding: '10px 20px', fontSize: '10px' }}>
+                Get Involved
+              </NavLink>
             </div>
 
-            {/* Mobile Get Involved - Column 12 */}
-            <div className="col-span-1 md:hidden flex justify-end">
-              <Button size="sm" asChild className="get-involved-gold-button border-none px-3 py-2">
-                <NavLink to="/support">Join</NavLink>
-              </Button>
+            {/* Mobile CTA */}
+            <div className="flex md:hidden">
+              <NavLink
+                to="/support"
+                className="cipher-btn-gold"
+                style={{ padding: '8px 14px', fontSize: '10px' }}
+              >
+                Join
+              </NavLink>
             </div>
+
           </div>
+        </div>
       </div>
     </header>
   );

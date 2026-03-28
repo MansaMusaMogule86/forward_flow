@@ -61,17 +61,19 @@ export const TestimonialsSection = () => {
 
   // Map database stories to testimonial format or use fallbacks
   const testimonials: Testimonial[] = dbTestimonials && dbTestimonials.length > 0
-    ? dbTestimonials.map((story, index) => ({
-        quote: story.participant_testimonial 
-          ? (story.participant_testimonial.slice(0, 100) + (story.participant_testimonial.length > 100 ? '...' : ''))
-          : story.title,
-        name: story.participant_name || 'Community Member',
-        location: 'United States',
-        avatar: (story.images && Array.isArray(story.images) && story.images.length > 0) 
-          ? String(story.images[0]) 
-          : fallbackTestimonials[index % 3].avatar,
-        stars: 5
-      }))
+    ? dbTestimonials.map((story, index) => {
+        const hasOwnImage = story.images && Array.isArray(story.images) && story.images.length > 0;
+        return {
+          quote: story.participant_testimonial
+            ? (story.participant_testimonial.slice(0, 100) + (story.participant_testimonial.length > 100 ? '...' : ''))
+            : story.title,
+          // When using a fallback photo, also use the matching fallback name so photo and name align
+          name: hasOwnImage ? (story.participant_name || 'Community Member') : fallbackTestimonials[index % 3].name,
+          location: 'United States',
+          avatar: hasOwnImage ? String(story.images[0]) : fallbackTestimonials[index % 3].avatar,
+          stars: 5
+        };
+      })
     : fallbackTestimonials;
 
   return (

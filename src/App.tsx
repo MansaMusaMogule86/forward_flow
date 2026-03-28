@@ -10,6 +10,7 @@ import { SecurityProvider } from "@/components/security/SecurityProvider";
 import { SessionSecurityProvider } from "@/components/security/SessionSecurityProvider";
 import { BrandedErrorBoundary } from "@/components/ui/BrandedErrorBoundary";
 import { PageLoadingSkeleton } from "@/components/ui/loading-states";
+import { AntiWhiteLabelProtection } from "@/components/security/AntiWhiteLabelProtection";
 import Layout from "./components/layout/Layout";
 import { StateProvider } from "./contexts/StateContext";
 import { AnalyticsProvider } from "./components/layout/AnalyticsProvider";
@@ -65,7 +66,7 @@ const App = () => {
         <SecurityProvider>
           <SessionSecurityProvider>
             <AuthProvider>
-              {/* <AntiWhiteLabelProtection /> — disabled: monitorTampering() overrides console.log globally; re-enable after verifying production domain */}
+              <AntiWhiteLabelProtection />
               <Toaster />
               <Sonner />
               <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>

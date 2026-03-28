@@ -26,14 +26,14 @@ const Discover = () => {
 
   if (loading) {
     return (
-      <main id="main" className="min-h-screen bg-gradient-osu-subtle">
+      <main id="main" className="min-h-screen bg-background">
         {/* Hero Skeleton */}
-        <div className="bg-gradient-osu-primary border-b border-osu-scarlet/20 mb-12">
+        <div className="bg-white border-b border-osu-gray-light/60 mb-12">
           <div className="container py-16">
             <div className="max-w-4xl mx-auto text-center space-y-6">
-              <Skeleton className="h-14 w-3/4 mx-auto bg-white/20" />
-              <Skeleton className="h-6 w-full mx-auto bg-white/20" />
-              <Skeleton className="h-6 w-2/3 mx-auto bg-white/20" />
+              <Skeleton className="h-14 w-3/4 mx-auto bg-osu-gray-light/60" />
+              <Skeleton className="h-6 w-full mx-auto bg-osu-gray-light/60" />
+              <Skeleton className="h-6 w-2/3 mx-auto bg-osu-gray-light/60" />
             </div>
           </div>
         </div>
@@ -72,13 +72,13 @@ const Discover = () => {
   }
 
   return (
-    <main id="main" className="min-h-screen bg-gradient-osu-subtle">
+    <main id="main" className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="bg-gradient-osu-primary border-b border-osu-scarlet/20 mb-12">
+      <div className="bg-white border-b border-osu-gray-light/60 mb-12">
         <div className="container py-16">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="font-heading text-5xl md:text-6xl font-bold mb-6 text-white">AI Resource Discovery</h1>
-            <p className="text-xl text-white leading-relaxed">
+            <h1 className="font-heading text-5xl md:text-6xl font-bold mb-6 text-foreground">AI Resource Discovery</h1>
+            <p className="text-xl text-foreground/80 leading-relaxed">
               Find personalized support services through <strong>The Collective</strong> across all 88 Ohio counties using our AI-powered resource navigator.
               Get recommendations tailored to your specific needs and location.
             </p>
@@ -99,13 +99,13 @@ const Discover = () => {
           </div>
           
           {/* AI Resource Discovery Interface */}
-          <div className="relative mb-12 bg-card rounded-2xl shadow-xl border border-osu-gray/20 overflow-hidden">
+          <div className="relative mb-12 bg-card rounded-2xl shadow-sm border border-osu-gray-light/70 overflow-hidden">
             <img 
               src={communitySearchResources} 
               alt="Diverse individuals using AI-powered resource discovery in a community center"
               className="w-full h-64 object-cover opacity-20"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-osu-scarlet/10 to-osu-gray/10 flex items-center justify-center">
+            <div className="absolute inset-0 bg-white/85 flex items-center justify-center">
               <div className="text-center text-osu-scarlet max-w-4xl px-8">
                 <h2 className="font-heading text-2xl md:text-3xl font-semibold mb-4">Smart Resource Navigator</h2>
                 <p className="text-osu-gray">
@@ -117,8 +117,8 @@ const Discover = () => {
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-osu-scarlet/20 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-osu-scarlet/5 to-osu-gray/5">
+              <Card className="border-osu-gray-light/70 shadow-sm">
+                <CardHeader className="bg-background border-b border-osu-gray-light/50">
                   <CardTitle className="flex items-center gap-2 text-osu-scarlet">
                     <Sparkles className="h-5 w-5" />
                     AI-Powered Resource Discovery
@@ -141,7 +141,7 @@ const Discover = () => {
                     </ul>
                     <Button 
                       onClick={() => setShowAIDiscovery(true)}
-                      className="w-full bg-gradient-to-r from-osu-scarlet to-osu-gray hover:from-osu-scarlet/90 hover:to-osu-gray/90 text-white"
+                      className="w-full bg-osu-scarlet hover:bg-osu-scarlet-dark text-white"
                     >
                       <Bot className="h-4 w-4 mr-2" />
                       Start AI Discovery
@@ -150,8 +150,8 @@ const Discover = () => {
                 </CardContent>
               </Card>
 
-              <Card className="border-osu-gray/20 shadow-lg">
-                <CardHeader className="bg-gradient-to-r from-osu-gray/5 to-osu-scarlet/5">
+              <Card className="border-osu-gray-light/70 shadow-sm">
+                <CardHeader className="bg-background border-b border-osu-gray-light/50">
                   <CardTitle className="flex items-center gap-2 text-osu-gray">
                     <Bot className="h-5 w-5" />
                     Quick Search Examples
@@ -174,7 +174,7 @@ const Discover = () => {
                         key={index}
                         variant="outline"
                         size="sm"
-                        className="w-full text-left justify-start h-auto p-3 text-xs hover:bg-osu-scarlet/10 hover:border-osu-scarlet/30"
+                        className="w-full text-left justify-start h-auto p-3 text-xs hover:bg-osu-scarlet/5 hover:border-osu-scarlet/20"
                         onClick={() => {
                           setShowAIDiscovery(true);
                         }}

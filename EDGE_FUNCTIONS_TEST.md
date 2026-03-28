@@ -79,8 +79,10 @@ Here's a step-by-step guide on how to submit a referral:
 ### Pre-Testing Requirements
 - [ ] LOVABLE_API_KEY configured in Supabase secrets
 - [ ] OPENAI_API_KEY configured (for OpenAI-powered functions)
+- [ ] PERPLEXITY_API_KEY configured (for web-search fallback functions)
 - [ ] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY available
 - [ ] Edge functions deployed to Supabase
+- [ ] Valid Supabase user JWT available for auth-required functions (e.g., partner-support-chat)
 
 ### Test Categories
 
@@ -135,6 +137,7 @@ curl -X POST \
 curl -X POST \
   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/partner-support-chat \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <SUPABASE_USER_JWT>" \
   -d '{
     "messages": [
       {"role": "user", "content": "What is Forward Focus Elevation?"}
@@ -142,7 +145,7 @@ curl -X POST \
   }'
 ```
 
-**Expected:** Streaming SSE response with chat completion
+**Expected:** Streaming SSE response with chat completion (401 if JWT missing/invalid)
 
 ---
 
@@ -152,14 +155,13 @@ curl -X POST \
   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/generate-success-story \
   -H "Content-Type: application/json" \
   -d '{
-    "participantName": "John D.",
-    "programType": "Job Training",
-    "outcome": "Secured full-time employment",
-    "duration": "6 months"
+    "basicInfo": "Participant completed a 6-month job readiness and interview coaching pathway.",
+    "outcome": "Secured full-time employment with benefits.",
+    "participantQuote": "I finally feel stable and hopeful about my future."
   }'
 ```
 
-**Expected:** JSON with generated story content
+**Expected:** JSON with `title`, `story`, `summary`, and optional `suggestedTags`
 
 ---
 
@@ -200,11 +202,13 @@ curl -X POST \
   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/crisis-support-ai \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "I am feeling overwhelmed"
+    "query": "I am feeling overwhelmed and need immediate support",
+    "location": "Columbus",
+    "urgencyLevel": "urgent"
   }'
 ```
 
-**Expected:** JSON with supportive response and resource links
+**Expected:** JSON including `response`, `resources`, optional `webResources`, and `urgencyLevel`
 
 ---
 
@@ -214,11 +218,14 @@ curl -X POST \
   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/victim-support-ai \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "I need legal assistance"
+    "query": "I need legal assistance and counseling resources",
+    "location": "Columbus",
+    "victimType": "violent_crime",
+    "traumaLevel": "ongoing"
   }'
 ```
 
-**Expected:** JSON with victim services information
+**Expected:** JSON including `response`, `resources`, optional `webResources`, and `victimType`
 
 ---
 
@@ -228,11 +235,62 @@ curl -X POST \
   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/reentry-navigator-ai \
   -H "Content-Type: application/json" \
   -d '{
-    "message": "How do I get my record expunged?"
+    "query": "How do I get my record expunged?",
+    "location": "Columbus",
+    "reentryStage": "recently_released",
+    "priorityNeeds": ["legal", "employment"]
   }'
 ```
 
-**Expected:** JSON with expungement guidance
+**Expected:** JSON including `response`, `resources`, optional `webResources`, and `keyServices`
+
+---
+
+### 9. Coach K
+```bash
+curl -X POST \
+  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/coach-k \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messages": [
+      {"role": "user", "content": "I need help finding housing and work in Franklin County."}
+    ]
+  }'
+```
+
+**Expected:** Streaming SSE response (`text/event-stream`) with coach guidance
+
+---
+
+### 10. AI Resource Discovery
+```bash
+curl -X POST \
+  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/ai-resource-discovery \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "I need rental assistance and legal aid",
+    "location": "Columbus",
+    "limit": 10
+  }'
+```
+
+**Expected:** JSON including `response`, `curatedResources`, optional `webResources`, and `usedWebFallback`
+
+---
+
+### 11. Crisis Emergency AI
+```bash
+curl -X POST \
+  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/crisis-emergency-ai \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "I need immediate crisis support",
+    "location": "Columbus",
+    "urgencyLevel": "immediate"
+  }'
+```
+
+**Expected:** JSON including `response`, `resources`, optional `webResources`, and `urgencyLevel`
 
 ---
 

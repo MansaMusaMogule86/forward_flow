@@ -27,11 +27,15 @@ export const HeroSection = ({ selectedState, onShowStateModal, onShowAIDiscovery
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 max-w-2xl mx-auto mb-8 items-center justify-center">
-            <Button size="lg" className="get-involved-gold-button border-none" asChild>
-              <Link 
-                to="/help" 
+            <Button
+              size="lg"
+              variant="outline"
+              className="bg-osu-gray/20 border-osu-gray/30 text-white hover:bg-osu-gray/30"
+              asChild
+            >
+              <Link
+                to="/help"
                 aria-label="Get immediate help and support services"
-                className="font-semibold"
                 onClick={() => trackClick('hero_get_help_now', { location: 'hero_section' })}
               >
                 Get Help Now

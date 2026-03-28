@@ -35,39 +35,38 @@ export default function AboutUs() {
         }}
       />
       <BreadcrumbSchema crumbs={[{ name: 'About Us', path: '/about' }]} />
-      <main id="main" className="bg-cream/30">
+      <main id="main" className="bg-background">
       {/* Hero Section */}
-      <header className="relative bg-gradient-osu-primary text-white overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-muted/90 via-osu-scarlet/80 to-osu-scarlet-dark/70"></div>
+      <header className="relative bg-white overflow-hidden border-b border-osu-gray-light/60">
         <div className="relative container py-24 md:py-32 flex items-center justify-center text-center">
           <div className="max-w-5xl mx-auto text-center">
-            <h1 className="font-heading text-5xl md:text-7xl font-bold mb-8 leading-tight">
+            <h1 className="font-heading text-5xl md:text-7xl font-bold mb-8 leading-tight text-foreground">
               About Forward Focus Elevation
             </h1>
-            <p className="text-lg md:text-xl mb-12 text-white/90 leading-relaxed max-w-3xl mx-auto">Real Healing. Smart Tools. Second Chances for Every Story. AI-powered transformation for justice-impacted individuals and families because your next chapter deserves more than survival.</p>
+            <p className="text-lg md:text-xl mb-12 text-foreground/80 leading-relaxed max-w-3xl mx-auto">Real Healing. Smart Tools. Second Chances for Every Story. AI-powered transformation for justice-impacted individuals and families because your next chapter deserves more than survival.</p>
             <div className="flex items-center justify-center gap-6 text-sm mb-12 flex-wrap">
-              <span className="flex items-center gap-2 bg-osu-scarlet/20 backdrop-blur-sm border border-osu-scarlet/30 px-6 py-3 rounded-full text-white">
+              <span className="flex items-center gap-2 bg-osu-scarlet/5 border border-osu-scarlet/20 px-6 py-3 rounded-full text-osu-scarlet">
                 <Shield className="h-5 w-5" />
                 Dignity
               </span>
-              <span className="flex items-center gap-2 bg-osu-gray/20 backdrop-blur-sm border border-osu-gray/30 px-6 py-3 rounded-full text-white">
+              <span className="flex items-center gap-2 bg-osu-gray/5 border border-osu-gray/20 px-6 py-3 rounded-full text-osu-gray-dark">
                 <Heart className="h-5 w-5" />
                 Hope
               </span>
-              <span className="flex items-center gap-2 bg-white/20 backdrop-blur-sm border border-white/30 px-6 py-3 rounded-full text-white">
+              <span className="flex items-center gap-2 bg-osu-gray/5 border border-osu-gray/20 px-6 py-3 rounded-full text-osu-gray-dark">
                 <Users className="h-5 w-5" />
                 Community
               </span>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-4 max-w-lg justify-center mx-auto">
-              <Button asChild size="lg" className="get-involved-gold-button border-none flex-1 shadow-xl">
+              <Button asChild size="lg" className="get-involved-gold-button border-none flex-1">
                 <Link to="/victim-services">
                   <Shield className="h-5 w-5 mr-2" />
                   Healing Hub
                 </Link>
               </Button>
-              <Button asChild size="lg" className="bg-osu-gray hover:bg-osu-gray-dark text-white flex-1 shadow-xl border-none">
+              <Button asChild size="lg" className="bg-osu-gray hover:bg-osu-gray-dark text-white flex-1 border-none">
                 <Link to="/learn">
                   <Users className="h-5 w-5 mr-2" />
                   The Collective
@@ -92,7 +91,7 @@ export default function AboutUs() {
                   <p className="text-xl leading-relaxed">
                     So, we built something different — a trauma-informed, AI-powered platform led by an **Accredited AI Consultant and Master Certified Transformation Coach**. A community designed not just to provide resources, but to scale human empowerment through technology.
                   </p>
-                  <div className="bg-gradient-to-br from-primary/10 to-accent/10 p-8 rounded-2xl border-l-4 border-primary">
+                  <div className="bg-white p-8 rounded-2xl border border-osu-gray-light/70 border-l-4 border-l-osu-scarlet">
                     <p className="text-lg font-semibold text-foreground mb-4">Forward is the Only Direction</p>
                     <p className="text-foreground/80 leading-relaxed">
                       We see a future where every justice-impacted person and family has access to the tools, people, and opportunities needed to thrive no matter where they are or what challenges they face. Forward Focus Elevation is more than an organization — it's a digital space, a community, and a movement of people who believe in second chances and lasting change.
@@ -100,9 +99,9 @@ export default function AboutUs() {
                   </div>
                 </div>
               </div>
-              <div className="relative rounded-2xl overflow-hidden shadow-xl">
+              <div className="relative rounded-2xl overflow-hidden border border-osu-gray-light/70">
                 <img src={diverseCommunityMeeting} alt="Diverse community members in supportive meeting environment" className="w-full h-80 object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-accent/90 to-transparent flex items-end">
+                <div className="absolute inset-0 bg-gradient-to-t from-osu-gray-dark/70 to-transparent flex items-end">
                   <div className="p-8 text-accent-foreground w-full text-center">
                     <p className="text-2xl font-semibold">
                       Built by community, for community
@@ -129,7 +128,7 @@ export default function AboutUs() {
             </div>
             
             <div className="grid md:grid-cols-3 gap-8 mb-16">
-              <Card className="text-center p-8 border border-osu-gray/10 bg-white/40 backdrop-blur-md hover:shadow-xl transition-all duration-300">
+              <Card className="text-center p-8 border border-osu-gray-light/70 bg-white hover:shadow-md transition-shadow duration-200">
                 <CardHeader>
                   <div className="w-16 h-16 bg-osu-scarlet/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Shield className="h-8 w-8 text-osu-scarlet" />
@@ -143,7 +142,7 @@ export default function AboutUs() {
                 </CardContent>
               </Card>
               
-              <Card className="text-center p-8 border border-osu-gray/10 bg-white/40 backdrop-blur-md hover:shadow-xl transition-all duration-300">
+              <Card className="text-center p-8 border border-osu-gray-light/70 bg-white hover:shadow-md transition-shadow duration-200">
                 <CardHeader>
                   <div className="w-16 h-16 bg-osu-gray/10 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Heart className="h-8 w-8 text-osu-gray" />
@@ -157,7 +156,7 @@ export default function AboutUs() {
                 </CardContent>
               </Card>
               
-              <Card className="text-center p-8 border border-osu-gray/10 bg-white/40 backdrop-blur-md hover:shadow-xl transition-all duration-300">
+              <Card className="text-center p-8 border border-osu-gray-light/70 bg-white hover:shadow-md transition-shadow duration-200">
                 <CardHeader>
                   <div className="w-16 h-16 bg-white/20 border border-white/30 shadow-inner rounded-full flex items-center justify-center mx-auto mb-4">
                     <Users className="h-8 w-8 text-foreground" />
@@ -172,7 +171,7 @@ export default function AboutUs() {
               </Card>
             </div>
             
-            <div className="bg-gradient-to-br from-osu-scarlet/5 to-osu-gray/5 rounded-2xl p-12 text-center border border-osu-gray/10 shadow-inner">
+            <div className="bg-white rounded-2xl p-12 text-center border border-osu-gray-light/70">
               <h3 className="text-3xl font-heading font-bold text-foreground mb-6">Our Mission</h3>
               <p className="text-xl text-foreground/80 leading-relaxed max-w-4xl mx-auto font-light">
                 To create a trauma-informed, AI-powered ecosystem where justice-impacted individuals and families 
@@ -182,7 +181,7 @@ export default function AboutUs() {
             </div>
 
             {/* Accredited Social Impact Section */}
-            <div className="mt-16 bg-white/40 backdrop-blur-md rounded-2xl p-8 border border-osu-scarlet/10 flex flex-col md:flex-row items-center gap-8 shadow-sm">
+            <div className="mt-16 bg-white rounded-2xl p-8 border border-osu-gray-light/70 flex flex-col md:flex-row items-center gap-8">
               <div className="p-4 bg-osu-scarlet/10 rounded-full">
                 <Award className="h-12 w-12 text-osu-scarlet" />
               </div>
@@ -196,7 +195,7 @@ export default function AboutUs() {
 
             {/* What Makes Us Different */}
             <div className="mt-16 grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 bg-secondary/5 py-8 md:py-16 px-4 md:px-8 rounded-2xl overflow-hidden">
-              <div className="bg-background rounded-xl p-6 md:p-8 border shadow-lg hover:shadow-xl transition-all overflow-hidden">
+              <div className="bg-background rounded-xl p-6 md:p-8 border border-osu-gray-light/70 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
                 <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8">
                   <div className="w-12 h-12 md:w-16 md:h-16 bg-secondary rounded-xl flex items-center justify-center shadow-md">
                     <Users className="h-6 w-6 md:h-8 md:w-8 text-secondary-foreground" />
@@ -211,7 +210,7 @@ export default function AboutUs() {
                 </p>
               </div>
 
-              <div className="bg-background rounded-xl p-6 md:p-8 border shadow-lg hover:shadow-xl transition-all overflow-hidden">
+              <div className="bg-background rounded-xl p-6 md:p-8 border border-osu-gray-light/70 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
                 <div className="flex items-center gap-4 md:gap-6 mb-6 md:mb-8">
                   <div className="w-12 h-12 md:w-16 md:h-16 bg-primary rounded-xl flex items-center justify-center shadow-md">
                     <Target className="h-6 w-6 md:h-8 md:w-8 text-primary-foreground" />
@@ -230,7 +229,7 @@ export default function AboutUs() {
         </section>
 
         {/* Printable One-Pager Section */}
-        <section className="scroll-mt-16 py-16 bg-white/50 border-y border-osu-gray/5">
+        <section className="scroll-mt-16 py-16 bg-white border-y border-osu-gray-light/60">
           <div className="max-w-4xl mx-auto px-4 text-center">
             <h2 className="font-heading text-3xl font-bold text-foreground mb-4">The FFE Vision One-Pager</h2>
             <p className="text-muted-foreground mb-8">Download or print a summary of our mission and Coach Kay's accredited expert profile.</p>
@@ -260,13 +259,13 @@ export default function AboutUs() {
               Whether you have questions, need support, or want to get involved — we're here for you.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto">
-              <Button asChild size="lg" className="get-involved-gold-button border-none flex-1 shadow-xl">
+              <Button asChild size="lg" className="get-involved-gold-button border-none flex-1">
                 <Link to="/victim-services">
                   <Shield className="h-5 w-5 mr-2" />
                   Explore the Healing Hub
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="secondary" className="flex-1 shadow-xl">
+              <Button asChild size="lg" variant="secondary" className="flex-1">
                 <Link to="/learn">
                   <Users className="h-5 w-5 mr-2" />
                   Access The Collective

@@ -194,25 +194,22 @@ export default function VictimServices() {
                 Access clinically-grounded tools for stabilization, reflection, and connection—at your own pace, on your own terms.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
-                <Button 
-                  size="lg" 
-                  className="get-involved-gold-button border-none shadow-xl px-8 py-6 text-lg"
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
+                <button
+                  className="inline-flex items-center justify-center gap-2 h-14 px-8 w-full sm:w-[220px] rounded text-base font-semibold bg-[#BB0000] text-white hover:bg-[#990000] transition-colors shadow-lg"
                   onClick={() => setShowVictimAI(true)}
                 >
-                  <Bot className="h-5 w-5 mr-2" />
+                  <Bot className="h-5 w-5" />
                   Ask Coach Kay
-                </Button>
-                <Button 
-                  size="lg" 
-                  variant="outline"
-                  className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20 px-8 py-6 text-lg"
+                </button>
+                <button
+                  className="inline-flex items-center justify-center h-14 px-8 w-full sm:w-[220px] rounded text-base font-semibold bg-white/10 backdrop-blur-sm border border-white/30 text-white hover:bg-white/20 transition-colors"
                   onClick={() => {
                     document.getElementById('toolkit')?.scrollIntoView({ behavior: 'smooth' });
                   }}
                 >
                   Explore Healing Tools
-                </Button>
+                </button>
               </div>
             </div>
           </div>
@@ -312,7 +309,7 @@ export default function VictimServices() {
                 <Button 
                   size="lg" 
                   variant="outline"
-                  className="border-white/30 text-white hover:bg-white/10"
+                  className="bg-white/10 border-white/45 text-white hover:bg-white/20 hover:text-white"
                   onClick={() => setShowVictimAI(true)}
                 >
                   Chat with Support

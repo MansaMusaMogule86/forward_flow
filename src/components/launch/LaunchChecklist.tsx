@@ -48,7 +48,7 @@ export const LaunchChecklist = () => {
 
       // 3. Check AI services - Coach K
       const { error: coachError } = await supabase.functions.invoke('coach-k', {
-        body: { message: 'System check', sessionId: 'launch-test' }
+        body: { messages: [{ role: 'user', content: 'System check' }] }
       });
       
       checklist.push({
@@ -62,7 +62,7 @@ export const LaunchChecklist = () => {
 
       // 4. Check crisis support AI
       const { error: crisisError } = await supabase.functions.invoke('crisis-support-ai', {
-        body: { message: 'System check', sessionId: 'launch-test' }
+        body: { query: 'System check' }
       });
       
       checklist.push({

@@ -10,7 +10,23 @@ const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "X-XSS-Protection": "1; mode=block",
+  "Referrer-Policy": "strict-origin-when-cross-origin",
 };
+
+// Escape HTML entities to prevent injection in admin email body
+const escapeHtml = (str: string): string =>
+  str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+
+// RFC-5322 compatible email regex
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 interface ContactEmailRequest {
   name: string;
@@ -28,20 +44,19 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Simple fail-open rate limiting
+    // Rate limit by client IP
     const clientIP = req.headers.get("x-forwarded-for")?.split(',')[0].trim() || 
                      req.headers.get("x-real-ip") || 
                      "unknown";
     
-    // Check rate limit (fail-open: if check fails, allow request)
-    try {
-      const supabaseClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-      );
+    // Rate limiting — fail-closed: deny if DB check cannot be completed
+    const supabaseClient = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+    );
 
+    try {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
-      
       const { data: recentRequests, error } = await supabaseClient
         .from("audit_logs")
         .select("id")
@@ -49,25 +64,28 @@ const handler = async (req: Request): Promise<Response> => {
         .eq("ip_address", clientIP)
         .gte("created_at", fiveMinutesAgo);
 
-      if (!error && recentRequests && recentRequests.length >= 5) {
-        console.log(`Rate limit exceeded for IP: ${clientIP}`);
+      if (error) {
+        // Fail-closed: cannot verify rate limit, deny request
+        console.error("Rate limit DB error — denying request:", error.message);
         return new Response(
-          JSON.stringify({ 
-            success: false,
-            error: "Too many requests. Please wait a few minutes before trying again."
-          }),
-          {
-            status: 429,
-            headers: {
-              "Content-Type": "application/json",
-              ...corsHeaders,
-            },
-          }
+          JSON.stringify({ success: false, error: "Service temporarily unavailable. Please try again shortly." }),
+          { status: 503, headers: { "Content-Type": "application/json", ...corsHeaders } }
+        );
+      }
+
+      if (recentRequests && recentRequests.length >= 5) {
+        return new Response(
+          JSON.stringify({ success: false, error: "Too many requests. Please wait a few minutes before trying again." }),
+          { status: 429, headers: { "Content-Type": "application/json", ...corsHeaders } }
         );
       }
     } catch (rateLimitError) {
-      // Fail open: log error but allow request to proceed
-      console.error("Rate limit check failed (allowing request):", rateLimitError);
+      // Fail-closed: unknown error, deny request
+      console.error("Rate limit check exception — denying request:", rateLimitError);
+      return new Response(
+        JSON.stringify({ success: false, error: "Service temporarily unavailable. Please try again shortly." }),
+        { status: 503, headers: { "Content-Type": "application/json", ...corsHeaders } }
+      );
     }
 
     const requestBody: ContactEmailRequest = await req.json();
@@ -81,9 +99,9 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     
-    if (!email || typeof email !== 'string' || !email.includes('@') || email.length > 255) {
+    if (!email || typeof email !== 'string' || !EMAIL_REGEX.test(email) || email.length > 255) {
       return new Response(
-        JSON.stringify({ success: false, error: "Valid email is required (max 255 characters)" }),
+        JSON.stringify({ success: false, error: "Valid email address is required (max 255 characters)" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -136,11 +154,6 @@ const handler = async (req: Request): Promise<Response> => {
     // Update contact submission with email ID
     if (resendEmailId) {
       try {
-        const supabaseClient = createClient(
-          Deno.env.get("SUPABASE_URL") ?? "",
-          Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-        );
-
         await supabaseClient
           .from("contact_submissions")
           .update({ 
@@ -155,27 +168,27 @@ const handler = async (req: Request): Promise<Response> => {
       }
     }
 
-    // Send notification to admin/Coach Kay
+    // Send notification to admin/Coach Kay (all user values HTML-escaped)
     const adminEmailResponse = await resend.emails.send({
       from: "Forward Focus Contact <noreply@ffeservices.net>",
       to: ["support@ffeservices.net"],
-      subject: `New ${type} inquiry from ${name}`,
+      subject: `New ${escapeHtml(type)} inquiry from ${escapeHtml(name)}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h2 style="color: #374151;">New ${type.charAt(0).toUpperCase() + type.slice(1)} Inquiry</h2>
-          
+          <h2 style="color: #374151;">New ${escapeHtml(type.charAt(0).toUpperCase() + type.slice(1))} Inquiry</h2>
+
           <div style="background: #F3F4F6; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
-            <p><strong>Type:</strong> ${type}</p>
+            <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+            <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+            <p><strong>Subject:</strong> ${escapeHtml(subject)}</p>
+            <p><strong>Type:</strong> ${escapeHtml(type)}</p>
           </div>
-          
+
           <div style="background: white; border: 1px solid #E5E7EB; padding: 20px; border-radius: 8px;">
             <h3 style="margin-top: 0;">Message:</h3>
-            <p style="white-space: pre-wrap;">${message}</p>
+            <p style="white-space: pre-wrap;">${escapeHtml(message)}</p>
           </div>
-          
+
           <p style="color: #6B7280; font-size: 14px; margin-top: 20px;">
             Received at: ${new Date().toLocaleString()}
           </p>
@@ -187,17 +200,13 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Log successful contact form submission (for rate limiting)
     try {
-      const supabaseClient = createClient(
-        Deno.env.get("SUPABASE_URL") ?? "",
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
-      );
-
+      // Do not store PII (email/subject) in audit log — used only for rate limiting
       await supabaseClient
         .from("audit_logs")
         .insert({
           action: "CONTACT_FORM_SUBMIT",
           ip_address: clientIP,
-          details: { email, type, subject },
+          details: { type },
           severity: "info"
         });
     } catch (logError) {

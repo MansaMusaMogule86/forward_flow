@@ -160,7 +160,7 @@ export default function ContactForm({
         </CardContent>
       </Card>;
   }
-  return <Card className={className}>
+  return <Card className={`flex flex-col ${className}`}>
       <CardHeader className="text-center">
         <div className="w-12 h-12 bg-primary rounded-lg flex items-center justify-center mx-auto mb-4">
           <Mail className="h-6 w-6 text-primary-foreground" />
@@ -172,30 +172,32 @@ export default function ContactForm({
           {getFormDescription()}
         </p>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
-              <Input id="name" name="name" type="text" value={formData.name} onChange={handleInputChange} placeholder="Your full name" required />
+      <CardContent className="flex flex-col flex-1 pb-6">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1">
+          <div className="space-y-6 flex-1">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name *</Label>
+                <Input id="name" name="name" type="text" value={formData.name} onChange={handleInputChange} placeholder="Your full name" required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="email">Email Address *</Label>
+                <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="your.email@example.com" required />
+              </div>
             </div>
+
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
-              <Input id="email" name="email" type="email" value={formData.email} onChange={handleInputChange} placeholder="your.email@example.com" required />
+              <Label htmlFor="subject">Subject</Label>
+              <Input id="subject" name="subject" type="text" value={formData.subject} onChange={handleInputChange} placeholder={getDefaultSubject()} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="message">Message *</Label>
+              <Textarea id="message" name="message" value={formData.message} onChange={handleInputChange} placeholder={type === 'coaching' ? "Tell Coach Kay about your current situation, goals, and how she can best support you..." : type === 'booking' ? "Let us know your preferred dates and times, and what you'd like to discuss during your consultation..." : "How can we help you? Share your questions, concerns, or feedback..."} className="min-h-32" required />
             </div>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="subject">Subject</Label>
-            <Input id="subject" name="subject" type="text" value={formData.subject} onChange={handleInputChange} placeholder={getDefaultSubject()} />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="message">Message *</Label>
-            <Textarea id="message" name="message" value={formData.message} onChange={handleInputChange} placeholder={type === 'coaching' ? "Tell Coach Kay about your current situation, goals, and how she can best support you..." : type === 'booking' ? "Let us know your preferred dates and times, and what you'd like to discuss during your consultation..." : "How can we help you? Share your questions, concerns, or feedback..."} className="min-h-32" required />
-          </div>
-          
-          <Button type="submit" className="w-full get-involved-gold-button border-none" size="lg" disabled={isSubmitting}>
+
+          <Button type="submit" className="w-full get-involved-gold-button border-none mt-6" size="lg" disabled={isSubmitting}>
             {isSubmitting ? <>
                 <AlertCircle className="h-4 w-4 mr-2 animate-spin" />
                 Sending...
@@ -204,8 +206,6 @@ export default function ContactForm({
                 {type === 'booking' ? 'Request Consultation' : 'Send Message'}
               </>}
           </Button>
-          
-          
         </form>
       </CardContent>
     </Card>;

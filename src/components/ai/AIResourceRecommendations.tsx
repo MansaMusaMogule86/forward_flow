@@ -120,7 +120,10 @@ export const AIResourceRecommendations = () => {
                   AI-powered resource recommendations are available for registered community members.
                 </p>
               </div>
-              <Button onClick={() => navigate("/auth")} variant="default">
+              <Button
+                onClick={() => navigate("/auth")}
+                className="rounded-md border border-primary/40 bg-primary text-primary-foreground hover:bg-primary/90 text-base font-semibold"
+              >
                 Sign In to Get Started
               </Button>
             </div>
@@ -150,7 +153,7 @@ export const AIResourceRecommendations = () => {
               <Button
                 onClick={getRecommendations}
                 disabled={loading || !userNeeds.trim()}
-                className="w-full"
+                className="w-full rounded-md border border-primary/40 bg-primary text-primary-foreground hover:bg-primary/90 text-base font-semibold"
               >
                 {loading ? (
                   <>

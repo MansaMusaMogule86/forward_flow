@@ -115,6 +115,8 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
 
       const data = await response.json();
 
+      const curatedResources = data.curatedResources || data.resources || [];
+
       // Create AI message with the response
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -122,7 +124,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
         // ReactMarkdown will handle the formatting, but we can keep formatAIResponse if it does some specific cleanup
         content: data.response || 'I found some resources for you.',
         timestamp: new Date(),
-        curatedResources: data.curatedResources || [],
+        curatedResources,
         webResources: data.webResources || [],
         usedWebFallback: data.usedWebFallback || false
       };

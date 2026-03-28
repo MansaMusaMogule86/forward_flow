@@ -160,13 +160,11 @@ const DailyHealingToolkit = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {/* Crisis Relief Toolkit */}
-          <Card className="crisis-toolkit border-2 border-red-200 bg-red-50/50 hover:shadow-xl transition-all duration-300 md:hover:-translate-y-1 backdrop-blur-sm">
+          <Card className="crisis-toolkit pro-card border-2 border-red-200 bg-red-50/50 backdrop-blur-sm">
             <CardHeader className="text-center">
-              <div className="text-4xl mb-2 transform hover:scale-110 transition-transform duration-300" style={{
-                textShadow: '2px 2px 4px rgba(0,0,0,0.3), 4px 4px 8px rgba(0,0,0,0.2), -1px -1px 2px rgba(255,255,255,0.8)',
-                transform: 'perspective(100px) rotateX(15deg)',
-                filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2))'
-              }}>🚨</div>
+              <div className="pro-icon-chip mx-auto mb-2">
+                <Phone className="h-6 w-6" />
+              </div>
               <CardTitle className="text-osu-scarlet">Instant Crisis Relief</CardTitle>
               <p className="text-muted-foreground">Immediate tools when you need help right now</p>
             </CardHeader>
@@ -212,9 +210,11 @@ const DailyHealingToolkit = () => {
           </Card>
 
           {/* Daily Check-In */}
-          <Card className="daily-checkin bg-slate-50/50 border-2 border-slate-200 hover:shadow-xl transition-all duration-300 md:hover:-translate-y-1">
+          <Card className="daily-checkin pro-card bg-slate-50/50 border-2 border-slate-200">
             <CardHeader className="text-center">
-              <div className="text-4xl mb-2">💭</div>
+              <div className="pro-icon-chip mx-auto mb-2">
+                <Sparkles className="h-6 w-6" />
+              </div>
               <CardTitle className="text-slate-700">Daily Check-In</CardTitle>
               <p className="text-muted-foreground">How are you feeling today?</p>
             </CardHeader>
@@ -253,9 +253,11 @@ const DailyHealingToolkit = () => {
           </Card>
 
           {/* Healing Frequencies Player */}
-          <Card className="frequency-player bg-slate-50/50 border-2 border-slate-300 hover:shadow-xl transition-all duration-300 md:hover:-translate-y-1">
+          <Card className="frequency-player pro-card bg-slate-50/50 border-2 border-slate-300">
             <CardHeader className="text-center">
-              <div className="text-4xl mb-2">🎵</div>
+              <div className="pro-icon-chip mx-auto mb-2">
+                <BookOpen className="h-6 w-6" />
+              </div>
               <CardTitle className="text-slate-700">Healing Frequencies</CardTitle>
               <p className="text-muted-foreground">Therapeutic sound frequencies for deep healing</p>
             </CardHeader>
@@ -265,9 +267,11 @@ const DailyHealingToolkit = () => {
           </Card>
 
           {/* Progress Dashboard */}
-          <Card className="progress-dashboard bg-slate-50/50 border-2 border-slate-200 hover:shadow-xl transition-all duration-300 md:hover:-translate-y-1">
+          <Card className="progress-dashboard pro-card bg-slate-50/50 border-2 border-slate-200">
             <CardHeader className="text-center">
-              <div className="text-4xl mb-2">📈</div>
+              <div className="pro-icon-chip mx-auto mb-2">
+                <TrendingUp className="h-6 w-6" />
+              </div>
               <CardTitle className="text-slate-700">Your Healing Journey</CardTitle>
               <p className="text-muted-foreground">Celebrate your progress and milestones</p>
             </CardHeader>

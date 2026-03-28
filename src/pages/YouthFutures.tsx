@@ -76,7 +76,7 @@ export default function YouthFutures() {
       <BreadcrumbSchema crumbs={[{ name: 'Youth Futures', path: '/youth-futures' }]} />
 
       {/* Hero Section */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-osu-gray/10 via-cream/30 to-osu-gray/10">
+      <section className="relative py-20 overflow-hidden bg-white border-b border-osu-gray-light/60">
         <div className="container px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 animate-fade-in">
@@ -98,13 +98,13 @@ export default function YouthFutures() {
                 </Button>
               </div>
             </div>
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+            <div className="relative rounded-2xl overflow-hidden shadow-sm border border-osu-gray-light/70">
               <img
                 src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?auto=format&fit=crop&q=80"
                 alt="Youth working on laptop"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-osu-scarlet/40 to-transparent"></div>
+              <div className="absolute inset-0 bg-gradient-to-t from-osu-gray-dark/35 to-transparent"></div>
             </div>
           </div>
         </div>
@@ -122,7 +122,7 @@ export default function YouthFutures() {
       </section>
 
       {/* Programs Section */}
-      <section className="py-20 bg-osu-gray/5">
+      <section className="py-20 bg-background">
         <div className="container px-4">
           <div className="text-center mb-16">
             <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">Three Program Pathways</h2>
@@ -130,20 +130,20 @@ export default function YouthFutures() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <Card className="border-2 hover:border-osu-scarlet/50 transition-all duration-300">
+            <Card className="pro-card border-2 hover:border-osu-scarlet/50 transition-all duration-300">
               <CardHeader className="text-center space-y-2">
                 <div className="w-12 h-12 bg-osu-scarlet/10 rounded-full flex items-center justify-center mx-auto">
                   <Rocket className="h-6 w-6 text-osu-scarlet" />
                 </div>
-                <CardTitle className="text-xl font-bold">🚀 Weekend Accelerator</CardTitle>
+                <CardTitle className="text-xl font-bold">Weekend Accelerator</CardTitle>
                 <Badge variant="secondary">3-Day Intensive</Badge>
               </CardHeader>
               <CardContent className="space-y-6">
                 <ul className="space-y-3 text-sm">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> 8 AI career tools</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Resume & LinkedIn</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Budget mastery</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Business ideation</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> 8 AI career tools</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Resume & LinkedIn</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Budget mastery</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Business ideation</li>
                 </ul>
                 <div className="pt-4 border-t text-center">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Sponsor Investment</p>
@@ -152,20 +152,20 @@ export default function YouthFutures() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 hover:border-osu-scarlet/50 transition-all duration-300 transform scale-105 shadow-xl bg-white z-10">
+            <Card className="pro-card border-2 hover:border-osu-scarlet/50 transition-all duration-300">
               <CardHeader className="text-center space-y-2">
                 <div className="w-12 h-12 bg-osu-scarlet/10 rounded-full flex items-center justify-center mx-auto">
                   <Target className="h-6 w-6 text-osu-scarlet" />
                 </div>
-                <CardTitle className="text-xl font-bold">💪 6-Week Intensive</CardTitle>
+                <CardTitle className="text-xl font-bold">6-Week Intensive</CardTitle>
                 <Badge className="bg-osu-scarlet text-white">Thursday Evenings</Badge>
               </CardHeader>
               <CardContent className="space-y-6">
                 <ul className="space-y-3 text-sm">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> 14 advanced AI tools</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Job search support</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Weekly mentorship</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Interview training</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> 14 advanced AI tools</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Job search support</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Weekly mentorship</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Interview training</li>
                 </ul>
                 <div className="pt-4 border-t text-center">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Sponsor Investment</p>
@@ -174,20 +174,20 @@ export default function YouthFutures() {
               </CardContent>
             </Card>
 
-            <Card className="border-2 hover:border-osu-scarlet/50 transition-all duration-300">
+            <Card className="pro-card border-2 hover:border-osu-scarlet/50 transition-all duration-300">
               <CardHeader className="text-center space-y-2">
                 <div className="w-12 h-12 bg-osu-scarlet/10 rounded-full flex items-center justify-center mx-auto">
                   <Sparkles className="h-6 w-6 text-osu-scarlet" />
                 </div>
-                <CardTitle className="text-xl font-bold">🎯 Complete Elevation</CardTitle>
+                <CardTitle className="text-xl font-bold">Complete Elevation</CardTitle>
                 <Badge variant="secondary">12-Week Transformation</Badge>
               </CardHeader>
               <CardContent className="space-y-6">
                 <ul className="space-y-3 text-sm">
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> All 23 premium tools</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Personal mentor</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Family support</li>
-                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-green-500" /> Lifetime access</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> All 23 premium tools</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Personal mentor</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Family support</li>
+                  <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Lifetime access</li>
                 </ul>
                 <div className="pt-4 border-t text-center">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Sponsor Investment</p>
@@ -217,16 +217,16 @@ export default function YouthFutures() {
       </section>
 
       {/* How It Works Section */}
-      <section id="apply" className="py-20 bg-gradient-to-r from-osu-gray to-osu-gray-dark text-white">
+      <section id="apply" className="py-20 bg-osu-gray-dark text-white">
         <div className="container px-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 divide-y md:divide-y-0 md:divide-x divide-white/20">
             <div className="space-y-6 pb-8 md:pb-0">
               <h2 className="text-3xl font-bold">For Youth</h2>
               <ul className="space-y-4 text-lg opacity-90">
-                <li className="flex items-center gap-3"><Zap className="h-6 w-6 text-yellow-400" /> 100% FREE to participate</li>
-                <li className="flex items-center gap-3"><Users className="h-6 w-6 text-blue-400" /> Ages 14-26</li>
-                <li className="flex items-center gap-3"><Shield className="h-6 w-6 text-green-400" /> Justice-impacted or community-referred</li>
-                <li className="flex items-center gap-3"><CheckCircle2 className="h-6 w-6 text-osu-scarlet" /> Apply online in minutes</li>
+                <li className="flex items-center gap-3"><Zap className="h-5 w-5 pro-list-icon" /> 100% FREE to participate</li>
+                <li className="flex items-center gap-3"><Users className="h-5 w-5 pro-list-icon" /> Ages 14-26</li>
+                <li className="flex items-center gap-3"><Shield className="h-5 w-5 pro-list-icon" /> Justice-impacted or community-referred</li>
+                <li className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 pro-list-icon" /> Apply online in minutes</li>
               </ul>
               <Button size="lg" className="get-involved-gold-button border-none w-full sm:w-auto h-14 text-lg" asChild>
                 <a
@@ -245,12 +245,12 @@ export default function YouthFutures() {
             <div className="space-y-6 pt-8 md:pt-0 md:pl-12">
               <h2 className="text-3xl font-bold">For Organizations</h2>
               <ul className="space-y-4 text-lg opacity-90">
-                <li className="flex items-center gap-3"><Briefcase className="h-6 w-6 text-yellow-400" /> Sponsor youth through your organization</li>
-                <li className="flex items-center gap-3"><Users className="h-6 w-6 text-blue-400" /> Schools, nonprofits, courts, faith-based</li>
-                <li className="flex items-center gap-3"><DollarSign className="h-6 w-6 text-green-400" /> Tax-deductible support</li>
-                <li className="flex items-center gap-3"><Calendar className="h-6 w-6 text-osu-scarlet" /> Impact reporting included</li>
+                <li className="flex items-center gap-3"><Briefcase className="h-5 w-5 pro-list-icon" /> Sponsor youth through your organization</li>
+                <li className="flex items-center gap-3"><Users className="h-5 w-5 pro-list-icon" /> Schools, nonprofits, courts, faith-based</li>
+                <li className="flex items-center gap-3"><DollarSign className="h-5 w-5 pro-list-icon" /> Tax-deductible support</li>
+                <li className="flex items-center gap-3"><Calendar className="h-5 w-5 pro-list-icon" /> Impact reporting included</li>
               </ul>
-              <Button size="lg" variant="outline" className="border-white text-white hover:bg-white hover:text-osu-gray w-full sm:w-auto h-14 text-lg" asChild>
+              <Button size="lg" className="get-involved-gold-button border-none w-full sm:w-auto h-14 text-lg" asChild>
                 <a
                   href="/partners/request"
                   onClick={() => {
@@ -283,7 +283,7 @@ export default function YouthFutures() {
                   <a href="tel:3802877936" className="hover:text-osu-scarlet transition-colors" onClick={() => trackClick('youth_futures_contact_phone')}>380-287-7936</a>
                 </div>
               </div>
-              <Button size="lg" className="get-involved-gold-button border-none h-14 px-12 text-lg shadow-2xl transform hover:scale-105 transition-all" asChild>
+              <Button size="lg" className="get-involved-gold-button border-none h-14 px-12 text-lg" asChild>
                 <a href="https://calendly.com/ffe_coach_kay/free-call" target="_blank" rel="noopener noreferrer" onClick={() => { trackClick('youth_futures_schedule_info_call'); trackConversion('youth_info_call', { source: 'youth_futures_contact_section' }); }}>
                   Schedule Info Call
                 </a>
