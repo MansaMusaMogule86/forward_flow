@@ -34,8 +34,7 @@
       "Bash(grep -r supabase.from /c/Users/mehdi/Desktop/DESKTOP/02_PROJECTS/forwardfocus-foundation/src --include=*.tsx --include=*.ts -A 2)",
       "Bash(grep -r \"window.location.href\\\\|window.location.replace\\\\|window.open\" /c/Users/mehdi/Desktop/DESKTOP/02_PROJECTS/forwardfocus-foundation/src --include=*.tsx --include=*.ts)",
       "Bash(grep -r \"Access-Control-Allow-Origin\\\\|Access-Control-Allow\" /c/Users/mehdi/Desktop/DESKTOP/02_PROJECTS/forwardfocus-foundation/supabase/functions --include=*.ts)",
-      "Bash(gh auth:*)",
-      "Bash(xargs sed:*)"
+      "Bash(gh auth:*)"
     ]
   }
 }

@@ -14,7 +14,12 @@ const AUTHORIZED_CONFIG: DomainConfig = {
     '127.0.0.1',
     'forward-focus-elevation.org',
     'www.forward-focus-elevation.org',
-    'mdwkkgancoocvkmecwkm.supabase.co'
+    'mdwkkgancoocvkmecwkm.supabase.co',
+    'github.io',
+    'netlify.app',
+    'vercel.app',
+    'lovable.app',
+    'lovableproject.com',
   ],
   brandName: 'Forward Focus Elevation',
   copyrightNotice: '© 2025 Forward Focus Elevation. All rights reserved.'
@@ -58,41 +63,8 @@ class AntiWhitelabelProtection {
   }
 
   private handleUnauthorizedUsage() {
-    console.warn('Unauthorized domain detected:', window.location.hostname);
-    
-    // Create overlay warning
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.95);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      z-index: 999999;
-      font-family: system-ui, -apple-system, sans-serif;
-      text-align: center;
-      padding: 2rem;
-    `;
-    
-    overlay.innerHTML = `
-      <h1>Unauthorized Usage Detected</h1>
-      <p>This platform is protected by copyright and licensing agreements.</p>
-      <p>Domain: <strong>${window.location.hostname}</strong> is not authorized.</p>
-      <p>${AUTHORIZED_CONFIG.copyrightNotice}</p>
-      <p>For licensing inquiries, contact: ${SUPPORT_EMAIL}</p>
-    `;
-    
-    document.body.appendChild(overlay);
-    
-    // Disable functionality immediately
-    document.body.innerHTML = '';
-    document.body.appendChild(overlay);
+    // Log only — do not block page rendering
+    console.warn('[FFE] Domain not in allowlist:', window.location.hostname);
   }
 
   private monitorTampering() {

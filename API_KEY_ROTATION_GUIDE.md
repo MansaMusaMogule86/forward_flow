@@ -26,7 +26,7 @@ This document provides step-by-step procedures for rotating API keys used in the
 ### During Rotation
 
 1. Generate new key in the service provider's dashboard
-2. Update the secret in Supabase Dashboard / Supabase Secrets
+2. Update the secret in Supabase Dashboard Secrets
 3. Verify the application works with the new key
 4. Monitor logs for any errors
 

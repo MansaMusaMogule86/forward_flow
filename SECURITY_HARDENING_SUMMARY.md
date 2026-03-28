@@ -124,7 +124,7 @@ Checks user passwords against databases of known breached passwords (e.g., Have 
 
 ### How to Enable (Manual Steps):
 
-1. **Open Supabase Dashboard Backend**
+1. **Open Supabase Project Dashboard**
    - In your Forward Focus project, click "View Backend" or use the backend access link
 
 2. **Navigate to Authentication Settings**

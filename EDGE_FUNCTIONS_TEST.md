@@ -77,7 +77,8 @@ Here's a step-by-step guide on how to submit a referral:
 ## Edge Function Test Checklist
 
 ### Pre-Testing Requirements
-- [ ] LOVABLE_API_KEY configured in Supabase secrets
+- [ ] FORWARD_FOCUS_API_KEY configured in Supabase secrets
+  - Legacy compatibility: if older environments still use `LOVABLE_API_KEY`, map it to the same secret value.
 - [ ] OPENAI_API_KEY configured (for OpenAI-powered functions)
 - [ ] PERPLEXITY_API_KEY configured (for web-search fallback functions)
 - [ ] SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY available

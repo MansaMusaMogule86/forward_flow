@@ -163,7 +163,8 @@ The Supabase database linter found no security warnings. This indicates:
    - Rate Limiting: ✅ AI gateway handles it
    - Error Handling: ✅ 429, 402, 500 handled
    - Input Validation: ✅ Required fields checked
-   - Secret Management: ✅ LOVABLE_API_KEY in env
+   - Secret Management: ✅ FORWARD_FOCUS_API_KEY in env
+   - Compatibility Note: `LOVABLE_API_KEY` is treated as a legacy alias for `FORWARD_FOCUS_API_KEY` where older deployments still reference it.
    - Security Rating: **HIGH**
 
 2. **partner-support-chat**

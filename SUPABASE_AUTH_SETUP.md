@@ -6,7 +6,7 @@ To enable leaked password protection in your Supabase project:
 
 ### Steps:
 
-1. **Open Supabase Dashboard Backend**
+1. **Open Supabase Project Dashboard**
    - Click "View Backend" in your Forward Focus project
    - Navigate to Authentication → Settings
 
