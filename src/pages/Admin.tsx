@@ -15,6 +15,7 @@ import { RealtimeNotifications } from "@/components/admin/RealtimeNotifications"
 import { usePagination } from "@/hooks/usePagination";
 import { DataPagination } from "@/components/ui/data-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
+import { logger } from "@/lib/logger";
 
 // Lazy load heavy components for better performance
 const SecurityMonitoringDashboard = lazy(() => import("@/components/security/SecurityMonitoringDashboard").then(m => ({ default: m.SecurityMonitoringDashboard })));
@@ -150,7 +151,7 @@ const Admin = () => {
         const { data } = await supabase.rpc('check_admin_exists');
         setAdminExists(data || false);
       } catch (error) {
-        console.error('Error checking admin exists:', error);
+        logger.error('Error checking admin exists:', error);
         setAdminExists(false);
       }
     };
@@ -178,36 +179,36 @@ const Admin = () => {
         ]);
 
         if (referralsRes.error) {
-          console.error('Error fetching referrals:', referralsRes.error);
+          logger.error('Error fetching referrals:', referralsRes.error);
         } else {
           setReferrals(referralsRes.data || []);
         }
 
         if (requestsRes.error) {
-          console.error('Error fetching partnership requests:', requestsRes.error);
+          logger.error('Error fetching partnership requests:', requestsRes.error);
         } else {
           setPartnershipRequests(requestsRes.data || []);
         }
 
         if (contactsRes.error) {
-          console.error('Error fetching contact submissions:', contactsRes.error);
+          logger.error('Error fetching contact submissions:', contactsRes.error);
         } else {
           setContactSubmissions(contactsRes.data || []);
         }
 
         if (supportRes.error) {
-          console.error('Error fetching support requests:', supportRes.error);
+          logger.error('Error fetching support requests:', supportRes.error);
         } else {
           setSupportRequests(supportRes.data || []);
         }
 
         if (bookingsRes.error) {
-          console.error('Error fetching booking requests:', bookingsRes.error);
+          logger.error('Error fetching booking requests:', bookingsRes.error);
         } else {
           setBookingRequests(bookingsRes.data || []);
         }
       } catch (error) {
-        console.error('Error fetching admin data:', error);
+        logger.error('Error fetching admin data:', error);
       } finally {
         setLoadingData(false);
       }
@@ -289,7 +290,7 @@ const Admin = () => {
       }
       setRevealedContacts(newRevealed);
     } catch (error) {
-      console.error('Error in contact visibility toggle:', error);
+      logger.error('Error in contact visibility toggle:', error);
       toast({
         title: "Error",
         description: "Failed to toggle contact visibility",
@@ -350,7 +351,7 @@ const Admin = () => {
         }
       }
     } catch (error) {
-      console.error('Error updating status:', error);
+      logger.error('Error updating status:', error);
       toast({
         title: "Error",
         description: "Failed to update status",

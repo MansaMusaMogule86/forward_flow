@@ -61,45 +61,6 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
       className="sticky top-0 z-50"
       style={{ fontFamily: 'Outfit, sans-serif' }}
     >
-      {/* ── Emergency bar ── */}
-      {!emergencyDismissed && (
-        <div
-          className="relative w-full flex items-center justify-center px-6"
-          style={{
-            background: '#BB0000',
-            minHeight: '40px',
-            paddingTop: '6px',
-            paddingBottom: '6px'
-          }}
-        >
-          <p
-            style={{
-              fontFamily: 'DM Mono, monospace',
-              fontSize: '10px',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase',
-              color: 'rgba(255,255,255,0.92)'
-            }}
-          >
-            <Phone className="inline h-3 w-3 mr-2 opacity-80" aria-hidden />
-            Crisis line &nbsp;·&nbsp;{' '}
-            <a href="tel:988" className="underline font-bold hover:no-underline">988</a>
-            {' '}Suicide & Crisis &nbsp;·&nbsp;{' '}
-            <a href="tel:18007997233" className="underline font-bold hover:no-underline">1-800-799-7233</a>
-            {' '}DV Hotline &nbsp;·&nbsp;{' '}
-            <a href="tel:211" className="underline font-bold hover:no-underline">211</a>
-            {' '}Local Services
-          </p>
-          <button
-            onClick={dismissEmergency}
-            aria-label="Dismiss emergency bar"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-          >
-            <X className="h-3.5 w-3.5" />
-          </button>
-        </div>
-      )}
-
       {/* ── Main nav ── */}
       <div
         className="w-full transition-all duration-300"

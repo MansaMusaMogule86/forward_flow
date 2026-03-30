@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useReducer } from 'react';
 import { Send, Heart, Shield, Phone, MessageSquare, Mail, Bot } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import EmailChatHistoryModal from './EmailChatHistoryModal';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 const MAX_MESSAGE_LENGTH = 4000;
 
@@ -44,7 +45,47 @@ interface CrisisSupportAIProps {
   initialQuery?: string;
 }
 
+const initialState = {
+  messages: [
+    {
+      id: '1',
+      type: 'ai',
+      content: "Hi, I'm Alex, your crisis support companion. I'm here to listen and help you find immediate support. Your safety matters deeply to me. If you're in immediate danger, please call **911** right now.\n\nCan you tell me what's bringing you here today? I want to understand so I can help you best.",
+      timestamp: new Date(),
+    }
+  ],
+  input: '',
+  isLoading: false,
+  conversationContext: [],
+  hasAskedSafety: false,
+  userResponse: [],
+  showEmailModal: false,
+};
+
+const reducer = (state, action) => {
+  switch (action.type) {
+    case 'ADD_MESSAGE':
+      return { ...state, messages: [...state.messages, action.payload] };
+    case 'SET_INPUT':
+      return { ...state, input: action.payload };
+    case 'SET_LOADING':
+      return { ...state, isLoading: action.payload };
+    case 'SET_CONVERSATION_CONTEXT':
+      return { ...state, conversationContext: action.payload };
+    case 'SET_HAS_ASKED_SAFETY':
+      return { ...state, hasAskedSafety: action.payload };
+    case 'SET_USER_RESPONSE':
+      return { ...state, userResponse: action.payload };
+    case 'TOGGLE_EMAIL_MODAL':
+      return { ...state, showEmailModal: !state.showEmailModal };
+    default:
+      return state;
+  }
+};
+
 const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, initialQuery }) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -75,94 +116,63 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
     }
   }, [initialQuery, isOpen]);
 
-  const sendMessage = async (userQuery: string) => {
+  const validateInput = (input) => {
+    if (!input.trim()) return false;
+    return true;
+  };
+
+  const fetchAIResponse = async (query) => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      logger.error('Supabase configuration missing in CrisisSupportAI');
+      throw new Error('Service temporarily unavailable');
+    }
+
+    const response = await fetch(`${supabaseUrl}/functions/v1/crisis-support-ai`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${supabaseKey}` },
+      body: JSON.stringify({
+        query: createPersonalizedQuery(query),
+        urgencyLevel: determineUrgency(query),
+        previousContext: state.conversationContext,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return response.json();
+  };
+
+  const handleFallback = async (error) => {
+    const safeMessage = error instanceof Error ? error.message : 'Unknown error';
+    const safeStatus = (error as { status?: number; code?: string })?.status ?? (error as { code?: string })?.code ?? undefined;
+    logger.error('Crisis AI error:', { message: safeMessage, status: safeStatus });
+    toast.error("I'm having trouble connecting right now. Switching to offline support mode.");
+
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+      const { data: resources } = await supabase
+        .from('resources')
+        .select('*')
+        .or('type.ilike.%crisis%,type.ilike.%emergency%,type.ilike.%mental health%,type.ilike.%suicide%,type.ilike.%domestic violence%,type.ilike.%substance abuse%')
+        .eq('verified', true)
+        .limit(8);
 
-      if (!supabaseUrl || !supabaseKey) {
-        console.error('Supabase configuration missing in CrisisSupportAI');
-        throw new Error('Service temporarily unavailable');
-      }
-
-      // Determine urgency level based on content
-      const urgencyLevel = determineUrgency(userQuery);
-      
-      const response = await fetch(`${supabaseUrl}/functions/v1/crisis-support-ai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
+      const content = "I'm experiencing technical difficulties, but your safety is my priority.\n\nFor immediate support:\n\n*   **Emergency:** Call 911\n*   **Suicide & Crisis:** Call 988\n*   **Crisis Text Line:** Text HOME to 741741\n\nHere are crisis resources I found:";
+      dispatch({ type: 'ADD_MESSAGE', payload: { id: Date.now().toString(), type: 'ai', content, resources } });
+    } catch (fallbackError) {
+      logger.error('Crisis fallback failed:', fallbackError);
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          id: Date.now().toString(),
+          type: 'ai',
+          content: "I'm experiencing technical difficulties. For immediate crisis support:\n\n*   Call **911** for emergencies\n*   Call **988** for suicide crisis support\n*   Text **HOME** to **741741**",
         },
-        body: JSON.stringify({
-          query: createPersonalizedQuery(userQuery),
-          urgencyLevel,
-          previousContext: conversationContext
-        })
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      
-      // Update AI message with the response
-      setMessages(prev => {
-        const newMessages = [...prev];
-        const lastMessage = newMessages[newMessages.length - 1];
-        if (lastMessage.type === 'ai') {
-          lastMessage.content = data.response;
-          lastMessage.resources = data.resources;
-          lastMessage.webResources = data.webResources;
-          lastMessage.urgencyLevel = data.urgencyLevel;
-        }
-        return newMessages;
-      });
-      
-      // Update conversation context
-      setConversationContext(prev => [
-        ...prev,
-        { role: 'user', content: userQuery },
-        { role: 'assistant', content: data.response }
-      ]);
-      
-      // Track user responses for follow-up questions
-      setUserResponse(prev => [...prev, userQuery]);
-    } catch (error) {
-      console.error('Crisis AI error:', error);
-      toast.error("I'm having trouble connecting right now. Switching to offline support mode.");
-
-      // Fallback: client-side crisis resource lookup so users still get help
-      try {
-        const { data: resources } = await supabase
-          .from('resources')
-          .select('*')
-          .or('type.ilike.%crisis%,type.ilike.%emergency%,type.ilike.%mental health%,type.ilike.%suicide%,type.ilike.%domestic violence%,type.ilike.%substance abuse%')
-          .eq('verified', true)
-          .limit(8);
-
-        const content = "I'm experiencing technical difficulties, but your safety is my priority.\n\nFor immediate support:\n\n*   **Emergency:** Call 911\n*   **Suicide & Crisis:** Call 988\n*   **Crisis Text Line:** Text HOME to 741741\n\nHere are crisis resources I found:";
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMessage = newMessages[newMessages.length - 1];
-          if (lastMessage.type === 'ai') {
-            lastMessage.content = content;
-            lastMessage.resources = resources || [];
-          }
-          return newMessages;
-        });
-      } catch (fallbackError) {
-        console.error('Crisis fallback failed:', fallbackError);
-        setMessages(prev => {
-          const newMessages = [...prev];
-          const lastMessage = newMessages[newMessages.length - 1];
-          if (lastMessage.type === 'ai') {
-            lastMessage.content = "I'm experiencing technical difficulties. For immediate crisis support:\n\n*   Call **911** for emergencies\n*   Call **988** for suicide crisis support\n*   Text **HOME** to **741741**";
-          }
-          return newMessages;
-        });
-      }
     }
   };
 
@@ -187,33 +197,42 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
   };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if (!validateInput(input)) return;
 
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      type: 'user',
-      content: input,
-      timestamp: new Date(),
-    };
+    dispatch({ type: 'ADD_MESSAGE', payload: { id: Date.now().toString(), type: 'user', content: input, timestamp: new Date() } });
+    dispatch({ type: 'SET_INPUT', payload: '' });
+    dispatch({ type: 'SET_LOADING', payload: true });
 
-    setMessages(prev => [...prev, userMessage]);
-    const userInput = input;
-    setInput('');
-    setIsLoading(true);
-    
-    if (!hasAskedSafety) setHasAskedSafety(true);
+    try {
+      const data = await fetchAIResponse(input);
 
-    // Add empty AI message for response
-    const aiMessage: Message = {
-      id: (Date.now() + 1).toString(),
-      type: 'ai',
-      content: 'Alex is thinking...',
-      timestamp: new Date(),
-    };
-    setMessages(prev => [...prev, aiMessage]);
+      dispatch({
+        type: 'ADD_MESSAGE',
+        payload: {
+          id: Date.now().toString(),
+          type: 'ai',
+          content: data.response,
+          resources: data.resources,
+          webResources: data.webResources,
+          urgencyLevel: data.urgencyLevel,
+        },
+      });
 
-    await sendMessage(userInput);
-    setIsLoading(false);
+      dispatch({
+        type: 'SET_CONVERSATION_CONTEXT',
+        payload: [
+          ...state.conversationContext,
+          { role: 'user', content: input },
+          { role: 'assistant', content: data.response },
+        ],
+      });
+
+      dispatch({ type: 'SET_USER_RESPONSE', payload: [...state.userResponse, input] });
+    } catch (error) {
+      await handleFallback(error);
+    } finally {
+      dispatch({ type: 'SET_LOADING', payload: false });
+    }
   };
 
   const quickActions = [
@@ -424,20 +443,24 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
           <div className="space-y-1">
             <div className="flex gap-2">
               <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
+                value={state.input}
+                onChange={(e) => dispatch({ type: 'SET_INPUT', payload: e.target.value })}
                 placeholder="Tell Alex what's on your mind..."
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                disabled={isLoading}
+                disabled={state.isLoading}
                 className="flex-1 h-11 sm:h-12"
                 maxLength={MAX_MESSAGE_LENGTH}
               />
-              <Button onClick={handleSend} disabled={isLoading || !input.trim()} className="shrink-0 h-11 w-11 sm:h-12 sm:w-12">
+              <Button
+                onClick={handleSend}
+                disabled={state.isLoading || !state.input.trim()}
+                className="shrink-0 h-11 w-11 sm:h-12 sm:w-12"
+              >
                 <Send className="h-4 w-4" />
               </Button>
             </div>
             <div className="text-xs text-muted-foreground text-right">
-              {input.length} / {MAX_MESSAGE_LENGTH}
+              {state.input.length} / {MAX_MESSAGE_LENGTH}
             </div>
           </div>
           <div className="flex items-center justify-between text-xs text-muted-foreground">

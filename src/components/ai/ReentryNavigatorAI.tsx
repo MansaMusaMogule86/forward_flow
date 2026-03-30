@@ -8,6 +8,7 @@ import EmailChatHistoryModal from './EmailChatHistoryModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 const MAX_MESSAGE_LENGTH = 4000;
 
@@ -122,7 +123,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
       const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
       if (!supabaseUrl || !supabaseKey) {
-        console.error('Supabase configuration missing in ReentryNavigatorAI');
+        logger.error('Supabase configuration missing in ReentryNavigatorAI');
         throw new Error('Service temporarily unavailable');
       }
 
@@ -143,7 +144,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Reentry Navigator AI error:', errorText);
+        logger.error('Reentry Navigator AI error:', errorText);
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
@@ -170,7 +171,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
         { role: 'assistant', content: formattedResponse }
       ]);
     } catch (error) {
-      console.error(`${selectedCoach ? selectedCoach.name : 'Coach Kay'} (Reentry Navigator) AI error:`, error);
+      logger.error(`${selectedCoach ? selectedCoach.name : 'Coach Kay'} (Reentry Navigator) AI error:`, error);
       toast.error("I'm having trouble connecting to the AI. Switching to fallback resources.");
 
       // Fallback: client-side reentry resource lookup so users still get help
@@ -193,7 +194,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
           return newMessages;
         });
       } catch (fallbackError) {
-        console.error('Reentry fallback failed:', fallbackError);
+        logger.error('Reentry fallback failed:', fallbackError);
         const errorMessage = `I'm having technical difficulties, but your reentry journey is still important to me. For immediate support, call **2-1-1** for comprehensive resource navigation, or visit your local reentry program. You've got this!`;
         setMessages(prev => {
           const newMessages = [...prev];

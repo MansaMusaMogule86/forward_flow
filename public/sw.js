@@ -37,6 +37,9 @@ self.addEventListener('fetch', (event) => {
   // Only handle GET requests
   if (event.request.method !== 'GET') return;
 
+  // Exclude unsupported schemes like 'chrome-extension://'
+  if (event.request.url.startsWith('chrome-extension://')) return;
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
@@ -49,9 +52,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       })
-      .catch(() => {
-        // If network fails, try the cache
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(event.request))
   );
 });

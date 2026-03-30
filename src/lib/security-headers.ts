@@ -4,10 +4,28 @@ export const setupSecurityHeaders = () => {
   const isProd = import.meta.env.PROD;
 
   // Enhanced CSP - tightened for production
+  const scriptSrc = [
+    "'self'",
+    // unsafe-inline and unsafe-eval are only needed in dev (Vite HMR)
+    ...(!isProd ? ["'unsafe-inline'", "'unsafe-eval'"] : []),
+    'https://js.stripe.com',
+    'https://assets.calendly.com',
+  ].join(' ');
+
+  // unsafe-inline is retained in both environments because the app uses
+  // inline styles throughout (Tailwind, component style props, etc.).
+  // Removing it in production would silently break rendering.
+  const styleSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    'https://fonts.googleapis.com',
+    'https://assets.calendly.com',
+  ].join(' ');
+
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'unsafe-inline' ${isProd ? '' : "'unsafe-eval'"} https://js.stripe.com https://assets.calendly.com`,
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://assets.calendly.com",
+    `script-src ${scriptSrc}`,
+    `style-src ${styleSrc}`,
     "font-src 'self' https://fonts.gstatic.com data:",
     "img-src 'self' data: blob: https: https://*.supabase.co",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://assets.calendly.com",

@@ -11,6 +11,7 @@ import { Award, Eye, Plus, Star, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { AIStoryGenerator } from "@/components/ai/AIStoryGenerator";
+import { logger } from "@/lib/logger";
 
 interface SuccessStory {
   id: string;
@@ -75,7 +76,7 @@ export const SuccessStoriesManager = () => {
       if (error) throw error;
       setStories(data || []);
     } catch (error: any) {
-      console.error('Error loading success stories:', error);
+      logger.error('Error loading success stories:', error);
       toast({
         title: "Error",
         description: "Failed to load success stories",
@@ -129,7 +130,7 @@ export const SuccessStoriesManager = () => {
         featured: false
       });
     } catch (error: any) {
-      console.error('Error creating success story:', error);
+      logger.error('Error creating success story:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create success story",
@@ -157,7 +158,7 @@ export const SuccessStoriesManager = () => {
         description: `Story ${!currentStatus ? 'published' : 'unpublished'}`,
       });
     } catch (error: any) {
-      console.error('Error toggling published status:', error);
+      logger.error('Error toggling published status:', error);
       toast({
         title: "Error",
         description: "Failed to update story",
@@ -180,7 +181,7 @@ export const SuccessStoriesManager = () => {
         description: `Story ${!currentStatus ? 'featured' : 'unfeatured'}`,
       });
     } catch (error: any) {
-      console.error('Error toggling featured status:', error);
+      logger.error('Error toggling featured status:', error);
       toast({
         title: "Error",
         description: "Failed to update story",

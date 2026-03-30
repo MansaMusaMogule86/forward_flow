@@ -1,5 +1,6 @@
 // Enhanced Session Security Manager
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 interface SessionValidationResult {
   isValid: boolean;
@@ -41,7 +42,7 @@ class SessionSecurityManager {
       this.ipAddress = data.ip;
     } catch (error) {
       if (import.meta.env.DEV) {
-        console.warn('Could not get IP address for session validation');
+        logger.warn('Could not get IP address for session validation');
       }
     }
   }
@@ -74,7 +75,7 @@ class SessionSecurityManager {
       const { data, error } = await supabase.auth.refreshSession();
       
       if (error) {
-        console.error('Session rotation failed:', error);
+        logger.error('Session rotation failed:', error);
         this.handleSessionError('rotation_failed');
         return;
       }
@@ -82,7 +83,7 @@ class SessionSecurityManager {
       if (data.session) {
         this.sessionStartTime = Date.now();
         if (import.meta.env.DEV) {
-          console.log('Session rotated successfully');
+          logger.log('Session rotated successfully');
         }
         
         // Log security event
@@ -93,7 +94,7 @@ class SessionSecurityManager {
         });
       }
     } catch (error) {
-      console.error('Session rotation error:', error);
+      logger.error('Session rotation error:', error);
       this.handleSessionError('rotation_error');
     }
   }
@@ -160,7 +161,7 @@ class SessionSecurityManager {
 
   private handleSecurityThreat(validation: SessionValidationResult) {
     if (import.meta.env.DEV) {
-      console.warn('High security risk detected:', validation.warnings);
+      logger.warn('High security risk detected:', validation.warnings);
     }
     
     // Log security threat
@@ -179,7 +180,7 @@ class SessionSecurityManager {
 
   private async handleSessionError(reason: string) {
     if (import.meta.env.DEV) {
-      console.log('Handling session error:', reason);
+      logger.log('Handling session error:', reason);
     }
     
     try {
@@ -198,7 +199,7 @@ class SessionSecurityManager {
       window.location.href = `/auth?security=true&redirect=${encodeURIComponent(currentPath)}`;
       
     } catch (error) {
-      console.error('Error handling session security:', error);
+      logger.error('Error handling session security:', error);
       
       // Fallback: force page reload
       window.location.reload();
@@ -218,11 +219,11 @@ class SessionSecurityManager {
       
       // Log to console for development
       if (import.meta.env.DEV) {
-        console.log('Security Event:', eventType, data);
+        logger.log('Security Event:', eventType, data);
       }
       
     } catch (error) {
-      console.error('Failed to log security event:', error);
+      logger.error('Failed to log security event:', error);
     }
   }
 
