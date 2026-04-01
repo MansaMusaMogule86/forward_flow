@@ -85,21 +85,6 @@ const reducer = (state, action) => {
 
 const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, initialQuery }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'ai',
-      content: "Hi, I'm Alex, your crisis support companion. I'm here to listen and help you find immediate support. Your safety matters deeply to me. If you're in immediate danger, please call **911** right now.\n\nCan you tell me what's bringing you here today? I want to understand so I can help you best.",
-      timestamp: new Date(),
-    }
-  ]);
-  const [input, setInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [conversationContext, setConversationContext] = useState<Array<{role: string, content: string}>>([]);
-  const [hasAskedSafety, setHasAskedSafety] = useState(false);
-  const [userResponse, setUserResponse] = useState<string[]>([]);
-  const [showEmailModal, setShowEmailModal] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -108,11 +93,11 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [state.messages]);
 
   useEffect(() => {
     if (initialQuery && isOpen) {
-      setInput(initialQuery);
+      dispatch({ type: 'SET_INPUT', payload: initialQuery });
     }
   }, [initialQuery, isOpen]);
 
@@ -197,14 +182,14 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
   };
 
   const handleSend = async () => {
-    if (!validateInput(input)) return;
+    if (!validateInput(state.input)) return;
 
-    dispatch({ type: 'ADD_MESSAGE', payload: { id: Date.now().toString(), type: 'user', content: input, timestamp: new Date() } });
+    dispatch({ type: 'ADD_MESSAGE', payload: { id: Date.now().toString(), type: 'user', content: state.input, timestamp: new Date() } });
     dispatch({ type: 'SET_INPUT', payload: '' });
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      const data = await fetchAIResponse(input);
+      const data = await fetchAIResponse(state.input);
 
       dispatch({
         type: 'ADD_MESSAGE',
@@ -222,12 +207,12 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
         type: 'SET_CONVERSATION_CONTEXT',
         payload: [
           ...state.conversationContext,
-          { role: 'user', content: input },
+          { role: 'user', content: state.input },
           { role: 'assistant', content: data.response },
         ],
       });
 
-      dispatch({ type: 'SET_USER_RESPONSE', payload: [...state.userResponse, input] });
+      dispatch({ type: 'SET_USER_RESPONSE', payload: [...state.userResponse, state.input] });
     } catch (error) {
       await handleFallback(error);
     } finally {
@@ -300,7 +285,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
         {/* Messages */}
         <ScrollArea className="flex-1 p-3 sm:p-4 max-h-[50vh]">
           <div className="space-y-4">
-            {messages.map((message) => (
+            {state.messages.map((message) => (
               <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[85%] rounded-lg p-4 ${
                   message.type === 'user' 
@@ -398,7 +383,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
               </div>
             ))}
 
-            {isLoading && (
+            {state.isLoading && (
               <div className="flex justify-start">
                 <div className="bg-muted rounded-lg p-4 max-w-[85%]">
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -431,7 +416,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
                   variant="outline"
                   size="sm"
                   className="text-xs p-3 h-auto text-left justify-start hover:bg-destructive/5"
-                  onClick={() => setInput(action)}
+                  onClick={() => dispatch({ type: 'SET_INPUT', payload: action })
                 >
                   {action}
                 </Button>
@@ -470,14 +455,14 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setMessages([{
+                  dispatch({ type: 'ADD_MESSAGE', payload: {
                     id: '1',
                     type: 'ai',
                     content: "Hi, I'm Alex, your crisis support companion at Forward Focus Elevation. I'm here to listen and help you find immediate support. Your safety matters deeply to me. Can you tell me what's bringing you here today? I want to understand so I can help you best.",
                     timestamp: new Date(),
-                  }]);
-                  setConversationContext([]);
-                  setInput('');
+                  }});
+                  dispatch({ type: 'SET_CONVERSATION_CONTEXT', payload: [] });
+                  dispatch({ type: 'SET_INPUT', payload: '' });
                 }}
                 className="text-xs h-6 px-2"
               >
@@ -486,7 +471,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setShowEmailModal(true)}
+                onClick={() => dispatch({ type: 'TOGGLE_EMAIL_MODAL' })}
                 className="text-xs h-6 px-2"
               >
                 <Mail className="h-3 w-3 mr-1" />
@@ -503,9 +488,9 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
 
       {/* Email Chat History Modal */}
       <EmailChatHistoryModal
-        isOpen={showEmailModal}
-        onClose={() => setShowEmailModal(false)}
-        messages={messages}
+        isOpen={state.showEmailModal}
+        onClose={() => dispatch({ type: 'TOGGLE_EMAIL_MODAL' })}
+        messages={state.messages}
         coachName="Coach Kay - Crisis Support"
       />
     </Dialog>
