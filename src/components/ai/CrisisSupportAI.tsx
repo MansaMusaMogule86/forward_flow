@@ -53,16 +53,27 @@ const initialState = {
       content: "Hi, I'm Alex, your crisis support companion. I'm here to listen and help you find immediate support. Your safety matters deeply to me. If you're in immediate danger, please call **911** right now.\n\nCan you tell me what's bringing you here today? I want to understand so I can help you best.",
       timestamp: new Date(),
     }
-  ],
+  ] as Message[],
   input: '',
   isLoading: false,
-  conversationContext: [],
+  conversationContext: [] as Array<{role: string, content: string}>,
   hasAskedSafety: false,
-  userResponse: [],
+  userResponse: [] as string[],
   showEmailModal: false,
 };
 
-const reducer = (state, action) => {
+type State = typeof initialState;
+
+type Action =
+  | { type: 'ADD_MESSAGE'; payload: Message }
+  | { type: 'SET_INPUT'; payload: string }
+  | { type: 'SET_LOADING'; payload: boolean }
+  | { type: 'SET_CONVERSATION_CONTEXT'; payload: Array<{role: string, content: string}> }
+  | { type: 'SET_HAS_ASKED_SAFETY'; payload: boolean }
+  | { type: 'SET_USER_RESPONSE'; payload: string[] }
+  | { type: 'TOGGLE_EMAIL_MODAL' };
+
+const reducer = (state: State, action: Action): State => {
   switch (action.type) {
     case 'ADD_MESSAGE':
       return { ...state, messages: [...state.messages, action.payload] };
@@ -101,12 +112,12 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
     }
   }, [initialQuery, isOpen]);
 
-  const validateInput = (input) => {
+  const validateInput = (input: string) => {
     if (!input.trim()) return false;
     return true;
   };
 
-  const fetchAIResponse = async (query) => {
+  const fetchAIResponse = async (query: string) => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
@@ -132,10 +143,9 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
     return response.json();
   };
 
-  const handleFallback = async (error) => {
+  const handleFallback = async (error: unknown) => {
     const safeMessage = error instanceof Error ? error.message : 'Unknown error';
-    const safeStatus = (error as { status?: number; code?: string })?.status ?? (error as { code?: string })?.code ?? undefined;
-    logger.error('Crisis AI error:', { message: safeMessage, status: safeStatus });
+    logger.error('Crisis AI error:', { message: safeMessage });
     toast.error("I'm having trouble connecting right now. Switching to offline support mode.");
 
     try {
@@ -147,7 +157,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
         .limit(8);
 
       const content = "I'm experiencing technical difficulties, but your safety is my priority.\n\nFor immediate support:\n\n*   **Emergency:** Call 911\n*   **Suicide & Crisis:** Call 988\n*   **Crisis Text Line:** Text HOME to 741741\n\nHere are crisis resources I found:";
-      dispatch({ type: 'ADD_MESSAGE', payload: { id: Date.now().toString(), type: 'ai', content, resources } });
+      dispatch({ type: 'ADD_MESSAGE', payload: { id: Date.now().toString(), type: 'ai', content, resources, timestamp: new Date() } });
     } catch (fallbackError) {
       logger.error('Crisis fallback failed:', fallbackError);
       dispatch({
@@ -156,6 +166,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
           id: Date.now().toString(),
           type: 'ai',
           content: "I'm experiencing technical difficulties. For immediate crisis support:\n\n*   Call **911** for emergencies\n*   Call **988** for suicide crisis support\n*   Text **HOME** to **741741**",
+          timestamp: new Date(),
         },
       });
     }
@@ -176,8 +187,8 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
   };
   
   const createPersonalizedQuery = (query: string): string => {
-    const safetyQuestions = !hasAskedSafety ? " Alex should ask about immediate safety and current situation." : "";
-    const context = userResponse.length > 0 ? ` Previous responses: ${userResponse.join(', ')}` : "";
+    const safetyQuestions = !state.hasAskedSafety ? " Alex should ask about immediate safety and current situation." : "";
+    const context = state.userResponse.length > 0 ? ` Previous responses: ${state.userResponse.join(', ')}` : "";
     return `User says: "${query}". Alex (crisis counselor) should respond with empathy, assess safety, and ask probing questions.${safetyQuestions}${context}`;
   };
 
@@ -185,11 +196,12 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
     if (!validateInput(state.input)) return;
 
     dispatch({ type: 'ADD_MESSAGE', payload: { id: Date.now().toString(), type: 'user', content: state.input, timestamp: new Date() } });
+    const currentInput = state.input;
     dispatch({ type: 'SET_INPUT', payload: '' });
     dispatch({ type: 'SET_LOADING', payload: true });
 
     try {
-      const data = await fetchAIResponse(state.input);
+      const data = await fetchAIResponse(currentInput);
 
       dispatch({
         type: 'ADD_MESSAGE',
@@ -200,6 +212,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
           resources: data.resources,
           webResources: data.webResources,
           urgencyLevel: data.urgencyLevel,
+          timestamp: new Date(),
         },
       });
 
@@ -207,12 +220,12 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
         type: 'SET_CONVERSATION_CONTEXT',
         payload: [
           ...state.conversationContext,
-          { role: 'user', content: state.input },
+          { role: 'user', content: currentInput },
           { role: 'assistant', content: data.response },
         ],
       });
 
-      dispatch({ type: 'SET_USER_RESPONSE', payload: [...state.userResponse, state.input] });
+      dispatch({ type: 'SET_USER_RESPONSE', payload: [...state.userResponse, currentInput] });
     } catch (error) {
       await handleFallback(error);
     } finally {
@@ -238,6 +251,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
           <DialogTitle>Crisis Support AI Chat</DialogTitle>
           <DialogDescription>Your compassionate crisis companion, available 24/7.</DialogDescription>
         </DialogHeader>
+        
         {/* Header */}
         <div className="flex items-center justify-between bg-destructive p-4 text-destructive-foreground shrink-0">
           <div className="flex items-center gap-3">
@@ -402,7 +416,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
           </div>
         </ScrollArea>
 
-        {/* Quick Actions & Input */}
+        {/* Quick Actions and Input */}
         <div className="border-t p-4 space-y-4 shrink-0">
           <div>
             <p className="text-sm font-medium mb-3 flex items-center gap-2">
@@ -416,7 +430,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
                   variant="outline"
                   size="sm"
                   className="text-xs p-3 h-auto text-left justify-start hover:bg-destructive/5"
-                  onClick={() => dispatch({ type: 'SET_INPUT', payload: action })
+                  onClick={() => dispatch({ type: 'SET_INPUT', payload: action })}
                 >
                   {action}
                 </Button>
