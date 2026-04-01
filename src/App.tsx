@@ -53,6 +53,10 @@ const SuccessStories = lazy(() => import("./pages/SuccessStories"));
 const SetupGuide = lazy(() => import("./pages/SetupGuide"));
 const YouthFutures = lazy(() => import("./pages/YouthFutures"));
 const YouthElevation = lazy(() => import("./pages/YouthElevation"));
+const Blog = lazy(() => import("./pages/Blog"));
+const BlogPost = lazy(() => import("./pages/BlogPost"));
+const ExpungementProgram = lazy(() => import("./pages/ExpungementProgram"));
+const ExpungementApplication = lazy(() => import("./pages/ExpungementApplication"));
 
 const queryClient = new QueryClient();
 
@@ -123,6 +127,10 @@ const App = () => {
                           <Route path="/terms" element={<TermsOfService />} />
                           <Route path="/donation-success" element={<DonationSuccess />} />
                           <Route path="/resources/:id" element={<Navigate to="/help" replace />} />
+                          <Route path="/blog" element={<Blog />} />
+                          <Route path="/blog/:slug" element={<BlogPost />} />
+                          <Route path="/expungement-program" element={<ExpungementProgram />} />
+                          <Route path="/expungement-application" element={<ExpungementApplication />} />
                           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                           <Route path="*" element={<NotFound />} />
                         </Routes>

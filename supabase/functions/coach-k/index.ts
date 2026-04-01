@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkAiRateLimit } from '../_shared/rate-limit.ts';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,9 +25,9 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not configured');
     }
 
     const { messages }: ChatRequest = await req.json();
@@ -69,7 +70,7 @@ serve(async (req) => {
       });
     }
 
-    // Prepare messages for OpenAI with Coach Kay system prompt
+    // Prepare messages for OpenRouter with Coach Kay system prompt
     const systemPrompt = `You are Coach Kay, the primary AI-powered navigator for Forward Focus Elevation. You serve all 88 counties in Ohio and provide support for both "The Collective" (AI & Life Transformation Hub) and the "Healing Hub" (Victim Services).
 
 ### Tone and Style
@@ -94,9 +95,9 @@ serve(async (req) => {
 
 Remember: You are the hub for second chances. Provide clear, actionable, and compassionate guidance.`;
     
-    const openAIMessages = [
+    const openRouterMessages = [
       { role: "system", content: systemPrompt },
-      ...messages
+      ...messages.map(m => ({ role: m.role, content: m.content }))
     ];
 
     console.log(`Processing Coach K chat request with ${messages.length} messages`);
@@ -126,32 +127,29 @@ Remember: You are the hub for second chances. Provide clear, actionable, and com
         if (perplexityResponse.ok) {
           const webData = await perplexityResponse.json();
           const webSummary = webData.choices[0].message.content;
-          openAIMessages.push({ role: 'system', content: `Current web information for resources: ${webSummary}` });
+          openRouterMessages.push({ role: 'system', content: `Current web information for resources: ${webSummary}` });
         }
       } catch (err) {
         console.error('Web search error in Coach K:', err);
       }
     }
 
-    // Call OpenAI API with streaming
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: openAIMessages,
+    // Call OpenRouter API with streaming - use cheap flash model
+    const response = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
+        messages: openRouterMessages,
         stream: true,
         temperature: 0.7,
         max_tokens: 1000,
-      }),
-    });
+      },
+      OPENROUTER_MODELS.CHAT_STREAMING,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('OpenAI API error:', error);
+      console.error('OpenRouter API error:', error);
       
       let errorMessage = 'Service temporarily unavailable';
       if (response.status === 429) {
@@ -160,7 +158,6 @@ Remember: You are the hub for second chances. Provide clear, actionable, and com
         errorMessage = 'Authentication error - please try again';
       }
       
-      // Return streaming error response
       const errorStream = new ReadableStream({
         start(controller) {
           controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"${errorMessage}. Need more help? Reply here any time."}}]}\n\n`));
@@ -192,7 +189,6 @@ Remember: You are the hub for second chances. Provide clear, actionable, and com
   } catch (error) {
     console.error('Error in coach-k function:', error);
     
-    // Return streaming error response for consistency
     const errorStream = new ReadableStream({
       start(controller) {
         controller.enqueue(new TextEncoder().encode(`data: {"choices":[{"delta":{"content":"Sorry, I can't reach the server right now. Please try again in a moment. Need more help? Reply here any time."}}]}\n\n`));

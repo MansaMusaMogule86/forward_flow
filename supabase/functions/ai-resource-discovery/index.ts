@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.55.0';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -98,28 +99,30 @@ ${JSON.stringify(resourceContext, null, 2)}
 
 Remember: You are the hub for second chances. Be the "Google and Perplexity" for justice-impacted individuals and survivors by providing verified, structured resource information.`;
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY not configured');
+    }
+
+    // Use Gemini Flash for resource discovery - fast and cheap
+    const openRouterResponse = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: query }
         ],
-        max_completion_tokens: 800,
-      }),
-    });
+        max_tokens: 800,
+      },
+      OPENROUTER_MODELS.CHAT_STREAMING,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
 
-    if (!openAIResponse.ok) {
-      const errorData = await openAIResponse.text();
-      console.error('OpenAI API error:', errorData);
+    if (!openRouterResponse.ok) {
+      const errorData = await openRouterResponse.text();
+      console.error('OpenRouter API error:', errorData);
       errorCount++;
       
-      // Instead of throwing, provide helpful guidance with database resources
       const responseTime = Date.now() - startTime;
       try {
         await supabase.rpc('log_ai_usage', {
@@ -135,9 +138,9 @@ Remember: You are the hub for second chances. Be the "Google and Perplexity" for
       const helpfulGuidance = `I'm here to help you find Ohio resources! While my AI is temporarily unavailable, I've found ${resources?.length || 0} resources from our database that might help.
 
 **Tips for better results:**
-• Be specific about your location (city or county in Ohio)
-• Mention the type of help you need (housing, employment, healthcare, legal aid, etc.)
-• Include any special circumstances (justice-involved, family with children, etc.)
+- Be specific about your location (city or county in Ohio)
+- Mention the type of help you need (housing, employment, healthcare, legal aid, etc.)
+- Include any special circumstances (justice-involved, family with children, etc.)
 
 Here are the resources I found for you:`;
 
@@ -150,7 +153,7 @@ Here are the resources I found for you:`;
       });
     }
 
-    const aiData = await openAIResponse.json();
+    const aiData = await openRouterResponse.json();
     const aiResponse = aiData.choices[0].message.content;
 
     // Find most relevant resources to return alongside AI response

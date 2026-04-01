@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { OPENROUTER_MODELS, callOpenRouterWithFallback, OpenRouterMessage } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -33,9 +34,9 @@ serve(async (req) => {
   }
 
   try {
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not configured');
     }
 
     const { messages, topic, stream: shouldStream = true }: ChatRequest = await req.json();
@@ -57,36 +58,33 @@ serve(async (req) => {
     }
 
     const systemPrompt = PROMPTS[topic as TopicType];
-    const openAIMessages = [
+    const openRouterMessages: OpenRouterMessage[] = [
       { role: "system", content: systemPrompt },
-      ...messages
+      ...messages.map(m => ({ role: m.role, content: m.content }))
     ];
 
     console.log(`Processing ${topic} chat request with ${messages.length} messages (stream: ${shouldStream})`);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: openAIMessages,
+    // Use streaming model for real-time responses
+    const response = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
+        messages: openRouterMessages,
         stream: shouldStream,
         temperature: 0.7,
         max_tokens: 1000,
-      }),
-    });
+      },
+      OPENROUTER_MODELS.CHAT_STREAMING,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
 
     if (!response.ok) {
       const error = await response.text();
-      console.error('OpenAI API error:', error);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('OpenRouter API error:', error);
+      throw new Error(`OpenRouter API error: ${response.status}`);
     }
 
     if (!shouldStream) {
-      // Return JSON response directly for non-streaming requests
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content || '';
       return new Response(

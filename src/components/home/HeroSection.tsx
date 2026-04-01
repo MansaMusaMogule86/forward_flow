@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useAnalyticsContext } from "@/components/layout/AnalyticsProvider";
+import heroImage from "@/assets/images/community/diverse-families-community.jpg";
 
 interface HeroSectionProps {
   selectedState: { name: string } | null;
@@ -14,7 +15,10 @@ export const HeroSection = ({ selectedState, onShowStateModal, onShowAIDiscovery
   return (
     <section className="relative bg-gradient-osu-primary text-white overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-br from-osu-gray/90 via-osu-scarlet/80 to-osu-scarlet-dark/70"></div>
-      <div className="absolute inset-0 -z-10 bg-[url('/images/diverse-families-community.jpg')] bg-cover bg-center opacity-20" />
+      <div 
+        className="absolute inset-0 -z-10 bg-cover bg-center opacity-20"
+        style={{ backgroundImage: `url(${heroImage})` }}
+      />
       
       <div className="relative container px-4 sm:px-6 py-16 sm:py-24 md:py-32">
         <div className="max-w-4xl mx-auto text-center">

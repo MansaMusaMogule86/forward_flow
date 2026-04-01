@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -58,9 +59,9 @@ serve(async (req) => {
       }
     }
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY not configured');
     }
 
     const systemPrompt = `You are the Partner Support Assistant for Forward Focus Elevation, a comprehensive organization specializing in AI & Life Transformation and holistic support for individuals and families rebuilding their lives through "The Collective" and the "Focus Flow Elevation Hub".
@@ -94,25 +95,25 @@ We provide holistic support including AI-guided coaching, housing assistance, em
 
 **Partner Portal Navigation:**
 
-🏠 **Dashboard Tab** (/partner-dashboard)
+**Dashboard Tab** (/partner-dashboard)
 - View key statistics (total referrals, active cases, success stories)
 - See recent activity feed
 - Quick access to verification status
 - Impact score and performance metrics
 
-⚡ **Quick Actions Tab**
+**Quick Actions Tab**
 - Submit New Referral: Add client name, contact info, services needed, urgency level
 - Add Resource: Share community resources (housing, jobs, legal aid, etc.)
 - Request Verification: Apply for verified partner status with organization details
 - Create Success Story: Document positive outcomes with participant consent
 
-🤝 **Partner Network Tab**
+**Partner Network Tab**
 - Browse verified partners by category and location
 - View partner profiles and service offerings
 - Discover collaboration opportunities
 - Access shared resources
 
-📊 **Analytics Section** (for verified partners)
+**Analytics Section** (for verified partners)
 - Referral conversion rates
 - Service utilization trends
 - Client outcome tracking
@@ -184,21 +185,19 @@ Be warm, professional, and solution-oriented. Provide specific navigation paths 
 
     console.log('Partner support chat request from user:', userId);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+    // Use Qwen for partner support - good balance of quality and cost
+    const response = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages
         ],
         stream: true,
-      }),
-    });
+      },
+      OPENROUTER_MODELS.CHAT_STANDARD,
+      OPENROUTER_MODELS.CHAT_STREAMING
+    );
 
     if (!response.ok) {
       if (response.status === 429) {

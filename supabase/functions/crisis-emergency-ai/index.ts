@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkAiRateLimit } from '../_shared/rate-limit.ts';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -95,26 +96,29 @@ Remember: Safety first. Your role is to stabilize and connect users with verifie
       { role: 'user', content: query }
     ];
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages,
-        max_completion_tokens: 1000,
-      }),
-    });
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not configured');
+    }
 
-    if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', await openAIResponse.text());
+    // Use Claude Haiku for emergency - better safety alignment
+    const openRouterResponse = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
+        messages,
+        max_tokens: 1000,
+      },
+      OPENROUTER_MODELS.CRISIS_SUPPORT,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
+
+    if (!openRouterResponse.ok) {
+      console.error('OpenRouter API error:', await openRouterResponse.text());
       errorCount++;
       throw new Error('Failed to generate AI response');
     }
 
-    const aiData = await openAIResponse.json();
+    const aiData = await openRouterResponse.json();
     const aiMessage = aiData.choices[0].message.content;
 
     // Web Search Fallback (Perplexity)
@@ -158,7 +162,6 @@ Remember: Safety first. Your role is to stabilize and connect users with verifie
       const resourceDesc = resource.description?.toLowerCase() || '';
       const resourceType = resource.type?.toLowerCase() || '';
       
-      // Emergency-specific resource matching
       if (queryLower.includes('crisis') || queryLower.includes('emergency') || queryLower.includes('help')) {
         return resourceType.includes('crisis') || resourceType.includes('emergency') || resourceType.includes('support');
       }
@@ -199,7 +202,6 @@ Remember: Safety first. Your role is to stabilize and connect users with verifie
     console.error('Crisis Emergency AI error:', error);
     errorCount++;
     
-    // Log error usage analytics  
     const responseTime = Date.now() - startTime;
     try {
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!;

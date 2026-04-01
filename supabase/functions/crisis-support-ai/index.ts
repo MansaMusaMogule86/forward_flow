@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -30,7 +31,6 @@ async function checkRateLimit(supabase: any, identifier: string, endpoint: strin
 
     if (error) {
       console.error('Rate limit check error:', error);
-      // Fail open - allow request if rate limit check fails
       return { limited: false, remaining: RATE_LIMIT_MAX_REQUESTS };
     }
 
@@ -57,7 +57,6 @@ async function recordRequest(supabase: any, identifier: string, endpoint: string
 }
 
 function getClientIdentifier(req: Request, authHeader: string | null): string {
-  // Try to get user ID from JWT
   if (authHeader && authHeader.startsWith('Bearer ')) {
     try {
       const token = authHeader.split(' ')[1];
@@ -68,7 +67,6 @@ function getClientIdentifier(req: Request, authHeader: string | null): string {
     }
   }
   
-  // Fall back to IP address
   const forwarded = req.headers.get('x-forwarded-for');
   const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
   return `ip:${ip}`;
@@ -86,7 +84,6 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    // Rate limiting check
     const authHeader = req.headers.get('authorization');
     const identifier = getClientIdentifier(req, authHeader);
     const endpoint = 'crisis-support-ai';
@@ -96,7 +93,6 @@ serve(async (req) => {
     if (rateLimit.limited) {
       console.log(`Rate limit exceeded for ${identifier}`);
       
-      // Log rate limit event
       await supabase.from('audit_logs').insert({
         action: 'AI_RATE_LIMIT_EXCEEDED',
         resource_type: 'ai_endpoint',
@@ -118,7 +114,6 @@ serve(async (req) => {
       });
     }
 
-    // Record this request
     await recordRequest(supabase, identifier, endpoint);
 
     const { query, location, county, urgencyLevel = 'moderate', previousContext = [] }: CrisisQuery = await req.json();
@@ -173,18 +168,21 @@ Remember: You are the companion for second chances and healing. Be the "Google a
       { role: 'user', content: query }
     ];
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not configured');
+    }
+
+    // Use Claude Haiku for crisis - better safety alignment
+    const openRouterResponse = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
         messages,
-        max_completion_tokens: 1000,
-      }),
-    });
+        max_tokens: 1000,
+      },
+      OPENROUTER_MODELS.CRISIS_SUPPORT,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
 
     // Filter resources based on query context and urgency
     const relevantResources = resources?.filter(resource => {
@@ -193,7 +191,6 @@ Remember: You are the companion for second chances and healing. Be the "Google a
       const resourceDesc = resource.description?.toLowerCase() || '';
       const resourceType = resource.type?.toLowerCase() || '';
       
-      // Crisis-specific resource matching
       if (queryLower.includes('suicide') || queryLower.includes('self-harm')) {
         return resourceType.includes('crisis') || resourceType.includes('mental health');
       }
@@ -210,11 +207,10 @@ Remember: You are the companion for second chances and healing. Be the "Google a
              resourceType.includes('emergency');
     })?.slice(0, 8) || [];
 
-    if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', await openAIResponse.text());
+    if (!openRouterResponse.ok) {
+      console.error('OpenRouter API error:', await openRouterResponse.text());
       errorCount++;
       
-      // Log usage analytics
       const responseTime = Date.now() - startTime;
       try {
         await supabase.rpc('log_ai_usage', {
@@ -248,7 +244,7 @@ I'm searching for local Ohio resources that can provide you with immediate suppo
       });
     }
 
-    const aiData = await openAIResponse.json();
+    const aiData = await openRouterResponse.json();
     const aiMessage = aiData.choices[0].message.content;
 
     // Web Search Fallback (Perplexity)
@@ -314,7 +310,6 @@ I'm searching for local Ohio resources that can provide you with immediate suppo
     console.error('Crisis Support AI error:', error);
     errorCount++;
     
-    // Log error usage analytics  
     const responseTime = Date.now() - startTime;
     try {
       await supabase.rpc('log_ai_usage', {
@@ -327,7 +322,6 @@ I'm searching for local Ohio resources that can provide you with immediate suppo
       console.error('Failed to log AI usage error:', logError);
     }
     
-    // Emergency fallback: Return supportive message with any available resources
     const fallbackMessage = `I am here to support you. While I am experiencing technical difficulties, your safety is the highest priority.
 
 ## Immediate Crisis Support
@@ -338,7 +332,6 @@ I'm searching for local Ohio resources that can provide you with immediate suppo
 
 I am continuing to search for local Ohio resources to assist you.`;
 
-    // Try to get basic crisis resources as fallback
     let fallbackResources = [];
     try {
       const { data: dbResources } = await supabase

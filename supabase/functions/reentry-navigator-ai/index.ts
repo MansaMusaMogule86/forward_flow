@@ -2,6 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { checkAiRateLimit } from '../_shared/rate-limit.ts';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -76,42 +77,40 @@ serve(async (req) => {
       { role: 'user', content: query }
     ];
 
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not configured');
     }
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+    // Use Gemini Flash for reentry - good balance of quality and cost
+    const openRouterResponse = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
         messages,
         max_tokens: 1500,
-      }),
-    });
+      },
+      OPENROUTER_MODELS.CHAT_STREAMING,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
 
-    if (!openAIResponse.ok) {
-      if (openAIResponse.status === 429) {
+    if (!openRouterResponse.ok) {
+      if (openRouterResponse.status === 429) {
         return new Response(JSON.stringify({ error: "AI rate limit exceeded. Please try again shortly." }), {
           status: 429,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      if (openAIResponse.status === 402) {
+      if (openRouterResponse.status === 402) {
         return new Response(JSON.stringify({ error: "AI service temporarily unavailable. Please try again later." }), {
           status: 402,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      console.error('AI gateway error:', openAIResponse.status, await openAIResponse.text());
+      console.error('AI gateway error:', openRouterResponse.status, await openRouterResponse.text());
       throw new Error('Failed to generate AI response');
     }
 
-    const aiData = await openAIResponse.json();
+    const aiData = await openRouterResponse.json();
     const aiMessage = aiData.choices[0].message.content;
 
     // Web Search Fallback (Perplexity)
@@ -156,7 +155,6 @@ serve(async (req) => {
       const resourceDesc = resource.description?.toLowerCase() || '';
       const resourceType = resource.type?.toLowerCase() || '';
       
-      // Reentry-specific resource matching
       if (queryLower.includes('housing') || queryLower.includes('shelter') || queryLower.includes('apartment')) {
         return resourceType.includes('housing') || resourceType.includes('transitional');
       }
@@ -244,7 +242,6 @@ Remember: You are the guide for second chances and AI-driven life transformation
 
   if (!coach) return basePrompt;
 
-  // Coach-specific personality additions
   const coachPrompts: Record<string, string> = {
     'Coach Dana': `
 

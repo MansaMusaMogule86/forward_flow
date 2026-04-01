@@ -1,11 +1,8 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
+import { corsHeaders } from '../_shared/utils.ts';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 interface VictimSupportQuery {
   query: string;
@@ -16,7 +13,6 @@ interface VictimSupportQuery {
   previousContext?: Array<{role: string, content: string}>;
 }
 
-// Rate limiting configuration
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const RATE_LIMIT_WINDOW_MINUTES = 5;
 
@@ -82,7 +78,6 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    // Rate limiting check
     const authHeader = req.headers.get('authorization');
     const identifier = getClientIdentifier(req, authHeader);
     const endpoint = 'victim-support-ai';
@@ -117,7 +112,13 @@ serve(async (req) => {
 
     const { query, location, county, victimType, traumaLevel = 'ongoing', previousContext = [] }: VictimSupportQuery = await req.json();
 
-    // Enhanced resource filtering for victim services
+    if (!query || typeof query !== 'string' || query.length > 5000) {
+      return new Response(JSON.stringify({ error: 'Invalid or missing query (max 5000 chars)' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     let resourceQuery = supabase
       .from('resources')
       .select('*')
@@ -136,7 +137,6 @@ serve(async (req) => {
       throw new Error('Failed to fetch resources');
     }
 
-    // Trauma-informed system prompt optimized for Ohio victim services
     const systemPrompt = `You are Coach Kay, the trauma-informed navigator for the Healing Hub at Forward Focus Elevation. You serve all 88 counties across Ohio, specializing in support for crime victims and survivors.
 
 ### Tone and Style
@@ -167,59 +167,73 @@ Remember: You are the guide for healing and second chances. Be the "Google and P
       { role: 'user', content: query }
     ];
 
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages,
-        max_completion_tokens: 1200,
-      }),
-    });
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY is not configured');
+    }
 
-    if (!openAIResponse.ok) {
-      console.error('OpenAI API error:', await openAIResponse.text());
+    // Use Claude Haiku for victim support - trauma-informed
+    const openRouterResponse = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
+        messages,
+        max_tokens: 1200,
+      },
+      OPENROUTER_MODELS.CRISIS_SUPPORT,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
+
+    if (!openRouterResponse.ok) {
+      console.error('OpenRouter API error:', await openRouterResponse.text());
       throw new Error('Failed to generate AI response');
     }
 
-    const aiData = await openAIResponse.json();
-    const aiMessage = aiData.choices[0].message.content;
+    const aiData = await openRouterResponse.json();
+    const aiMessage = aiData.choices?.[0]?.message?.content;
+    if (!aiMessage) {
+      throw new Error('AI response missing expected content');
+    }
 
     // Web Search Fallback (Perplexity)
     let webResources: any[] = [];
     const minResources = 3;
     if ((resources?.length || 0) < minResources) {
-      try {
-        const perplexityResponse = await fetch('https://api.perplexity.ai/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get('PERPLEXITY_API_KEY')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'llama-3.1-sonar-small-128k-online',
-            messages: [
-              { role: 'system', content: 'You are a victim services resource finder for Coach Kay at the Healing Hub. Find verified Ohio victim support organizations (name, phone, website, description) across all 88 counties. Prioritize Columbus and Franklin County if applicable. Return as structured JSON or a clear list.' },
-              { role: 'user', content: `Search for Ohio victim support related to: ${query} ${location ? 'near ' + location : ''} ${county ? 'in ' + county + ' County' : ''}` }
-            ],
-            max_tokens: 1000
-          }),
-        });
+      const perplexityApiKey = Deno.env.get('PERPLEXITY_API_KEY');
+      if (!perplexityApiKey) {
+        console.warn('PERPLEXITY_API_KEY not configured, skipping web search fallback');
+      } else {
+        try {
+          const perplexityResponse = await fetch('https://api.perplexity.ai/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${perplexityApiKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'llama-3.1-sonar-small-128k-online',
+              messages: [
+                { role: 'system', content: 'You are a victim services resource finder for Coach Kay at the Healing Hub. Find verified Ohio victim support organizations (name, phone, website, description) across all 88 counties. Prioritize Columbus and Franklin County if applicable. Return as structured JSON or a clear list.' },
+                { role: 'user', content: `Search for Ohio victim support related to: ${query} ${location ? 'near ' + location : ''} ${county ? 'in ' + county + ' County' : ''}` }
+              ],
+              max_tokens: 1000
+            }),
+          });
 
-        if (perplexityResponse.ok) {
-          const webData = await perplexityResponse.json();
-          webResources = [{
-            name: 'Latest Web Resources',
-            description: webData.choices[0].message.content,
-            type: 'web_search',
-            source: 'perplexity'
-          }];
+          if (perplexityResponse.ok) {
+            const webData = await perplexityResponse.json();
+            const perplexityContent = webData.choices?.[0]?.message?.content;
+            if (perplexityContent) {
+              webResources = [{
+                name: 'Latest Web Resources',
+                description: perplexityContent,
+                type: 'web_search',
+                source: 'perplexity'
+              }];
+            }
+          }
+        } catch (err) {
+          console.error('Web search error:', err);
         }
-      } catch (err) {
-        console.error('Web search error:', err);
       }
     }
 
@@ -230,7 +244,6 @@ Remember: You are the guide for healing and second chances. Be the "Google and P
       const resourceDesc = resource.description?.toLowerCase() || '';
       const resourceType = resource.type?.toLowerCase() || '';
       
-      // Victim service-specific resource matching
       if (queryLower.includes('legal') || queryLower.includes('rights') || queryLower.includes('lawyer')) {
         return resourceType.includes('legal aid') || resourceType.includes('advocacy');
       }

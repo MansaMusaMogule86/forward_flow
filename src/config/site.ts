@@ -69,8 +69,9 @@ export const SITE_CONFIG = {
   
   // Logo paths (relative to public folder)
   logo: {
-    default: '/apple-touch-icon.png',
-    transparent: '/apple-touch-icon.png',
+    default: '/logo-primary.jpg',
+    transparent: '/logo-primary.jpg',
+    og: '/og-image.jpg',
   },
   
   // Copyright and legal

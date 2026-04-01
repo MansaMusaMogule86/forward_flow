@@ -15,8 +15,8 @@ export const SEOHead = ({
   title, 
   description, 
   path, 
-  image = '/apple-touch-icon.png',
-  imageAlt = `${SITE_CONFIG.name} logo`,
+  image = '/og-image.jpg',
+  imageAlt = `${SITE_CONFIG.name} - CEO Logo`,
   type = 'website',
   robots = 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
 }: SEOHeadProps) => {

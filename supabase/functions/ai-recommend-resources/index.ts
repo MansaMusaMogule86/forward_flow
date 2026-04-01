@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
 import { corsHeaders, errorResponse } from "../_shared/utils.ts";
+import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -48,9 +49,9 @@ serve(async (req) => {
       });
     }
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY not configured');
     }
 
     // Fetch available resources
@@ -63,9 +64,9 @@ serve(async (req) => {
     if (error) throw error;
 
     // Create context for AI
-    const resourceContext = resources?.map(r => 
+    const resourceContext = (resources || []).map(r => 
       `${r.name}: ${r.description} (Category: ${r.category}, Location: ${r.city}, ${r.state})`
-    ).join('\n');
+    ).join('\n') || 'No resources available in database.';
 
     const systemPrompt = `You are an expert resource recommendation assistant for "The Collective" (AI & Life Transformation Hub) at Forward Focus Elevation,
     helping individuals find the best community and AI transformation resources for their needs. You have access to a database of
@@ -90,14 +91,10 @@ serve(async (req) => {
       "summary": "brief summary of recommendations"
     }`;
 
-    const aiResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+    // Use Ministral for structured JSON output - cheap and reliable
+    const aiResponse = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
@@ -128,8 +125,10 @@ serve(async (req) => {
           }
         }],
         tool_choice: { type: 'function', function: { name: 'recommend_resources' } }
-      }),
-    });
+      },
+      OPENROUTER_MODELS.RESOURCE_DISCOVERY,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
 
     if (!aiResponse.ok) {
       if (aiResponse.status === 429) {
@@ -148,7 +147,10 @@ serve(async (req) => {
     }
 
     const data = await aiResponse.json();
-    const toolCall = data.choices[0].message.tool_calls?.[0];
+    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+    if (!toolCall?.function?.arguments) {
+      throw new Error('AI response missing expected tool call');
+    }
     const result = JSON.parse(toolCall.function.arguments);
 
     console.log('AI recommendations generated for user:', user.id);

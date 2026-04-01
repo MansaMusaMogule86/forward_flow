@@ -1,0 +1,332 @@
+{
+  "$schema": "./swarm-schema.json",
+  "name": "Forward Focus Elevation - Swarm Team",
+  "version": "1.0.0",
+  "description": "Multi-agent configuration for SEO optimization, content creation, and chatbot management",
+  "agents": [
+    {
+      "id": "seo-optimizer",
+      "name": "SEO Optimizer Agent",
+      "role": "seo_specialist",
+      "priority": 1,
+      "capabilities": [
+        "json_ld_schema_generation",
+        "meta_tag_optimization",
+        "keyword_research",
+        "content_structure_analysis",
+        "rich_snippet_optimization",
+        "technical_seo_audit"
+      ],
+      "tools": [
+        "schema_generator",
+        "keyword_analyzer",
+        "readability_checker",
+        "competitor_analyzer"
+      ],
+      "models": {
+        "primary": "anthropic/claude-3.5-haiku",
+        "fallback": "qwen/qwen-2.5-7b-instruct"
+      },
+      "system_prompt": "You are an expert SEO specialist focused on nonprofit and social services websites. Your goal is to maximize organic visibility for mission-critical content. Generate comprehensive JSON-LD schemas, optimize meta tags, and ensure all content follows E-E-A-T principles. Prioritize local SEO for Ohio's 88 counties.",
+      "tasks": [
+        {
+          "id": "blog_seo",
+          "description": "Optimize all blog posts with proper schemas",
+          "frequency": "on_content_publish",
+          "automated": true
+        },
+        {
+          "id": "technical_audit",
+          "description": "Monthly technical SEO audit",
+          "frequency": "monthly",
+          "automated": true
+        }
+      ]
+    },
+    {
+      "id": "content-strategist",
+      "name": "Content Strategist Agent",
+      "role": "content_strategist",
+      "priority": 2,
+      "capabilities": [
+        "topic_research",
+        "content_calendar_planning",
+        "competitor_content_analysis",
+        "keyword_gap_analysis",
+        "content_optimization",
+        "user_intent_matching"
+      ],
+      "tools": [
+        "trend_analyzer",
+        "content_planner",
+        "gap_analyzer"
+      ],
+      "models": {
+        "primary": "google/gemini-2.0-flash-exp:free",
+        "fallback": "mistral/ministral-8b"
+      },
+      "system_prompt": "You are a content strategist for a nonprofit helping justice-impacted individuals and crime survivors. Research topics that genuinely help our audience. Focus on actionable guides, local Ohio resources, and trauma-informed content. Ensure all content aligns with our mission of providing second chances.",
+      "tasks": [
+        {
+          "id": "topic_research",
+          "description": "Research high-impact topics for blog content",
+          "frequency": "weekly",
+          "automated": true
+        },
+        {
+          "id": "content_calendar",
+          "description": "Plan monthly content calendar",
+          "frequency": "monthly",
+          "automated": false
+        }
+      ]
+    },
+    {
+      "id": "chatbot-trainer",
+      "name": "Chatbot Training Agent",
+      "role": "ai_trainer",
+      "priority": 1,
+      "capabilities": [
+        "prompt_optimization",
+        "model_selection",
+        "conversation_flow_design",
+        "safety_filtering",
+        "rate_limit_management",
+        "fallback_response_design"
+      ],
+      "tools": [
+        "prompt_tester",
+        "model_benchmark",
+        "conversation_analyzer"
+      ],
+      "models": {
+        "primary": "anthropic/claude-3.5-haiku",
+        "fallback": "qwen/qwen-2.5-7b-instruct"
+      },
+      "system_prompt": "You are an AI training specialist focused on safety-critical chatbots for vulnerable populations. Optimize prompts for Coach Kay and other AI assistants to provide compassionate, accurate, and safe responses. Prioritize cost-effective models from OpenRouter while maintaining quality. Ensure crisis responses are always appropriate.",
+      "tasks": [
+        {
+          "id": "prompt_optimization",
+          "description": "Optimize chatbot prompts for better responses",
+          "frequency": "weekly",
+          "automated": true
+        },
+        {
+          "id": "model_cost_analysis",
+          "description": "Analyze and optimize model selection for cost",
+          "frequency": "weekly",
+          "automated": true
+        }
+      ]
+    },
+    {
+      "id": "resource-curator",
+      "name": "Resource Curation Agent",
+      "role": "resource_specialist",
+      "priority": 2,
+      "capabilities": [
+        "resource_verification",
+        "contact_validation",
+        "service_area_mapping",
+        "category_classification",
+        "justice_friendly_tagging",
+        "availability_monitoring"
+      ],
+      "tools": [
+        "web_scraper",
+        "phone_validator",
+        "geocoder",
+        "classifier"
+      ],
+      "models": {
+        "primary": "mistral/ministral-8b",
+        "fallback": "qwen/qwen-2.5-7b-instruct"
+      },
+      "system_prompt": "You are a resource curation specialist for Ohio social services. Verify that all listed resources are current, accessible, and appropriate for our users. Maintain our database of housing, employment, legal aid, and victim services across all 88 Ohio counties. Tag resources as justice-friendly when appropriate.",
+      "tasks": [
+        {
+          "id": "resource_verification",
+          "description": "Verify resource contact information",
+          "frequency": "monthly",
+          "automated": true
+        },
+        {
+          "id": "new_resource_discovery",
+          "description": "Discover new resources in underserved counties",
+          "frequency": "weekly",
+          "automated": true
+        }
+      ]
+    },
+    {
+      "id": "analytics-inspector",
+      "name": "Analytics & Insights Agent",
+      "role": "data_analyst",
+      "priority": 3,
+      "capabilities": [
+        "traffic_analysis",
+        "conversion_tracking",
+        "user_journey_mapping",
+        "content_performance_analysis",
+        "ai_usage_monitoring",
+        "resource_utilization_tracking"
+      ],
+      "tools": [
+        "analytics_api",
+        "report_generator",
+        "alert_system"
+      ],
+      "models": {
+        "primary": "google/gemini-2.0-flash-exp:free",
+        "fallback": "qwen/qwen-2.5-7b-instruct"
+      },
+      "system_prompt": "You are a data analyst monitoring the impact of Forward Focus Elevation. Track how users discover and interact with our resources. Identify trends in help-seeking behavior across Ohio's 88 counties. Alert on anomalies in AI usage or resource demand. Generate actionable insights for improving our services.",
+      "tasks": [
+        {
+          "id": "weekly_report",
+          "description": "Generate weekly analytics report",
+          "frequency": "weekly",
+          "automated": true
+        },
+        {
+          "id": "anomaly_detection",
+          "description": "Monitor for unusual patterns",
+          "frequency": "daily",
+          "automated": true
+        }
+      ]
+    },
+    {
+      "id": "local-seo-specialist",
+      "name": "Local SEO Specialist",
+      "role": "local_seo_expert",
+      "priority": 2,
+      "capabilities": [
+        "county_page_optimization",
+        "local_business_schema",
+        "citation_building",
+        "google_business_profile",
+        "local_keyword_targeting",
+        "service_area_optimization"
+      ],
+      "tools": [
+        "local_rank_tracker",
+        "citation_finder",
+        "schema_generator"
+      ],
+      "models": {
+        "primary": "anthropic/claude-3-haiku:beta",
+        "fallback": "qwen/qwen-2.5-7b-instruct"
+      },
+      "system_prompt": "You are a local SEO specialist focused on dominating search results across Ohio's 88 counties. Create location-specific content that helps residents find resources in their area. Optimize for queries like 'housing help in [county]' and 'victim services near me'. Ensure every county has strong visibility.",
+      "tasks": [
+        {
+          "id": "county_page_audit",
+          "description": "Audit and optimize county-specific pages",
+          "frequency": "monthly",
+          "automated": false
+        },
+        {
+          "id": "local_content",
+          "description": "Generate county-specific resource content",
+          "frequency": "weekly",
+          "automated": true
+        }
+      ]
+    }
+  ],
+  "workflows": [
+    {
+      "name": "New Blog Post Publication",
+      "trigger": "blog_post_published",
+      "steps": [
+        { "agent": "content-strategist", "task": "analyze_topic_performance" },
+        { "agent": "seo-optimizer", "task": "generate_schemas_and_meta" },
+        { "agent": "seo-optimizer", "task": "submit_to_search_engines" },
+        { "agent": "analytics-inspector", "task": "track_initial_performance" }
+      ]
+    },
+    {
+      "name": "Chatbot Model Optimization",
+      "trigger": "weekly_schedule",
+      "steps": [
+        { "agent": "chatbot-trainer", "task": "analyze_conversation_quality" },
+        { "agent": "chatbot-trainer", "task": "optimize_model_selection" },
+        { "agent": "analytics-inspector", "task": "cost_analysis_report" }
+      ]
+    },
+    {
+      "name": "Resource Database Maintenance",
+      "trigger": "monthly_schedule",
+      "steps": [
+        { "agent": "resource-curator", "task": "verify_all_resources" },
+        { "agent": "resource-curator", "task": "update_outdated_entries" },
+        { "agent": "resource-curator", "task": "discover_new_resources" },
+        { "agent": "analytics-inspector", "task": "report_resource_usage" }
+      ]
+    },
+    {
+      "name": "Crisis Response Audit",
+      "trigger": "weekly_schedule",
+      "steps": [
+        { "agent": "chatbot-trainer", "task": "review_crisis_responses" },
+        { "agent": "chatbot-trainer", "task": "update_emergency_protocols" },
+        { "agent": "resource-curator", "task": "verify_crisis_hotlines" }
+      ]
+    }
+  ],
+  "monitoring": {
+    "alerts": [
+      {
+        "condition": "ai_cost > $100/day",
+        "severity": "warning",
+        "notify": ["chatbot-trainer", "analytics-inspector"]
+      },
+      {
+        "condition": "chatbot_safety_flag",
+        "severity": "critical",
+        "notify": ["chatbot-trainer"],
+        "escalate": true
+      },
+      {
+        "condition": "resource_404_rate > 5%",
+        "severity": "warning",
+        "notify": ["resource-curator"]
+      }
+    ],
+    "metrics": [
+      "organic_traffic",
+      "keyword_rankings",
+      "ai_cost_per_interaction",
+      "resource_engagement_rate",
+      "user_satisfaction_score",
+      "county_coverage_score"
+    ]
+  },
+  "cost_optimization": {
+    "openrouter_settings": {
+      "enable_caching": true,
+      "cache_ttl_seconds": 3600,
+      "fallback_on_rate_limit": true,
+      "track_usage_by_endpoint": true
+    },
+    "model_selection_rules": [
+      {
+        "use_case": "streaming_chat",
+        "primary_model": "google/gemini-flash-1.5:free",
+        "max_cost_per_1k_tokens": 0.001
+      },
+      {
+        "use_case": "crisis_support",
+        "primary_model": "anthropic/claude-3-haiku:beta",
+        "max_cost_per_1k_tokens": 0.01,
+        "require_safety_alignment": true
+      },
+      {
+        "use_case": "structured_output",
+        "primary_model": "mistral/ministral-8b",
+        "max_cost_per_1k_tokens": 0.002
+      }
+    ]
+  }
+}
