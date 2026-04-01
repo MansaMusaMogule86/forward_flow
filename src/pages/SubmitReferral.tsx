@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +13,7 @@ const SubmitReferral = () => {
   const [contactInfo, setContactInfo] = useState("");
   const [notes, setNotes] = useState("");
   const [csrfToken] = useState(generateCSRFToken());
-  const rateLimiter = new RateLimiter();
+  const rateLimiter = useRef(new RateLimiter());
   useEffect(() => {
     document.title = "Submit Referral | Partner Portal";
   }, []);
@@ -22,7 +22,7 @@ const SubmitReferral = () => {
 
     // Rate limiting check
     const clientId = `${contactInfo || 'anonymous'}_referral`;
-    if (rateLimiter.isRateLimited(clientId, 2, 600000)) {
+    if (rateLimiter.current.isRateLimited(clientId, 2, 600000)) {
       // 2 attempts per 10 minutes
       toast({
         title: "Error",
@@ -70,6 +70,14 @@ const SubmitReferral = () => {
       toast({
         title: "Error",
         description: "Please provide a valid email address",
+        variant: "destructive"
+      });
+      return;
+    }
+    if (isPhone && !isValidPhone(sanitizedContactInfo)) {
+      toast({
+        title: "Error",
+        description: "Please provide a valid phone number",
         variant: "destructive"
       });
       return;
