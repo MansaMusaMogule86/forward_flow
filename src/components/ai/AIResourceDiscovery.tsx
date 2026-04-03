@@ -493,13 +493,17 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent hideClose className="max-w-5xl max-h-[90vh] h-[90vh] p-0 flex flex-col" aria-describedby="ai-discovery-description">
+      <DialogContent
+        hideClose
+        className="w-[100vw] max-w-none h-[100dvh] max-h-[100dvh] rounded-none p-0 flex flex-col sm:max-w-5xl sm:max-h-[90vh] sm:h-[90vh] sm:rounded-lg"
+        aria-describedby="ai-discovery-description"
+      >
         <div className="sr-only">
           <h2 id="ai-discovery-dialog-title">AI Resource Discovery Chat</h2>
         </div>
-        <DialogHeader className="p-6 pb-0">
+        <DialogHeader className="p-4 pb-1 sm:p-6 sm:pb-0">
           <div className="flex items-start justify-between gap-4">
-            <DialogTitle className="flex items-center gap-2">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg leading-tight">
               <Bot className="h-5 w-5 text-osu-scarlet" />
               AI Resource Discovery
               {(location || county) && (
@@ -512,7 +516,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
               variant="ghost"
               size="icon"
               onClick={onClose}
-              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              className="h-9 w-9 sm:h-8 sm:w-8 text-muted-foreground hover:text-foreground"
               aria-label="Close AI Resource Discovery"
             >
               <X className="h-4 w-4" />
@@ -524,7 +528,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
         </DialogHeader>
 
         <div className="flex flex-col flex-1 min-h-0">
-          <ScrollArea className="flex-1 p-6 pt-2 bg-gradient-subtle">
+          <ScrollArea className="flex-1 p-3 pt-2 sm:p-6 sm:pt-2 bg-gradient-subtle">
             {messages.length === 0 ? (
               <div className="space-y-4">
                 <div className="text-center py-8">
@@ -564,7 +568,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                       </div>
                     )}
 
-                    <div className={`max-w-[75%] space-y-3 ${message.type === 'user' ? 'order-first' : ''}`}>
+                    <div className={`max-w-[88%] sm:max-w-[75%] space-y-3 ${message.type === 'user' ? 'order-first' : ''}`}>
                       <div className={`p-4 rounded-lg ${message.type === 'user'
                         ? 'bg-primary text-primary-foreground ml-auto'
                         : 'bg-muted/50 border border-border'
@@ -656,7 +660,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
             <div ref={messagesEndRef} />
           </ScrollArea>
 
-          <div className="p-4 border-t border-border bg-background/95 backdrop-blur-sm flex-shrink-0 space-y-1">
+          <div className="p-3 sm:p-4 border-t border-border bg-background/95 backdrop-blur-sm flex-shrink-0 space-y-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)]">
             <div className="flex gap-2">
               <Input
                 value={inputValue}
@@ -664,14 +668,14 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                 placeholder="Ask me about resources, services, or support in Ohio..."
                 onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 h-11 text-sm"
                 maxLength={MAX_MESSAGE_LENGTH}
               />
               <Button
                 onClick={() => handleSend()}
                 disabled={isLoading || !inputValue.trim()}
                 size="sm"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground px-4"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground h-11 px-4"
               >
                 {isLoading ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -685,12 +689,12 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
             </div>
 
             {/* Bottom Action Buttons */}
-            <div className="flex gap-2 justify-center">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-2 sm:justify-center">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleNewChat}
-                className="flex items-center gap-2 text-sm"
+                className="flex items-center gap-2 text-xs sm:text-sm"
               >
                 <RotateCcw className="h-4 w-4" />
                 New Chat
@@ -699,7 +703,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={handleEmailHistory}
-                className="flex items-center gap-2 text-sm"
+                className="flex items-center gap-2 text-xs sm:text-sm"
               >
                 <History className="h-4 w-4" />
                 Email History
