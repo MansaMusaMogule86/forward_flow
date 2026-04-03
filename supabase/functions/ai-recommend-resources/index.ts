@@ -1,19 +1,19 @@
 import "xhr";
 import { serve } from "@std/http/server";
 import { createClient } from "@supabase/supabase-js";
-import { corsHeaders, handleCORS, logAiUsage, getSafeUserId } from "../_shared/utils.ts";
+import { corsHeaders, handleCorsPreFlight, logAiUsage, parseRequestBody, errorResponse, successResponse } from "../_shared/utils.ts";
 import { checkAiRateLimit } from "../_shared/rate-limit.ts";
 import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 serve(async (req) => {
-  const corsResponse = handleCORS(req);
-  if (corsResponse) return corsResponse;
+  const preflight = handleCorsPreFlight(req);
+  if (preflight) return preflight;
 
   const startTime = Date.now();
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
   const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
   const supabase = createClient(supabaseUrl, supabaseKey);
-  const userId = getSafeUserId(req);
+  const userId = undefined; // Will be set by rate limit check
 
   try {
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
@@ -23,14 +23,16 @@ serve(async (req) => {
 
     // Rate limiting
     const rateLimit = await checkAiRateLimit(supabase, req, 'ai-recommend-resources');
+    const currentUserId = rateLimit.identifier;
+
     if (rateLimit.limited) {
-      return new Response(
-        JSON.stringify({ error: rateLimit.message }),
-        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      await logAiUsage(supabase, 'ai-recommend-resources', Date.now() - startTime, 1, currentUserId);
+      return errorResponse(rateLimit.message || 'Rate limit exceeded', 429);
     }
 
-    const { userNeeds, location, category } = await req.json();
+    const body = await parseRequestBody<any>(req);
+    if (!body) return errorResponse('Missing request body', 400);
+    const { userNeeds, location, category } = body;
 
     // Fetch verified resources for matching
     const { data: resources } = await supabase
@@ -105,21 +107,13 @@ ${resourceContext}`;
     const result = JSON.parse(toolCall.function.arguments);
 
     // Log success
-    await logAiUsage(supabase, 'ai-recommend-resources', userId, Date.now() - startTime);
+    await logAiUsage(supabase, 'ai-recommend-resources', Date.now() - startTime, 0, currentUserId);
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return successResponse(result);
 
   } catch (error) {
     console.error('Error in ai-recommend-resources:', error);
-    await logAiUsage(supabase, 'ai-recommend-resources', userId, Date.now() - startTime, 1);
-    
-    return new Response(
-      JSON.stringify({ 
-        error: error instanceof Error ? error.message : 'Internal error' 
-      }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    await logAiUsage(supabase, 'ai-recommend-resources', Date.now() - startTime, 1, userId);
+    return errorResponse(error instanceof Error ? error.message : 'Internal error', 500);
   }
 });

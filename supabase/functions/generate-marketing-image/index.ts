@@ -1,35 +1,50 @@
+import "xhr";
 import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
+import { corsHeaders, handleCorsPreFlight, logAiUsage, parseRequestBody, errorResponse, successResponse } from "../_shared/utils.ts";
+import { checkAiRateLimit } from "../_shared/rate-limit.ts";
 import { callOpenRouter } from '../_shared/openrouter.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface ImageRequest {
+  prompt: string;
+  style?: 'professional' | 'inspirational' | 'community' | 'celebration';
+}
 
-serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+serve(async (req) => {
+  const preflight = handleCorsPreFlight(req);
+  if (preflight) return preflight;
+
+  const startTime = Date.now();
+  let userId: string | undefined;
+  const endpoint = 'generate-marketing-image';
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const { prompt, style = 'professional' } = await req.json();
-
-    // Input validation
-    if (!prompt || typeof prompt !== 'string' || prompt.length > 1000) {
-      return new Response(JSON.stringify({ error: 'Invalid or missing prompt (max 1000 chars)' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const body = await parseRequestBody<ImageRequest>(req);
+    if (!body || !body.prompt) {
+      return errorResponse('Missing prompt', 400);
     }
-    const validStyles = ['professional', 'inspirational', 'community', 'celebration'];
-    const safeStyle = validStyles.includes(style) ? style : 'professional';
-    
+
+    const { prompt, style = 'professional' } = body;
+
+    // Rate limiting
+    const rateLimit = await checkAiRateLimit(supabase, req, endpoint);
+    userId = rateLimit.identifier;
+
+    if (rateLimit.limited) {
+      await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
+      return new Response(
+        JSON.stringify({ error: rateLimit.message || 'Rate limit exceeded.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
-    if (!OPENROUTER_API_KEY) {
-      throw new Error('OPENROUTER_API_KEY not configured');
-    }
+    if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not configured');
 
-    // Enhance prompt based on style
     const styleEnhancements = {
       professional: 'professional, clean, modern design, high quality',
       inspirational: 'inspirational, uplifting, hopeful, warm colors',
@@ -37,56 +52,31 @@ serve(async (req: Request) => {
       celebration: 'celebratory, joyful, achievement, success story'
     };
 
-    const enhancedPrompt = `${prompt.substring(0, 1000)}. Style: ${styleEnhancements[safeStyle as keyof typeof styleEnhancements] || styleEnhancements.professional}. High resolution, suitable for social media and marketing materials. Include diverse representation.`;
+    const enhancedPrompt = `${prompt.substring(0, 1000)}. Style: ${styleEnhancements[style] || styleEnhancements.professional}. High resolution, suitable for social media and marketing materials. Include diverse representation.`;
 
-    console.log('Generating image with prompt:', enhancedPrompt);
-
-    // Using black-forest-labs/flux-schnell through OpenRouter for high-quality image generation
     const response = await callOpenRouter(OPENROUTER_API_KEY, {
       model: 'black-forest-labs/flux-schnell',
-      messages: [
-        {
-          role: 'user',
-          content: enhancedPrompt
-        }
-      ]
+      messages: [{ role: 'user', content: enhancedPrompt }]
     });
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      const errorText = await response.text();
-      console.error('OpenRouter error:', response.status, errorText);
       throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    // OpenRouter for image models usually returns the image URL in the content or as a separate field
     const imageUrl = data.choices?.[0]?.message?.content || data.choices?.[0]?.message?.image_url;
 
-    if (!imageUrl) {
-      throw new Error('No image generated');
-    }
+    if (!imageUrl) throw new Error('No image generated');
 
-    console.log('Image generated successfully');
+    // Log success
+    await logAiUsage(supabase, endpoint, Date.now() - startTime, 0, userId);
 
-    return new Response(JSON.stringify({ 
-      imageUrl,
-      prompt: enhancedPrompt 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return successResponse({ imageUrl, prompt: enhancedPrompt });
 
-  } catch (error: any) {
-    console.error('Error in generate-marketing-image:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  } catch (error) {
+    console.error(`[${endpoint}] Error:`, error);
+    await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
+    return errorResponse(error instanceof Error ? error.message : 'Internal error', 500);
   }
 });
 

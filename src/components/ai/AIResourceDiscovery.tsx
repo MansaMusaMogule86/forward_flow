@@ -14,6 +14,24 @@ import remarkGfm from 'remark-gfm';
 
 const MAX_MESSAGE_LENGTH = 4000;
 
+const SEARCH_STOP_WORDS = new Set([
+  'a', 'an', 'and', 'are', 'for', 'from', 'help', 'i', 'in', 'is', 'me', 'my', 'need', 'of', 'on', 'or', 'services', 'support', 'the', 'to', 'with'
+]);
+
+const SEARCH_SYNONYMS: Record<string, string[]> = {
+  addiction: ['recovery', 'substance', 'treatment'],
+  counseling: ['therapy', 'behavioral', 'wellness'],
+  expungement: ['record', 'sealing', 'legal'],
+  food: ['meals', 'pantry', 'nutrition'],
+  housing: ['shelter', 'rent', 'landlord'],
+  jobs: ['employment', 'training', 'career'],
+  legal: ['attorney', 'court', 'rights'],
+  mental: ['counseling', 'crisis', 'therapy', 'wellness'],
+  reentry: ['returning', 'justice', 'employment'],
+  trauma: ['healing', 'counseling', 'crisis'],
+  victim: ['survivor', 'advocacy', 'compensation'],
+};
+
 interface Message {
   id: string;
   type: 'user' | 'ai';
@@ -53,6 +71,128 @@ interface AIResourceDiscoveryProps {
   county?: string;
 }
 
+const normalizeResource = (resource: Record<string, any>): Resource => ({
+  id: resource.id,
+  name: resource.name || resource.title || resource.organization || 'Community Resource',
+  title: resource.title,
+  organization: resource.organization,
+  category: resource.category,
+  type: resource.type,
+  city: resource.city,
+  county: resource.county,
+  state: resource.state || resource.state_code,
+  description: resource.description,
+  phone: resource.phone,
+  website_url: resource.website_url,
+  email: resource.email,
+  address: resource.address,
+  verified: resource.verified,
+  justice_friendly: resource.justice_friendly,
+  rating: resource.rating,
+  source: resource.source,
+});
+
+const getSearchTokens = (query: string) => {
+  const baseTokens = query
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(token => token.length > 2 && !SEARCH_STOP_WORDS.has(token));
+
+  const expandedTokens = new Set(baseTokens);
+
+  for (const token of baseTokens) {
+    for (const synonym of SEARCH_SYNONYMS[token] || []) {
+      expandedTokens.add(synonym);
+    }
+  }
+
+  return Array.from(expandedTokens);
+};
+
+const buildResourceOrFilter = (tokens: string[]) => {
+  return tokens
+    .flatMap((token) => [
+      `title.ilike.%${token}%`,
+      `organization.ilike.%${token}%`,
+      `category.ilike.%${token}%`,
+      `description.ilike.%${token}%`,
+    ])
+    .join(',');
+};
+
+const matchesLocation = (resource: Resource, location?: string, county?: string) => {
+  const countyValue = county?.toLowerCase().trim();
+  const locationValue = location?.toLowerCase().trim();
+
+  if (countyValue && !`${resource.county ?? ''}`.toLowerCase().includes(countyValue)) {
+    return false;
+  }
+
+  if (!locationValue) {
+    return true;
+  }
+
+  const locationFields = [resource.city, resource.county, resource.state, resource.address]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return locationFields.includes(locationValue);
+};
+
+const scoreResource = (resource: Resource, tokens: string[]) => {
+  const haystack = [
+    resource.name,
+    resource.title,
+    resource.organization,
+    resource.category,
+    resource.type,
+    resource.description,
+    resource.city,
+    resource.county,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  let score = resource.verified ? 4 : 0;
+  score += resource.justice_friendly ? 3 : 0;
+
+  for (const token of tokens) {
+    if (resource.name?.toLowerCase().includes(token)) score += 6;
+    if (resource.category?.toLowerCase().includes(token)) score += 5;
+    if (resource.type?.toLowerCase().includes(token)) score += 5;
+    if (resource.description?.toLowerCase().includes(token)) score += 2;
+    if (haystack.includes(token)) score += 1;
+  }
+
+  return score;
+};
+
+const formatFallbackResponse = (resources: Resource[], query: string, location?: string, county?: string) => {
+  if (resources.length === 0) {
+    return [
+      `I could not find a strong match for "${query}" in our current resource directory.`,
+      county || location ? `I checked for matches near ${county ?? location}.` : 'I checked our current Ohio resource directory.',
+      'Try using a more specific need like housing, legal aid, counseling, expungement, victim services, food assistance, or job training.'
+    ].join(' ');
+  }
+
+  const intro = county || location
+    ? `I found ${resources.length} resource${resources.length === 1 ? '' : 's'} that look relevant for ${county ?? location}.`
+    : `I found ${resources.length} Ohio resource${resources.length === 1 ? '' : 's'} that look relevant to your request.`;
+
+  const bullets = resources
+    .slice(0, 4)
+    .map(resource => {
+      const details = [resource.city, resource.county ? `${resource.county} County` : undefined].filter(Boolean).join(', ');
+      return `- **${resource.name}**${details ? ` (${details})` : ''}: ${resource.description || resource.type || resource.category || 'Resource information available in the card below.'}`;
+    })
+    .join('\n');
+
+  return `${intro}\n\n${bullets}\n\nIf you want, I can narrow this down further by county, age group, urgency, or resource type.`;
+};
+
 const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
   isOpen,
   onClose,
@@ -84,48 +224,33 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
 
   const sendMessage = async (query: string) => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      if (!supabaseUrl || !supabaseKey) {
-        console.error('Supabase configuration missing in AIResourceDiscovery');
-        throw new Error('Service temporarily unavailable');
-      }
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/ai-resource-discovery`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('ai-resource-discovery', {
+        body: {
           query,
           location: location,
           county: county,
           resourceType: undefined,
           limit: 10
-        })
+        }
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('AI Resource Discovery error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        console.error('AI Resource Discovery error:', error);
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
-
-      const curatedResources = data.curatedResources || data.resources || [];
+      const curatedResources = Array.isArray(data.curatedResources || data.resources)
+        ? (data.curatedResources || data.resources).map(normalizeResource)
+        : [];
 
       // Create AI message with the response
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: 'ai',
-        // ReactMarkdown will handle the formatting, but we can keep formatAIResponse if it does some specific cleanup
         content: data.response || 'I found some resources for you.',
         timestamp: new Date(),
         curatedResources,
-        webResources: data.webResources || [],
+        webResources: Array.isArray(data.webResources) ? data.webResources.map(normalizeResource) : [],
         usedWebFallback: data.usedWebFallback || false
       };
 
@@ -157,33 +282,53 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
       await sendMessage(query);
     } catch (error) {
       console.error('Error getting AI response:', error);
-      
+
       toast({
-        title: "AI Assistant Temporarily Unavailable", 
+        title: "AI Assistant Temporarily Unavailable",
         description: "I'm searching our database directly for you instead.",
         variant: "default",
       });
 
       // Fallback: client-side resource lookup
       try {
-        const tokens = query.toLowerCase().split(/\s+/).slice(0, 3);
-        let orFilter = tokens.map(t => `name.ilike.%${t}%,description.ilike.%${t}%,type.ilike.%${t}%`).join(',');
-        if (!orFilter) orFilter = 'name.ilike.%%';
+        const tokens = getSearchTokens(query);
 
-        let resourceQuery = supabase
+        const targetedFilter = buildResourceOrFilter(tokens);
+        let fallbackRequest = supabase
           .from('resources')
           .select('*')
-          .limit(8)
-          .or(orFilter);
+          .limit(50);
 
-        if (county) resourceQuery = resourceQuery.ilike('county', `%${county}%`);
-        if (location) resourceQuery = resourceQuery.or(`city.ilike.%${location}%,county.ilike.%${location}%`);
+        if (targetedFilter) {
+          fallbackRequest = fallbackRequest.or(targetedFilter);
+        }
 
-        const { data: fallbackResources } = await resourceQuery;
+        let { data: allResources, error: fallbackQueryError } = await fallbackRequest;
 
-        const content = fallbackResources && fallbackResources.length > 0
-          ? `I found ${fallbackResources.length} Ohio resources that match your search. While the AI is unavailable, these resources should help:`
-          : "I'm having trouble connecting to our AI service right now. Please try again in a moment, or browse resources manually.";
+        if ((!allResources || allResources.length === 0) && tokens.length > 0) {
+          const broadFallback = await supabase
+            .from('resources')
+            .select('*')
+            .limit(150);
+
+          allResources = broadFallback.data;
+          fallbackQueryError = broadFallback.error;
+        }
+
+        if (fallbackQueryError) {
+          throw fallbackQueryError;
+        }
+
+        const fallbackResources = (allResources || [])
+          .map(normalizeResource)
+          .filter((resource) => matchesLocation(resource, location, county))
+          .map((resource) => ({ resource, score: scoreResource(resource, tokens) }))
+          .filter(({ score, resource }) => score > 0 || tokens.length === 0 || resource.verified || resource.justice_friendly)
+          .sort((left, right) => right.score - left.score)
+          .map(({ resource }) => resource)
+          .slice(0, 8);
+
+        const content = formatFallbackResponse(fallbackResources, query, location, county);
 
         const aiMessage: Message = {
           id: (Date.now() + 1).toString(),
@@ -263,11 +408,11 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
               )}
             </div>
           )}
-          
+
           {resource.description && (
             <p className="text-sm text-foreground leading-relaxed">{resource.description}</p>
           )}
-          
+
           <div className="flex gap-2 pt-2 flex-wrap">
             {resource.phone && (
               <Button size="sm" variant="outline" className="h-8 px-3 text-sm" asChild>
@@ -356,7 +501,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
             Get personalized resource recommendations using AI based on your specific needs and location
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="flex flex-col flex-1 min-h-0">
           <ScrollArea className="flex-1 p-6 pt-2 bg-gradient-subtle">
             {messages.length === 0 ? (
@@ -365,11 +510,11 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                   <Bot className="h-12 w-12 text-osu-scarlet mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">Hi! I'm your AI Resource Navigator</h3>
                   <p className="text-muted-foreground mb-6">
-                    I can help you find resources and support services across all 88 Ohio counties. 
+                    I can help you find resources and support services across all 88 Ohio counties.
                     Just tell me what you need!
                   </p>
                 </div>
-                
+
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-muted-foreground">Try asking about:</p>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -396,23 +541,22 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                         <Bot className="h-4 w-4 text-osu-scarlet-foreground" />
                       </div>
                     )}
-                    
-                  <div className={`max-w-[75%] space-y-3 ${message.type === 'user' ? 'order-first' : ''}`}>
-                      <div className={`p-4 rounded-lg ${
-                        message.type === 'user' 
-                          ? 'bg-primary text-primary-foreground ml-auto' 
-                          : 'bg-muted/50 border border-border'
-                      }`}>
+
+                    <div className={`max-w-[75%] space-y-3 ${message.type === 'user' ? 'order-first' : ''}`}>
+                      <div className={`p-4 rounded-lg ${message.type === 'user'
+                        ? 'bg-primary text-primary-foreground ml-auto'
+                        : 'bg-muted/50 border border-border'
+                        }`}>
                         {message.type === 'ai' ? (
                           <div className="text-sm leading-relaxed prose dark:prose-invert max-w-none">
-                             <ReactMarkdown
+                            <ReactMarkdown
                               remarkPlugins={[remarkGfm]}
                               components={{
-                                a: ({node, ...props}) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
-                                p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
-                                ul: ({node, ...props}) => <ul {...props} className="list-disc ml-4 mb-2" />,
-                                ol: ({node, ...props}) => <ol {...props} className="list-decimal ml-4 mb-2" />,
-                                li: ({node, ...props}) => <li {...props} className="mb-1" />,
+                                a: ({ node, ...props }) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
+                                p: ({ node, ...props }) => <p {...props} className="mb-2 last:mb-0" />,
+                                ul: ({ node, ...props }) => <ul {...props} className="list-disc ml-4 mb-2" />,
+                                ol: ({ node, ...props }) => <ol {...props} className="list-decimal ml-4 mb-2" />,
+                                li: ({ node, ...props }) => <li {...props} className="mb-1" />,
                               }}
                             >
                               {message.content}
@@ -422,7 +566,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                           <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                         )}
                       </div>
-                      
+
                       {message.curatedResources && message.curatedResources.length > 0 && (
                         <div className="space-y-3">
                           <h4 className="text-base font-semibold text-foreground flex items-center gap-2">
@@ -436,7 +580,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                           </div>
                         </div>
                       )}
-                      
+
                       {message.webResources && message.webResources.length > 0 && (
                         <div className="space-y-3 mt-4">
                           <div className="flex items-center gap-2">
@@ -447,7 +591,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                           </div>
                           <div className="bg-orange-50/30 dark:bg-orange-950/10 border border-orange-200 dark:border-orange-800 rounded-lg p-3">
                             <p className="text-xs text-muted-foreground mb-3">
-                              ⚠️ These results were found via web search and have not been verified by Forward Focus. 
+                              ⚠️ These results were found via web search and have not been verified by Forward Focus.
                               Please confirm credentials and services before using.
                             </p>
                             <div className="space-y-3">
@@ -459,7 +603,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                         </div>
                       )}
                     </div>
-                    
+
                     {message.type === 'user' && (
                       <div className="flex-shrink-0 w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
                         <User className="h-4 w-4 text-primary" />
@@ -467,7 +611,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                     )}
                   </div>
                 ))}
-                
+
                 {isTyping && (
                   <div className="flex gap-3 justify-start">
                     <div className="flex-shrink-0 w-8 h-8 bg-primary rounded-full flex items-center justify-center">
@@ -489,7 +633,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
             )}
             <div ref={messagesEndRef} />
           </ScrollArea>
-          
+
           <div className="p-4 border-t border-border bg-background/95 backdrop-blur-sm flex-shrink-0 space-y-1">
             <div className="flex gap-2">
               <Input
@@ -501,8 +645,8 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                 className="flex-1"
                 maxLength={MAX_MESSAGE_LENGTH}
               />
-              <Button 
-                onClick={() => handleSend()} 
+              <Button
+                onClick={() => handleSend()}
                 disabled={isLoading || !inputValue.trim()}
                 size="sm"
                 className="bg-primary hover:bg-primary/90 text-primary-foreground px-4"
@@ -517,21 +661,21 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
             <div className="text-xs text-muted-foreground text-right">
               {inputValue.length} / {MAX_MESSAGE_LENGTH}
             </div>
-            
+
             {/* Bottom Action Buttons */}
             <div className="flex gap-2 justify-center">
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleNewChat}
                 className="flex items-center gap-2 text-sm"
               >
                 <RotateCcw className="h-4 w-4" />
                 New Chat
               </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={handleEmailHistory}
                 className="flex items-center gap-2 text-sm"
               >

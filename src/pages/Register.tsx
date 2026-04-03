@@ -11,6 +11,8 @@ import { PasswordStrengthIndicator } from "@/components/security/PasswordStrengt
 import { registrationFormSchema } from "@/lib/validationSchemas";
 import learningCommunityImage from "@/assets/images/community/learning-community.jpg";
 
+import { supabase } from "@/integrations/supabase/client";
+
 const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -70,29 +72,17 @@ const Register = () => {
           });
         }
       } else {
-        // Send welcome email using anon key (no session exists yet before email confirmation)
+        // Send welcome email using supabase client
         try {
-          const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-          if (anonKey && supabaseUrl) {
-            await fetch(
-              `${supabaseUrl}/functions/v1/send-auth-email`,
-              {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${anonKey}`,
-                },
-                body: JSON.stringify({
-                  email: email.trim().toLowerCase(),
-                  type: 'welcome',
-                  userData: {
-                    name: email.split('@')[0]
-                  }
-                }),
+          await supabase.functions.invoke('send-auth-email', {
+            body: {
+              email: email.trim().toLowerCase(),
+              type: 'welcome',
+              userData: {
+                name: email.split('@')[0]
               }
-            );
-          }
+            }
+          });
         } catch {
           // Don't fail registration if welcome email fails
         }

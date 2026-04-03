@@ -47,70 +47,24 @@ const ChatbotPopup = () => {
 
   const sendMessage = async (messages: {role: string, content: string}[]) => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      if (!supabaseUrl || !supabaseKey) {
-        console.error('Supabase configuration missing in ChatbotPopup');
-        throw new Error('Service temporarily unavailable');
-      }
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/coach-k`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
-        },
-        body: JSON.stringify({
-          messages
-        })
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('coach-k', {
+        body: { messages }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (error) throw error;
+      if (!data) throw new Error('No response from Coach Kay');
 
-      const reader = response.body?.getReader();
-      if (!reader) {
-        throw new Error('No response body');
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = '';
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6);
-            if (data === '[DONE]') continue;
-            
-            try {
-              const parsed = JSON.parse(data);
-              const content = parsed.choices?.[0]?.delta?.content;
-              if (content) {
-                setMessages(prev => {
-                  const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  if (lastMessage.isBot) {
-                    lastMessage.text += content;
-                  }
-                  return newMessages;
-                });
-                scrollToBottom();
-              }
-            } catch (e) {
-              // Skip invalid JSON
-            }
-          }
+      setMessages(prev => {
+        const newMessages = [...prev];
+        const lastMessage = newMessages[newMessages.length - 1];
+        if (lastMessage.isBot) {
+          lastMessage.text = data.content || data.response || '';
         }
-      }
+        return newMessages;
+      });
+      scrollToBottom();
     } catch (error) {
       console.error('Coach K error:', error);
       const errorMessage: Message = {

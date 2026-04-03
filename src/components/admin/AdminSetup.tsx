@@ -37,7 +37,7 @@ export const AdminSetup = () => {
     setLoading(true);
     try {
       // Create admin role for the user  
-      const { error } = await supabase.rpc('create_first_admin_user', {
+      const { error } = await supabase.rpc('create_first_admin_user' as any, {
         admin_email: adminEmail
       });
 
@@ -106,7 +106,7 @@ export const AdminSetup = () => {
             The user must register a regular account first, then enter their email below to grant admin privileges.
           </AlertDescription>
         </Alert>
-        
+
         <div className="space-y-2">
           <Label htmlFor="adminEmail">Admin User Email</Label>
           <Input
@@ -118,15 +118,15 @@ export const AdminSetup = () => {
             className="bg-white"
           />
         </div>
-        
-        <Button 
-          onClick={createFirstAdmin} 
+
+        <Button
+          onClick={createFirstAdmin}
           disabled={loading || !adminEmail.trim()}
           className="w-full"
         >
           {loading ? 'Creating Admin...' : 'Create First Admin'}
         </Button>
-        
+
         <div className="text-xs text-orange-700 space-y-1">
           <p><strong>Steps:</strong></p>
           <ol className="list-decimal list-inside space-y-1 ml-2">

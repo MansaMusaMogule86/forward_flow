@@ -47,10 +47,9 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
   };
 
   const navLinkCls = ({ isActive }: { isActive: boolean }) =>
-    `text-sm transition-colors duration-150 ${
-      isActive
-        ? 'text-[#BB0000]'
-        : 'text-foreground/65 hover:text-foreground'
+    `text-sm transition-colors duration-150 ${isActive
+      ? 'text-[#BB0000]'
+      : 'text-foreground/65 hover:text-foreground'
     }`;
 
   const dropdownItemCls =
@@ -107,24 +106,21 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                   </SheetTitle>
                   <nav className="mt-6 space-y-1">
                     {[
-                      { to: '/',                label: 'Home' },
-                      { to: '/help',            label: 'Get Help Now' },
-                      { to: '/victim-services', label: 'Healing Hub' },
-                      { to: '/youth-futures',   label: 'Youth Futures' },
-                      { to: '/about',           label: 'About Us' },
-                      { to: '/learn',           label: 'The Collective' },
-                      { to: '/auth',            label: 'Client Portal' },
-                      { to: '/partners',        label: 'Partner Portal' },
+                      { to: '/', label: 'Home' },
+                      { to: '/help', label: 'Get Help Now' },
+                      { to: '/youth-futures', label: 'Youth Futures' },
+                      { to: '/about', label: 'About Us' },
+                      { to: '/auth', label: 'Client Portal' },
+                      { to: '/partners', label: 'Partner Portal' },
                     ].map(({ to, label }) => (
                       <NavLink
                         key={to}
                         to={to}
                         onClick={() => setOpen(false)}
                         className={({ isActive }) =>
-                          `block px-4 py-2.5 rounded-sm text-sm transition-colors ${
-                            isActive
-                              ? 'text-[#BB0000]'
-                              : 'text-foreground/65 hover:text-foreground hover:bg-accent/40'
+                          `block px-4 py-2.5 rounded-sm text-sm transition-colors ${isActive
+                            ? 'text-[#BB0000]'
+                            : 'text-foreground/65 hover:text-foreground hover:bg-accent/40'
                           }`
                         }
                         style={{ fontFamily: 'Outfit, sans-serif' }}
@@ -185,19 +181,15 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                     <NavLink to="/help" className={navLinkCls}>Get Help Now</NavLink>
                   </NavigationMenuItem>
                   <NavigationMenuItem>
-                    <NavLink to="/victim-services" className={navLinkCls}>Healing Hub</NavLink>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
                     <NavLink to="/youth-futures" className={navLinkCls}>Youth Futures</NavLink>
                   </NavigationMenuItem>
-
                   <NavigationMenuItem>
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         className="text-sm text-foreground/65 hover:text-foreground outline-none font-normal"
                         style={{ fontFamily: 'Outfit, sans-serif' }}
                       >
-                        About ▾
+                        Resources ▾
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
                         align="start"
@@ -205,13 +197,19 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                         style={{ background: '#FFFFFF', border: '1px solid rgba(214,214,214,0.9)' }}
                       >
                         <DropdownMenuItem asChild>
-                          <NavLink to="/about" className={dropdownItemCls}>About Us</NavLink>
+                          <NavLink to="/victim-services" className={dropdownItemCls}>Healing Hub</NavLink>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <NavLink to="/blog" className={dropdownItemCls}>Knowledge Hub</NavLink>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild>
                           <NavLink to="/learn" className={dropdownItemCls}>The Collective</NavLink>
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  </NavigationMenuItem>
+                  <NavigationMenuItem>
+                    <NavLink to="/about" className={navLinkCls}>About Us</NavLink>
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
@@ -310,3 +308,4 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
 };
 
 export default Header;
+

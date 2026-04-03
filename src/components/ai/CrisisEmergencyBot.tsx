@@ -5,6 +5,7 @@ import { Phone, MessageSquare, X, Send, Mic, MicOff, Bot, HeartHandshake, Heart 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
 import EmailChatHistoryModal from '@/components/ai/EmailChatHistoryModal';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -97,32 +98,17 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
     setIsLoading(true);
 
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      if (!supabaseUrl || !supabaseKey) {
-        console.error('Supabase configuration missing in CrisisEmergencyBot');
-        throw new Error('Service temporarily unavailable');
-      }
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/crisis-emergency-ai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('crisis-emergency-ai', {
+        body: {
           query: userMessage,
           urgencyLevel: 'moderate',
           previousContext: conversationContext
-        })
+        }
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        throw new Error(error.message);
       }
-
-      const data = await response.json();
       
       // Add AI response message with resources
       const aiMessage: Message = {

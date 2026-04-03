@@ -38,83 +38,15 @@ export const PartnerSupportChatbot = () => {
 
     try {
       const { supabase } = await import('@/integrations/supabase/client');
-      const { data: { session } } = await supabase.auth.getSession();
-      const token = session?.access_token;
       
-      if (!token) {
-        throw new Error('You must be logged in to use the partner support chat.');
-      }
-
-      const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/partner-support-chat`;
-      
-      const response = await fetch(CHAT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ messages: [...messages, userMessage] }),
+      const { data, error } = await supabase.functions.invoke('partner-support-chat', {
+        body: { messages: [...messages, userMessage] }
       });
 
-      if (!response.ok) {
-        if (response.status === 429) {
-          throw new Error('Too many requests. Please wait a moment and try again.');
-        }
-        if (response.status === 402) {
-          throw new Error('AI service temporarily unavailable. Please try again later.');
-        }
-        throw new Error('Failed to get response');
-      }
+      if (error) throw error;
+      if (!data) throw new Error('Failed to get response');
 
-      if (!response.body) throw new Error('No response body');
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let textBuffer = '';
-      let assistantContent = '';
-      let streamDone = false;
-
-      // Add empty assistant message
-      setMessages(prev => [...prev, { role: 'assistant', content: '' }]);
-
-      while (!streamDone) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        textBuffer += decoder.decode(value, { stream: true });
-
-        let newlineIndex: number;
-        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
-          let line = textBuffer.slice(0, newlineIndex);
-          textBuffer = textBuffer.slice(newlineIndex + 1);
-
-          if (line.endsWith('\r')) line = line.slice(0, -1);
-          if (line.startsWith(':') || line.trim() === '') continue;
-          if (!line.startsWith('data: ')) continue;
-
-          const jsonStr = line.slice(6).trim();
-          if (jsonStr === '[DONE]') {
-            streamDone = true;
-            break;
-          }
-
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const content = parsed.choices?.[0]?.delta?.content;
-            if (content) {
-              assistantContent += content;
-              setMessages(prev => {
-                const newMessages = [...prev];
-                newMessages[newMessages.length - 1] = { role: 'assistant', content: assistantContent };
-                return newMessages;
-              });
-            }
-          } catch {
-            textBuffer = line + '\n' + textBuffer;
-            break;
-          }
-        }
-      }
-
+      setMessages(prev => [...prev, { role: 'assistant', content: data.content || data.response || '' }]);
     } catch (error: any) {
       console.error('Error in chat:', error);
       toast({

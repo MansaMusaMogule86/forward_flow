@@ -44,7 +44,7 @@ serve(async (req) => {
       return errorResponse('Missing topic or messages', 400);
     }
 
-    const { messages, topic, stream: shouldStream = true } = body;
+    const { messages, topic, stream: shouldStream = false } = body;
     currentTopic = topic;
 
     if (!PROMPTS[topic as TopicType]) {
@@ -53,7 +53,7 @@ serve(async (req) => {
 
     // Rate limiting
     const rateLimit = await checkAiRateLimit(supabase, req, `chat-${topic}`);
-    userId = rateLimit.userId;
+    userId = rateLimit.identifier;
 
     if (rateLimit.limited) {
       await logAiUsage(supabase, `chat-${topic}`, Date.now() - startTime, 1, userId);

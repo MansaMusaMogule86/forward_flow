@@ -12,6 +12,7 @@ export interface RateLimitResult {
   identifier: string;
   maxRequests: number;
   remaining: number;
+  message?: string;
 }
 
 export async function checkAiRateLimit(

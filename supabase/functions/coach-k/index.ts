@@ -12,6 +12,7 @@ interface ChatMessage {
 
 interface ChatRequest {
   messages: ChatMessage[];
+  stream?: boolean;
 }
 
 const SYSTEM_PROMPT = `You are Coach Kay, the primary AI-powered navigator for Forward Focus Elevation. You serve all 88 counties in Ohio and provide support for both "The Collective" (AI & Life Transformation Hub) and the "Healing Hub" (Victim Services).
@@ -54,11 +55,11 @@ serve(async (req) => {
       return errorResponse('Missing messages', 400);
     }
 
-    const { messages } = body;
+    const { messages, stream: shouldStream = false } = body;
 
     // Standardized rate limiting
     const rateLimit = await checkAiRateLimit(supabase, req, endpoint);
-    userId = rateLimit.userId;
+    userId = rateLimit.identifier;
 
     if (rateLimit.limited) {
       await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
@@ -115,7 +116,7 @@ serve(async (req) => {
       OPENROUTER_API_KEY,
       {
         messages: openRouterMessages,
-        stream: true,
+        stream: shouldStream,
         temperature: 0.7,
         max_tokens: 1000,
       },
@@ -129,6 +130,14 @@ serve(async (req) => {
 
     // Log success (approximate for streaming)
     await logAiUsage(supabase, endpoint, Date.now() - startTime, 0, userId);
+
+    if (!shouldStream) {
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      return new Response(JSON.stringify({ response: content }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(response.body, {
       headers: {

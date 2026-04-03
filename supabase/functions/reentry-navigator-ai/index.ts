@@ -41,7 +41,7 @@ serve(async (req) => {
 
     // Standardized rate limiting
     const rateLimit = await checkAiRateLimit(supabase, req, endpoint);
-    userId = rateLimit.userId;
+    userId = rateLimit.identifier;
 
     if (rateLimit.limited) {
       await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);

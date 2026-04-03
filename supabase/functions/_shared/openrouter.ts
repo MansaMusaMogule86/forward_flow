@@ -1,41 +1,33 @@
 // OpenRouter shared configuration
-// Cheapest + Strongest models for our use case
+// Updated with reliable, cost-effective models that actually work
 
 export const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-// Model selection based on use case - optimized for cost vs performance
-// STRATEGY: Free/cheap for 95% of traffic, Claude ONLY for crisis detection
+// Model selection - RELIABLE options on OpenRouter
+// Prioritizing models that are consistently available
 export const OPENROUTER_MODELS = {
-  // Ultra-cheap, fast for general chat and streaming (FREE tier)
-  CHAT_STREAMING: 'google/gemini-flash-1.5:free',
+  // Primary: Google's Gemma 3 4B - reliable free tier, fast
+  CHAT_STREAMING: 'google/gemma-3-4b-it:free',
   
-  // Slightly better quality for important conversations (CHEAP - $0.10/1M)
-  CHAT_STANDARD: 'qwen/qwen-2.5-7b-instruct',
+  // Standard: Mistral 7B Instruct - good instruction following
+  CHAT_STANDARD: 'mistralai/mistral-7b-instruct:free',
   
-  // Crisis/emergency - ONLY use Claude for actual crisis situations
-  // Safety-tuned, trauma-informed responses for vulnerable users
+  // Crisis/emergency: Claude Haiku - reliable paid option for safety
   CRISIS_SUPPORT: 'anthropic/claude-3-haiku',
+  CRISIS_SPECIALIZED: 'anthropic/claude-3-haiku',
   
-  // Complex reasoning and structured output (FREE tier)
-  COMPLEX_REASONING: 'google/gemini-flash-1.5:free',
+  // Complex reasoning: Use Gemma or Mistral
+  COMPLEX_REASONING: 'google/gemma-3-4b-it:free',
   
-  // Resource discovery - structured JSON output (CHEAP - $0.10/1M)
-  RESOURCE_DISCOVERY: 'mistral/ministral-8b',
+  // Resource discovery: Mistral is good at structured output
+  RESOURCE_DISCOVERY: 'mistralai/mistral-7b-instruct:free',
   
-  // Fallback - always available (CHEAP)
-  FALLBACK: 'qwen/qwen-2.5-7b-instruct',
+  // Multiple fallbacks in order of preference
+  FALLBACK_1: 'mistralai/mistral-7b-instruct:free',
+  FALLBACK_2: 'google/gemma-3-4b-it:free',
+  FALLBACK_3: 'gryphe/mythomax-l2-13b:free',
+  FALLBACK: 'mistralai/mistral-7b-instruct:free',
 };
-
-// Pricing reference (per 1M tokens as of 2026):
-// google/gemini-flash-1.5:free - $0 (free tier, rate limited) - 90% of traffic
-// qwen/qwen-2.5-7b-instruct - $0.10/$0.10 (input/output) - fallback
-// mistral/ministral-8b - $0.10/$0.10 - structured output
-// anthropic/claude-3-haiku - $0.25/$1.25 - CRISIS ONLY (rare)
-//
-// HYBRID STRATEGY:
-// - 90% of calls = FREE (Gemini Flash)
-// - 9% of calls = CHEAP $0.10 (Qwen fallback)
-// - 1% of calls = Claude (only for detected crisis situations)
 
 export interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant';
@@ -57,7 +49,7 @@ export async function callOpenRouter(
   apiKey: string,
   request: OpenRouterRequest
 ): Promise<Response> {
-  return fetch(OPENROUTER_BASE_URL, {
+  const response = await fetch(OPENROUTER_BASE_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
@@ -67,38 +59,71 @@ export async function callOpenRouter(
     },
     body: JSON.stringify(request),
   });
+  
+  return response;
 }
 
-// Retry logic for failed requests with fallback models
+// Enhanced retry logic with multiple fallbacks
 export async function callOpenRouterWithFallback(
   apiKey: string,
   request: Omit<OpenRouterRequest, 'model'>,
   primaryModel: string,
-  fallbackModel: string = OPENROUTER_MODELS.FALLBACK,
+  fallbackModel?: string,
   maxRetries: number = 2
 ): Promise<Response> {
+  const fallbackChain = [
+    primaryModel,
+    fallbackModel || OPENROUTER_MODELS.FALLBACK_1,
+    OPENROUTER_MODELS.FALLBACK_2,
+    OPENROUTER_MODELS.FALLBACK_3,
+  ];
+  
   let lastError: Error | null = null;
   
-  // Try primary model
-  for (let i = 0; i < maxRetries; i++) {
-    try {
-      const response = await callOpenRouter(apiKey, { ...request, model: primaryModel });
-      if (response.ok) return response;
-      
-      // If rate limited or payment required, try fallback immediately
-      if (response.status === 429 || response.status === 402) {
-        console.log(`Primary model ${primaryModel} unavailable, trying fallback...`);
-        break;
+  // Try each model in the chain
+  for (const model of fallbackChain) {
+    for (let i = 0; i < maxRetries; i++) {
+      try {
+        console.log(`[OpenRouter] Trying model: ${model} (attempt ${i + 1}/${maxRetries})`);
+        
+        const response = await callOpenRouter(apiKey, { ...request, model });
+        
+        if (response.ok) {
+          console.log(`[OpenRouter] Success with model: ${model}`);
+          return response;
+        }
+        
+        // Try to parse error for better debugging
+        let errorDetails = '';
+        try {
+          const errorData = await response.clone().json();
+          errorDetails = JSON.stringify(errorData);
+        } catch {
+          errorDetails = await response.clone().text();
+        }
+        
+        console.error(`[OpenRouter] Model ${model} failed with status ${response.status}: ${errorDetails}`);
+        
+        // If rate limited (429) or payment required (402), move to next model immediately
+        if (response.status === 429 || response.status === 402) {
+          console.log(`[OpenRouter] Model ${model} unavailable, trying next...`);
+          break;
+        }
+        
+        // For other errors, retry same model
+        lastError = new Error(`OpenRouter error ${response.status}: ${errorDetails}`);
+      } catch (err) {
+        console.error(`[OpenRouter] Network error with model ${model}:`, err);
+        lastError = err as Error;
       }
       
-      lastError = new Error(`OpenRouter error: ${response.status}`);
-    } catch (err) {
-      lastError = err as Error;
+      // Small delay before retry
+      if (i < maxRetries - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     }
   }
   
-  // Try fallback model
-  console.log(`Using fallback model: ${fallbackModel}`);
-  return callOpenRouter(apiKey, { ...request, model: fallbackModel });
+  // All models failed
+  throw lastError || new Error('All OpenRouter models failed');
 }
-

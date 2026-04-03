@@ -57,6 +57,7 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const ExpungementProgram = lazy(() => import("./pages/ExpungementProgram"));
 const ExpungementApplication = lazy(() => import("./pages/ExpungementApplication"));
+const Reentry = lazy(() => import("./pages/Reentry"));
 
 const queryClient = new QueryClient();
 
@@ -131,6 +132,7 @@ const App = () => {
                           <Route path="/blog/:slug" element={<BlogPost />} />
                           <Route path="/expungement-program" element={<ExpungementProgram />} />
                           <Route path="/expungement-application" element={<ExpungementApplication />} />
+                          <Route path="/reentry" element={<Reentry />} />
                           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                           <Route path="*" element={<NotFound />} />
                         </Routes>

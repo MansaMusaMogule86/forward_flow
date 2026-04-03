@@ -119,38 +119,21 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
 
   const sendMessage = async (userQuery: string) => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      if (!supabaseUrl || !supabaseKey) {
-        logger.error('Supabase configuration missing in ReentryNavigatorAI');
-        throw new Error('Service temporarily unavailable');
-      }
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/reentry-navigator-ai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('reentry-navigator-ai', {
+        body: {
           query: userQuery,
           reentryStage,
           priorityNeeds: [],
           selectedCoach: selectedCoach,
-          previousContext: conversationContext.slice(-6), // Keep last 6 messages for context
-        })
+          previousContext: conversationContext.slice(-6),
+        }
       });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        logger.error('Reentry Navigator AI error:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (error) {
+        logger.error('Reentry Navigator AI error:', error);
+        throw new Error(error.message);
       }
 
-      const data = await response.json();
-
-      // We no longer need to format manually as ReactMarkdown handles it
       const formattedResponse = data.response;
       
       setMessages(prev => {
@@ -164,7 +147,6 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
         return newMessages;
       });
 
-      // Update conversation context
       setConversationContext(prev => [
         ...prev,
         { role: 'user', content: userQuery },
@@ -174,7 +156,6 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
       logger.error(`${selectedCoach ? selectedCoach.name : 'Coach Kay'} (Reentry Navigator) AI error:`, error);
       toast.error("I'm having trouble connecting to the AI. Switching to fallback resources.");
 
-      // Fallback: client-side reentry resource lookup so users still get help
       try {
         const { data: resources } = await supabase
           .from('resources')
@@ -223,7 +204,6 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
     setInput('');
     setIsLoading(true);
 
-    // Add empty AI message for response
     const aiMessage: Message = {
       id: (Date.now() + 1).toString(),
       type: 'ai',
@@ -233,7 +213,6 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
     setMessages(prev => [...prev, aiMessage]);
 
     try {
-      // Send message to the selected coach
       await sendMessage(userInput);
     } finally {
       setIsLoading(false);

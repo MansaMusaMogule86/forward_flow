@@ -1,14 +1,6 @@
 {
-  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "lib": ["ESNext", "DOM"],
-    "strict": true,
-    "noEmit": true,
-    "allowImportingTsExtensions": true,
-    "skipLibCheck": true
-  },
-  "include": ["./**/*.ts"]
+    "lib": ["deno.ns", "deno.window"],
+    "types": ["https://deno.land/std@0.224.0/types.d.ts"]
+  }
 }

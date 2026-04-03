@@ -74,33 +74,16 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
 
   const sendMessage = async (messages: {role: string, content: string}[]) => {
     try {
-      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-      const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-      if (!supabaseUrl || !supabaseKey) {
-        console.error('Supabase configuration missing in VictimSupportAI');
-        throw new Error('Service temporarily unavailable');
-      }
-
-      const response = await fetch(`${supabaseUrl}/functions/v1/victim-support-ai`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseKey}`
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('victim-support-ai', {
+        body: {
           query: messages[messages.length - 1].content,
           victimType: 'general',
           traumaLevel: 'ongoing',
           previousContext: messages.slice(0, -1)
-        })
+        }
       });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
+      
+      if (error) throw error;
       
       // Update AI message with the response
       setMessages(prev => {
@@ -119,10 +102,10 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
 
       // Fallback: update existing AI placeholder instead of adding new message
       try {
-        const { data: resources } = await supabase
+        const { data: resources } = await (supabase as any)
           .from('resources')
           .select('*')
-          .or('type.ilike.%victim%,type.ilike.%legal aid%,type.ilike.%compensation%,type.ilike.%counseling%,type.ilike.%trauma%,type.ilike.%advocacy%,type.ilike.%domestic violence%,type.ilike.%sexual assault%')
+          .or('category.ilike.%victim%,category.ilike.%legal aid%,category.ilike.%compensation%,category.ilike.%counseling%,category.ilike.%trauma%,category.ilike.%advocacy%,category.ilike.%domestic violence%,category.ilike.%sexual assault%')
           .eq('verified', true)
           .limit(8);
 
@@ -132,7 +115,15 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
           const lastMessage = newMessages[newMessages.length - 1];
           if (lastMessage.type === 'ai') {
             lastMessage.content = content;
-            lastMessage.resources = resources || [];
+            lastMessage.resources = (resources || []).map((r: any) => ({
+              id: r.id,
+              name: r.title,
+              organization: r.organization || 'Community Resource',
+              type: r.category || 'Support',
+              description: r.description || undefined,
+              website: r.website_url || undefined,
+              phone: r.contact_info || undefined
+            }));
           }
           return newMessages;
         });

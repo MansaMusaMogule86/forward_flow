@@ -37,14 +37,15 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const body = await parseRequestBody<{ messages: OpenRouterMessage[] }>(req);
-    if (!body || !body.messages) {
+    const body = await parseRequestBody<any>(req);
+    const { messages, stream: shouldStream = false } = body || {};
+    if (!messages) {
       return errorResponse('Missing messages', 400);
     }
 
     // Rate limiting
     const rateLimit = await checkAiRateLimit(supabase, req, endpoint);
-    userId = rateLimit.userId;
+    userId = rateLimit.identifier;
 
     if (rateLimit.limited) {
       await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
@@ -62,9 +63,9 @@ serve(async (req) => {
       {
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
-          ...body.messages
+          ...messages
         ],
-        stream: true,
+        stream: shouldStream,
         temperature: 0.7,
       },
       OPENROUTER_MODELS.CHAT_STREAMING,
@@ -77,6 +78,14 @@ serve(async (req) => {
 
     // Log success
     await logAiUsage(supabase, endpoint, Date.now() - startTime, 0, userId);
+
+    if (!shouldStream) {
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content || '';
+      return new Response(JSON.stringify({ response: content }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
     return new Response(response.body, {
       headers: { 
