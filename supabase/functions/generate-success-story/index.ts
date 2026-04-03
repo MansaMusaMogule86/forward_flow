@@ -1,43 +1,50 @@
+import "xhr";
 import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
+import { corsHeaders, handleCorsPreFlight, logAiUsage, parseRequestBody, errorResponse, successResponse } from "../_shared/utils.ts";
+import { checkAiRateLimit } from "../_shared/rate-limit.ts";
 import { OPENROUTER_MODELS, callOpenRouterWithFallback, OpenRouterMessage } from '../_shared/openrouter.ts';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface SuccessStoryRequest {
+  basicInfo: string;
+  outcome?: string;
+  participantQuote?: string;
+}
 
-serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
+serve(async (req) => {
+  const preflight = handleCorsPreFlight(req);
+  if (preflight) return preflight;
+
+  const startTime = Date.now();
+  let userId: string | undefined;
+  const endpoint = 'generate-success-story';
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
   try {
-    const { basicInfo, outcome, participantQuote } = await req.json();
+    const body = await parseRequestBody<SuccessStoryRequest>(req);
+    if (!body || !body.basicInfo) {
+      return errorResponse('Missing basicInfo', 400);
+    }
 
-    // Input validation
-    if (!basicInfo || typeof basicInfo !== 'string' || basicInfo.length > 2000) {
-      return new Response(JSON.stringify({ error: 'Invalid or missing basicInfo (max 2000 chars)' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    const { basicInfo, outcome, participantQuote } = body;
+
+    // Rate limiting
+    const rateLimit = await checkAiRateLimit(supabase, req, endpoint);
+    userId = rateLimit.userId;
+
+    if (rateLimit.limited) {
+      await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
+      return new Response(
+        JSON.stringify({ error: rateLimit.message || 'Rate limit exceeded.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
-    if (outcome && (typeof outcome !== 'string' || outcome.length > 1000)) {
-      return new Response(JSON.stringify({ error: 'Invalid outcome (max 1000 chars)' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    if (participantQuote && (typeof participantQuote !== 'string' || participantQuote.length > 1000)) {
-      return new Response(JSON.stringify({ error: 'Invalid participantQuote (max 1000 chars)' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-    
+
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
-    if (!OPENROUTER_API_KEY) {
-      throw new Error('OPENROUTER_API_KEY not configured');
-    }
+    if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not configured');
 
     const systemPrompt = `You are a professional content writer specializing in creating compelling success stories for social services and community organizations. Your goal is to highlight positive outcomes, celebrate achievements, and inspire others while maintaining dignity and respect for all individuals.`;
 
@@ -60,7 +67,6 @@ serve(async (req: Request) => {
       "suggestedTags": ["tag1", "tag2", "..."]
     }`;
 
-    // Use OpenRouter for generation
     const response = await callOpenRouterWithFallback(
       OPENROUTER_API_KEY,
       {
@@ -77,20 +83,6 @@ serve(async (req: Request) => {
     );
 
     if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }), {
-          status: 429,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI service requires payment. Please contact support.' }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      const errorText = await response.text();
-      console.error('OpenRouter error:', errorText);
       throw new Error(`AI API error: ${response.status}`);
     }
 
@@ -98,18 +90,15 @@ serve(async (req: Request) => {
     const content = data.choices[0].message.content;
     const result = JSON.parse(content);
 
-    console.log('AI story generated');
+    // Log success
+    await logAiUsage(supabase, endpoint, Date.now() - startTime, 0, userId);
 
-    return new Response(JSON.stringify(result), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return successResponse(result);
 
-  } catch (error: any) {
-    console.error('Error in generate-success-story:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  } catch (error) {
+    console.error(`[${endpoint}] Error:`, error);
+    await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
+    return errorResponse(error instanceof Error ? error.message : 'Internal error', 500);
   }
 });
 

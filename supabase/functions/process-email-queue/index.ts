@@ -164,6 +164,8 @@ function getSubjectForType(emailType: string): string {
       return "🌟 Week in Review + What's Coming";
     case 'community_call':
       return "🎙️ Tonight at 6 PM: Weekly Community Call";
+    case 'welcome_email':
+      return "Welcome to the Forward Focus Elevation Collective! 🌟";
     default:
       return "Forward Focus Elevation Update";
   }

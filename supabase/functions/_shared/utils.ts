@@ -97,6 +97,32 @@ export const verifyWebhookSignature = async (
 };
 
 /**
+ * Standardized AI Usage Logging
+ */
+export const logAiUsage = async (
+  supabase: any,
+  endpoint: string,
+  responseTimeMs: number,
+  errorCount: number = 0,
+  userId?: string
+) => {
+  try {
+    const { error } = await supabase.rpc('log_ai_usage', {
+      p_endpoint_name: endpoint,
+      p_user_id: userId || null,
+      p_response_time_ms: responseTimeMs,
+      p_error_count: errorCount
+    });
+
+    if (error) {
+      console.error(`[Analytics] Failed to log usage for ${endpoint}:`, error);
+    }
+  } catch (err) {
+    console.error(`[Analytics] Unexpected error logging usage for ${endpoint}:`, err);
+  }
+};
+
+/**
  * Helper to parse and validate request JSON
  */
 export const parseRequestBody = async <T>(req: Request): Promise<T | null> => {
