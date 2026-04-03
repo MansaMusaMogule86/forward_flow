@@ -1,8 +1,8 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import "xhr";
+import { serve } from "@std/http/server";
+import { createClient } from '@supabase/supabase-js';
 import { checkAiRateLimit } from '../_shared/rate-limit.ts';
-import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback, OpenRouterMessage } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -105,7 +105,7 @@ Remember: Safety first. Your role is to stabilize and connect users with verifie
     const openRouterResponse = await callOpenRouterWithFallback(
       OPENROUTER_API_KEY,
       {
-        messages,
+        messages: messages as OpenRouterMessage[],
         max_tokens: 1000,
       },
       OPENROUTER_MODELS.CRISIS_SUPPORT,
@@ -227,3 +227,4 @@ Remember: Safety first. Your role is to stabilize and connect users with verifie
     });
   }
 });
+

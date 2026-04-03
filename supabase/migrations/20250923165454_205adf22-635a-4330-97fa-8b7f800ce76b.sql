@@ -13,7 +13,7 @@ AS $$
 $$;
 
 -- 2. Fix is_user_admin function  
-CREATE OR REPLACE FUNCTION public.is_user_admin(user_id uuid DEFAULT auth.uid())
+CREATE OR REPLACE FUNCTION public.is_user_admin(p_user_id uuid DEFAULT auth.uid())
 RETURNS boolean 
 LANGUAGE plpgsql
 STABLE 
@@ -27,7 +27,7 @@ BEGIN
   
   RETURN EXISTS(
     SELECT 1 FROM public.user_roles 
-    WHERE user_roles.user_id = is_user_admin.user_id 
+    WHERE user_roles.user_id = p_user_id 
     AND role = 'admin'
   );
 END;
@@ -38,8 +38,7 @@ $$;
 DROP POLICY IF EXISTS "Anyone can view learning pathways" ON public.learning_pathways;
 DROP POLICY IF EXISTS "Learning pathways select authenticated" ON public.learning_pathways;
 
-CREATE POLICY "Authenticated users can view learning pathways" 
-ON public.learning_pathways 
+DROP POLICY IF EXISTS "Authenticated users can view learning pathways" ON public.learning_pathways; CREATE POLICY "Authenticated users can view learning pathways" ON public.learning_pathways 
 FOR SELECT 
 TO authenticated
 USING (true);
@@ -48,8 +47,7 @@ USING (true);
 DROP POLICY IF EXISTS "Anyone can view learning modules" ON public.learning_modules;
 DROP POLICY IF EXISTS "Learning modules select authenticated" ON public.learning_modules;
 
-CREATE POLICY "Authenticated users can view learning modules"
-ON public.learning_modules
+DROP POLICY IF EXISTS "Authenticated users can view learning modules" ON public.learning_modules; CREATE POLICY "Authenticated users can view learning modules" ON public.learning_modules
 FOR SELECT 
 TO authenticated
 USING (true);
@@ -78,7 +76,7 @@ $$;
 -- 5. Add rate limiting function for enhanced security
 CREATE OR REPLACE FUNCTION public.check_enhanced_rate_limit(
   user_id uuid, 
-  operation_type text, 
+  p_action_type text, 
   max_attempts integer DEFAULT 10,
   window_minutes integer DEFAULT 60
 )
@@ -90,11 +88,11 @@ AS $$
 DECLARE
   attempt_count integer;
 BEGIN
-  -- Count recent attempts for this user and operation
+  -- Count recent attempts for this user and p_action
   SELECT COUNT(*) INTO attempt_count
   FROM public.audit_log
   WHERE audit_log.user_id = check_enhanced_rate_limit.user_id
-  AND action LIKE '%' || upper(operation_type) || '%'
+  AND action LIKE '%' || upper(p_action_type) || '%'
   AND created_at > NOW() - (window_minutes || ' minutes')::INTERVAL;
   
   -- Return true if under limit
@@ -103,7 +101,7 @@ END;
 $$;
 
 -- 6. Add function to mask sensitive contact information
-CREATE OR REPLACE FUNCTION public.mask_contact_info(contact_value text)
+CREATE OR REPLACE FUNCTION public.mask_contact_text(contact_value text)
 RETURNS text
 LANGUAGE plpgsql
 IMMUTABLE
@@ -131,11 +129,10 @@ END;
 $$;
 
 -- 7. Update audit logging to be more secure
-CREATE OR REPLACE FUNCTION public.log_sensitive_access(
-  table_name text,
+CREATE OR REPLACE FUNCTION public.log_sensitive_access(table_name text,
   action_name text,
   record_id uuid DEFAULT NULL,
-  is_sensitive boolean DEFAULT true
+  sensitive_data_accessed boolean DEFAULT true
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -146,8 +143,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -155,12 +152,12 @@ BEGIN
   ) VALUES (
     auth.uid(),
     action_name,
-    log_sensitive_access.table_name,
-    log_sensitive_access.record_id,
-    is_sensitive,
+    log_sensitive_access.p_table_name,
+    log_sensitive_access.p_record_id,
+    p_sensitive_data,
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;

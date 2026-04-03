@@ -18,8 +18,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -29,7 +29,7 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -54,8 +54,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -65,13 +65,13 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- Create trigger for payment access logging (only for DML operations)
+-- Create trigger for payment access logging (only for DML p_actions)
 DROP TRIGGER IF EXISTS payment_access_audit ON public.payments;
 CREATE TRIGGER payment_access_audit
   AFTER INSERT OR UPDATE OR DELETE ON public.payments
@@ -97,7 +97,7 @@ BEGIN
     INSERT INTO public.audit_log (
       user_id,
       action,
-      table_name,
+      p_table_name,
       sensitive_data_accessed,
       created_at
     ) VALUES (
@@ -106,12 +106,12 @@ BEGIN
       'security_monitoring',
       true,
       now()
-    );
+    ) ON CONFLICT DO NOTHING;
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- Create function to clean up old audit logs (data retention)
+-- CREATE OR REPLACE FUNCTION to clean up old audit logs (data retention)
 CREATE OR REPLACE FUNCTION public.cleanup_audit_logs()
 RETURNS void AS $$
 BEGIN

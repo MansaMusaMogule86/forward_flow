@@ -6,8 +6,7 @@
 DROP POLICY IF EXISTS "public_basic_org_info" ON public.organizations;
 
 -- Create a secure policy that uses a function to return only safe columns for anonymous access
-CREATE POLICY "public_safe_org_info" 
-ON public.organizations 
+DROP POLICY IF EXISTS "public_safe_org_info" ON public.organizations; CREATE POLICY "public_safe_org_info" ON public.organizations 
 FOR SELECT 
 USING (
   verified = true 
@@ -57,7 +56,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -66,7 +65,7 @@ BEGIN
     'organizations',
     false,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return only safe, non-sensitive columns
   RETURN QUERY
@@ -97,7 +96,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -106,7 +105,7 @@ BEGIN
     'organizations',
     false,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN QUERY
   SELECT 

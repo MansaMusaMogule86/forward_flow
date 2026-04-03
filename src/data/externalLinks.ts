@@ -1,13 +1,13 @@
 export const EXTERNAL = {
-  base: "https://forwardfocuselevation.org",
+  base: "https://forward-focus-elevation.org",
   programs: {
-    mindfulness: "https://forwardfocuselevation.org",
-    financial: "https://forwardfocuselevation.org",
-    business: "https://forwardfocuselevation.org",
-    community: "https://forwardfocuselevation.org",
+    mindfulness: "https://forward-focus-elevation.org",
+    financial: "https://forward-focus-elevation.org",
+    business: "https://forward-focus-elevation.org",
+    community: "https://forward-focus-elevation.org",
   },
   partner: {
-    volunteer: "https://forwardfocuselevation.org",
-    partnership: "https://forwardfocuselevation.org",
+    volunteer: "https://forward-focus-elevation.org",
+    partnership: "https://forward-focus-elevation.org",
   },
 } as const;

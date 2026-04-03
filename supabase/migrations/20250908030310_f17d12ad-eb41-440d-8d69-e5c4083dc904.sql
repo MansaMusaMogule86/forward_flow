@@ -1,5 +1,5 @@
 -- Strengthen admin role checking with additional security measures
-CREATE OR REPLACE FUNCTION public.is_user_admin(user_id uuid DEFAULT auth.uid())
+CREATE OR REPLACE FUNCTION public.is_user_admin(p_user_id uuid DEFAULT auth.uid())
 RETURNS boolean
 LANGUAGE plpgsql
 STABLE SECURITY DEFINER
@@ -23,7 +23,7 @@ BEGIN
     -- Check for admin role with additional validation
     SELECT COUNT(*) INTO role_count
     FROM public.user_roles 
-    WHERE user_roles.user_id = is_user_admin.user_id 
+    WHERE user_roles.user_id = p_user_id 
     AND role = 'admin';
     
     -- Log admin access attempt for audit purposes
@@ -31,7 +31,7 @@ BEGIN
         INSERT INTO public.audit_log (
             user_id,
             action,
-            table_name,
+            p_table_name,
             sensitive_data_accessed,
             created_at
         ) VALUES (
@@ -40,14 +40,14 @@ BEGIN
             'user_roles',
             true,
             now()
-        );
+        ) ON CONFLICT DO NOTHING;
     END IF;
     
     RETURN role_count > 0;
 END;
 $$;
 
--- Add enhanced rate limiting for sensitive operations
+-- Add enhanced rate limiting for sensitive p_actions
 CREATE OR REPLACE FUNCTION public.check_enhanced_rate_limit(
     p_user_id uuid DEFAULT auth.uid(), 
     p_operation text DEFAULT 'general'::text, 
@@ -69,7 +69,7 @@ BEGIN
         p_limit_per_hour := p_limit_per_hour * 2; -- Double limit for admins
     END IF;
     
-    -- Count requests in the last hour for this user/operation combination
+    -- Count requests in the last hour for this user/p_action combination
     SELECT COUNT(*) INTO request_count
     FROM public.audit_log
     WHERE user_id = p_user_id
@@ -80,8 +80,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         created_at
     ) VALUES (
         p_user_id,
@@ -89,13 +89,13 @@ BEGIN
         'rate_limiting',
         null,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN request_count < p_limit_per_hour;
 END;
 $$;
 
--- Create function to validate input data
+-- CREATE OR REPLACE FUNCTION to validate input data
 CREATE OR REPLACE FUNCTION public.validate_contact_input(
     p_name text,
     p_email text DEFAULT null,
@@ -137,7 +137,7 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     -- Validate input data
-    IF NOT validate_contact_input(NEW.name, NULL, NEW.contact_info) THEN
+    IF NOT validate_contact_input(NEW.name, NULL, NEW.contact_text) THEN
         RAISE EXCEPTION 'Invalid input data provided';
     END IF;
     
@@ -145,8 +145,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -156,7 +156,7 @@ BEGIN
         NEW.id,
         true,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN NEW;
 END;
@@ -189,8 +189,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -200,7 +200,7 @@ BEGIN
         NEW.id,
         true,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN NEW;
 END;

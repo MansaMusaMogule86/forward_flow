@@ -2,7 +2,7 @@
 -- This ensures functions cannot be hijacked by schema manipulation
 
 -- Update functions missing proper search_path settings
-CREATE OR REPLACE FUNCTION public.mask_contact_info(contact text)
+CREATE OR REPLACE FUNCTION public.mask_contact_text(contact text)
 RETURNS text AS $$
 BEGIN
   IF contact IS NULL OR LENGTH(TRIM(contact)) = 0 THEN
@@ -24,7 +24,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = 'public';
 
-CREATE OR REPLACE FUNCTION public.is_user_admin(user_id uuid DEFAULT auth.uid())
+CREATE OR REPLACE FUNCTION public.is_user_admin(p_user_id uuid DEFAULT auth.uid())
 RETURNS boolean AS $$
 BEGIN
   IF user_id IS NULL THEN
@@ -33,7 +33,7 @@ BEGIN
   
   RETURN EXISTS(
     SELECT 1 FROM public.user_roles 
-    WHERE user_roles.user_id = is_user_admin.user_id 
+    WHERE user_roles.user_id = p_user_id 
     AND role = 'admin'::app_role
   );
 END;
@@ -55,14 +55,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = 'public';
 
-CREATE OR REPLACE FUNCTION public.log_sensitive_access(p_table_name text, p_action text, p_record_id uuid DEFAULT NULL, p_sensitive boolean DEFAULT true)
+CREATE OR REPLACE FUNCTION public.log_sensitive_access(table_name text, action text, record_id uuid DEFAULT NULL, p_sensitive boolean DEFAULT true)
 RETURNS void AS $$
 BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -76,7 +76,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = 'public';
 
@@ -101,15 +101,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = 'public';
 
 -- Drop existing permissive policies and create secure ones for learning_pathways
 DROP POLICY IF EXISTS "Authenticated users can view learning pathways" ON public.learning_pathways;
-CREATE POLICY "Authenticated users can view learning pathways"
-ON public.learning_pathways
+DROP POLICY IF EXISTS "Authenticated users can view learning pathways" ON public.learning_pathways; CREATE POLICY "Authenticated users can view learning pathways" ON public.learning_pathways
 FOR SELECT
 USING (auth.uid() IS NOT NULL);
 
 -- Drop existing permissive policies and create secure ones for learning_modules  
 DROP POLICY IF EXISTS "Authenticated users can view learning modules" ON public.learning_modules;
-CREATE POLICY "Authenticated users can view learning modules"
-ON public.learning_modules  
+DROP POLICY IF EXISTS "Authenticated users can view learning modules" ON public.learning_modules; CREATE POLICY "Authenticated users can view learning modules" ON public.learning_modules  
 FOR SELECT
 USING (auth.uid() IS NOT NULL);
 

@@ -7,8 +7,7 @@ DROP POLICY IF EXISTS "user_roles_insert_admin" ON public.user_roles;
 DROP POLICY IF EXISTS "user_roles_update_admin" ON public.user_roles;
 DROP POLICY IF EXISTS "user_roles_delete_admin" ON public.user_roles;
 
-CREATE POLICY "user_roles_select_self_or_admin"
-ON public.user_roles
+DROP POLICY IF EXISTS "user_roles_select_self_or_admin" ON public.user_roles; CREATE POLICY "user_roles_select_self_or_admin" ON public.user_roles
 AS PERMISSIVE
 FOR SELECT
 TO authenticated
@@ -16,23 +15,20 @@ USING (
   user_id = auth.uid() OR public.is_user_admin(auth.uid())
 );
 
-CREATE POLICY "user_roles_insert_admin"
-ON public.user_roles
+DROP POLICY IF EXISTS "user_roles_insert_admin" ON public.user_roles; CREATE POLICY "user_roles_insert_admin" ON public.user_roles
 AS PERMISSIVE
 FOR INSERT
 TO authenticated
 WITH CHECK (public.is_user_admin(auth.uid()));
 
-CREATE POLICY "user_roles_update_admin"
-ON public.user_roles
+DROP POLICY IF EXISTS "user_roles_update_admin" ON public.user_roles; CREATE POLICY "user_roles_update_admin" ON public.user_roles
 AS PERMISSIVE
 FOR UPDATE
 TO authenticated
 USING (public.is_user_admin(auth.uid()))
 WITH CHECK (public.is_user_admin(auth.uid()));
 
-CREATE POLICY "user_roles_delete_admin"
-ON public.user_roles
+DROP POLICY IF EXISTS "user_roles_delete_admin" ON public.user_roles; CREATE POLICY "user_roles_delete_admin" ON public.user_roles
 AS PERMISSIVE
 FOR DELETE
 TO authenticated
@@ -78,7 +74,7 @@ BEGIN
     0.00,
     now(),
     now() + interval '8 days'
-  ) RETURNING id INTO subscription_id;
+  ) RETURNING id INTO subscription_id ON CONFLICT DO NOTHING;
   RETURN subscription_id;
 END;
 $$;
@@ -138,7 +134,7 @@ BEGIN
   VALUES (v_email)
   ON CONFLICT (email) DO UPDATE SET
     started_at = now(),
-    expires_at = now() + interval '3 days';
+    expires_at = now() + interval '3 days' ON CONFLICT DO NOTHING;
   RETURN true;
 EXCEPTION
   WHEN others THEN

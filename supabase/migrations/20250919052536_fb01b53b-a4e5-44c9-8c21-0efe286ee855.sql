@@ -2,8 +2,7 @@
 DROP POLICY IF EXISTS "Users can manage their own anonymous sessions" ON public.anonymous_sessions;
 
 -- Create more restrictive RLS policy for anonymous sessions
-CREATE POLICY "Anonymous sessions token-based access" 
-ON public.anonymous_sessions 
+DROP POLICY IF EXISTS "Anonymous sessions token-based access" ON public.anonymous_sessions; CREATE POLICY "Anonymous sessions token-based access" ON public.anonymous_sessions 
 FOR ALL 
 USING (true) 
 WITH CHECK (true);
@@ -32,7 +31,7 @@ BEGIN
       ELSE anonymous_sessions.conversation_history
     END,
     updated_at = now()
-  RETURNING * INTO session_record;
+  RETURNING * INTO session_record ON CONFLICT DO NOTHING;
   
   -- Check if trial has expired
   IF session_record.trial_expired THEN

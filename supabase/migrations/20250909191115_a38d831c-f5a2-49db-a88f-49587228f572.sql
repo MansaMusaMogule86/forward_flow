@@ -39,7 +39,6 @@ GRANT SELECT ON public.organizations_public TO anon, authenticated;
 GRANT SELECT ON public.organizations_public_secure TO anon, authenticated;
 
 -- Add simple RLS policy for organizations that allows public read of verified orgs
-CREATE POLICY "Public read access to verified organizations" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Public read access to verified organizations" ON public.organizations; CREATE POLICY "Public read access to verified organizations" ON public.organizations 
 FOR SELECT 
 USING (verified = true);

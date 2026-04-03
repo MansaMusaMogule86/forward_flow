@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -136,9 +136,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log(`Reminders sent: ${successCount} success, ${failureCount} failures`);
 
-    // Log to audit_logs for monitoring
+    // Log to audit_log for monitoring
     try {
-      await supabaseClient.from('audit_logs').insert({
+      await supabaseClient.from('audit_log').insert({
         user_id: userId, // null for cron jobs
         action: `EMAIL_CAMPAIGN_${reminderType.type.toUpperCase()}`,
         resource_type: 'email_campaign',
@@ -343,3 +343,4 @@ function generateWeeklyEngagementEmail(): string {
 }
 
 serve(handler);
+

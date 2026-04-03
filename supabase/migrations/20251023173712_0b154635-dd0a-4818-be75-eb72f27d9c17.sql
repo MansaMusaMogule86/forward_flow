@@ -8,27 +8,27 @@ AS $$
   SELECT public.has_role(auth.uid(), 'admin'::app_role);
 $$;
 
--- Function to check admin operation rate limits
-CREATE OR REPLACE FUNCTION public.check_admin_operation_limit()
+-- Function to check admin p_action rate limits
+CREATE OR REPLACE FUNCTION public.check_admin_p_action_limit()
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  operation_count integer;
+  p_action_count integer;
   time_window interval := '1 minute';
-  max_operations integer := 30;
+  max_p_actions integer := 30;
 BEGIN
-  -- Count operations in the last minute for this admin
-  SELECT COUNT(*) INTO operation_count
+  -- Count p_actions in the last minute for this admin
+  SELECT COUNT(*) INTO p_action_count
   FROM public.audit_logs
   WHERE user_id = auth.uid()
     AND created_at > (now() - time_window)
     AND severity = 'info';
   
   -- Return true if under limit, false if over
-  RETURN operation_count < max_operations;
+  RETURN p_action_count < max_p_actions;
 END;
 $$;
 

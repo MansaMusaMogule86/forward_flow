@@ -21,13 +21,11 @@ CREATE TABLE IF NOT EXISTS public.success_stories (
 ALTER TABLE public.success_stories ENABLE ROW LEVEL SECURITY;
 
 -- Create policies
-CREATE POLICY "Anyone can view published success stories"
-ON public.success_stories
+DROP POLICY IF EXISTS "Anyone can view published success stories" ON public.success_stories; CREATE POLICY "Anyone can view published success stories" ON public.success_stories
 FOR SELECT
 USING (published = true);
 
-CREATE POLICY "Partners can view own success stories"
-ON public.success_stories
+DROP POLICY IF EXISTS "Partners can view own success stories" ON public.success_stories; CREATE POLICY "Partners can view own success stories" ON public.success_stories
 FOR SELECT
 USING (
   EXISTS (
@@ -37,8 +35,7 @@ USING (
   )
 );
 
-CREATE POLICY "Partners can create success stories"
-ON public.success_stories
+DROP POLICY IF EXISTS "Partners can create success stories" ON public.success_stories; CREATE POLICY "Partners can create success stories" ON public.success_stories
 FOR INSERT
 WITH CHECK (
   EXISTS (
@@ -48,8 +45,7 @@ WITH CHECK (
   )
 );
 
-CREATE POLICY "Partners can update own success stories"
-ON public.success_stories
+DROP POLICY IF EXISTS "Partners can update own success stories" ON public.success_stories; CREATE POLICY "Partners can update own success stories" ON public.success_stories
 FOR UPDATE
 USING (
   EXISTS (
@@ -59,14 +55,12 @@ USING (
   )
 );
 
-CREATE POLICY "Admins can manage all success stories"
-ON public.success_stories
+DROP POLICY IF EXISTS "Admins can manage all success stories" ON public.success_stories; CREATE POLICY "Admins can manage all success stories" ON public.success_stories
 FOR ALL
 USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Create updated_at trigger
-CREATE TRIGGER update_success_stories_updated_at
-BEFORE UPDATE ON public.success_stories
+DROP TRIGGER IF EXISTS update_success_stories_updated_at ON public.success_stories; CREATE TRIGGER update_success_stories_updated_at BEFORE UPDATE ON public.success_stories
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
@@ -83,7 +77,7 @@ ALTER TABLE public.bookings REPLICA IDENTITY FULL;
 ALTER TABLE public.security_alerts REPLICA IDENTITY FULL;
 ALTER TABLE public.success_stories REPLICA IDENTITY FULL;
 
--- Create function to get partner stats including success stories
+-- CREATE OR REPLACE FUNCTION to get partner stats including success stories
 CREATE OR REPLACE FUNCTION public.get_partner_stats_detailed()
 RETURNS TABLE(
   total_partners bigint,

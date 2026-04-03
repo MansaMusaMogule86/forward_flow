@@ -18,8 +18,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -29,7 +29,7 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -51,8 +51,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name, 
-    record_id,
+    p_table_name, 
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -66,7 +66,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN NEW;
 END;
@@ -91,8 +91,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -102,7 +102,7 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -134,7 +134,7 @@ BEGIN
     INSERT INTO public.audit_log (
       user_id,
       action,
-      table_name,
+      p_table_name,
       sensitive_data_accessed,
       created_at
     ) VALUES (
@@ -143,12 +143,12 @@ BEGIN
       'security_monitoring',
       true,
       now()
-    );
+    ) ON CONFLICT DO NOTHING;
   END IF;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- Create function to clean up old audit logs (data retention)
+-- CREATE OR REPLACE FUNCTION to clean up old audit logs (data retention)
 CREATE OR REPLACE FUNCTION public.cleanup_audit_logs()
 RETURNS void AS $$
 BEGIN

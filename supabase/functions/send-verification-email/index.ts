@@ -1,5 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { serve } from "@std/http/server";
+import { Resend } from "resend";
+import { getSiteUrl } from "../_shared/site-config.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -7,6 +8,8 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const partnerDashboardUrl = getSiteUrl("/partner-dashboard");
 
 interface VerificationEmailRequest {
   userEmail: string;
@@ -64,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
           </ul>
 
           <div style="margin: 30px 0;">
-            <a href="${Deno.env.get('VITE_SUPABASE_URL') || 'https://forward-focus-elevation.org'}/partner-dashboard"
+            <a href="${partnerDashboardUrl}"
                style="background-color: #16a34a; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
               Access Your Partner Dashboard
             </a>
@@ -156,7 +159,7 @@ const handler = async (req: Request): Promise<Response> => {
           </ul>
 
           <div style="margin: 30px 0;">
-            <a href="${Deno.env.get('VITE_SUPABASE_URL') || 'https://forward-focus-elevation.org'}/partner-dashboard" 
+            <a href="${partnerDashboardUrl}" 
                style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
               Check Application Status
             </a>
@@ -178,7 +181,6 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     const emailResponse = await resend.emails.send({
-      from: "Forward Focus Elevation <support@ffeservices.net>",
       from: "Forward Focus Elevation <noreply@forward-focus-elevation.org>",
       to: [userEmail],
       subject: subject,
@@ -207,3 +209,4 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+

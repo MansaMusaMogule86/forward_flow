@@ -39,7 +39,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -52,7 +52,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return data with conditional field masking based on access permissions
   RETURN QUERY
@@ -67,12 +67,12 @@ BEGIN
     CASE 
       WHEN is_user_admin(auth.uid()) OR has_contact_access_permission(auth.uid(), o.id) 
       THEN o.email
-      ELSE mask_contact_info(o.email)
+      ELSE mask_contact_text(o.email)
     END as email,
     CASE 
       WHEN is_user_admin(auth.uid()) OR has_contact_access_permission(auth.uid(), o.id) 
       THEN o.phone
-      ELSE mask_contact_info(o.phone)
+      ELSE mask_contact_text(o.phone)
     END as phone,
     CASE 
       WHEN is_user_admin(auth.uid()) OR has_contact_access_permission(auth.uid(), o.id) 
@@ -87,8 +87,7 @@ END;
 $$;
 
 -- Create new secure RLS policy for organizations
-CREATE POLICY "Secure organization access with field-level control"
-ON public.organizations
+DROP POLICY IF EXISTS "Secure organization access with field-level control" ON public.organizations; CREATE POLICY "Secure organization access with field-level control" ON public.organizations
 FOR SELECT
 USING (
   -- Only allow access through the secure function or for admin management
@@ -133,8 +132,8 @@ BEGIN
     INSERT INTO public.audit_log (
       user_id,
       action,
-      table_name,
-      record_id,
+      p_table_name,
+      p_record_id,
       sensitive_data_accessed,
       created_at
     ) VALUES (
@@ -144,7 +143,7 @@ BEGIN
       permission_record.id,
       true,
       now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN false;
   END IF;
@@ -190,7 +189,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -199,7 +198,7 @@ BEGIN
     'contact_access_permissions',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 
@@ -219,7 +218,7 @@ BEGIN
     SELECT 
       user_id,
       COUNT(*) as access_count,
-      COUNT(DISTINCT table_name) as tables_accessed
+      COUNT(DISTINCT p_table_name) as tables_accessed
     FROM public.audit_log
     WHERE action LIKE '%ORG%'
     AND created_at > NOW() - INTERVAL '15 minutes'
@@ -250,7 +249,7 @@ $$;
 INSERT INTO public.audit_log (
   user_id,
   action,
-  table_name,
+  p_table_name,
   sensitive_data_accessed,
   created_at
 ) VALUES (
@@ -259,4 +258,4 @@ INSERT INTO public.audit_log (
   'organizations',
   true,
   now()
-);
+) ON CONFLICT DO NOTHING;

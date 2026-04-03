@@ -1,5 +1,5 @@
 -- Create newsletter subscriptions table
-CREATE TABLE public.newsletter_subscriptions (
+CREATE TABLE IF NOT EXISTS public.newsletter_subscriptions (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   email TEXT NOT NULL UNIQUE,
   name TEXT,
@@ -16,7 +16,7 @@ CREATE TABLE public.newsletter_subscriptions (
 );
 
 -- Create email campaigns table
-CREATE TABLE public.email_campaigns (
+CREATE TABLE IF NOT EXISTS public.email_campaigns (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   subject TEXT NOT NULL,
@@ -37,30 +37,25 @@ ALTER TABLE public.newsletter_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.email_campaigns ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for newsletter_subscriptions
-CREATE POLICY "Anyone can subscribe to newsletter" 
-ON public.newsletter_subscriptions 
+DROP POLICY IF EXISTS "Anyone can subscribe to newsletter" ON public.newsletter_subscriptions; CREATE POLICY "Anyone can subscribe to newsletter" ON public.newsletter_subscriptions 
 FOR INSERT 
 WITH CHECK (true);
 
-CREATE POLICY "Users can view their own subscription" 
-ON public.newsletter_subscriptions 
+DROP POLICY IF EXISTS "Users can view their own subscription" ON public.newsletter_subscriptions; CREATE POLICY "Users can view their own subscription" ON public.newsletter_subscriptions 
 FOR SELECT 
 USING (auth.uid() = user_id OR auth.uid() IS NULL);
 
-CREATE POLICY "Users can update their own subscription" 
-ON public.newsletter_subscriptions 
+DROP POLICY IF EXISTS "Users can update their own subscription" ON public.newsletter_subscriptions; CREATE POLICY "Users can update their own subscription" ON public.newsletter_subscriptions 
 FOR UPDATE 
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can manage all subscriptions" 
-ON public.newsletter_subscriptions 
+DROP POLICY IF EXISTS "Admins can manage all subscriptions" ON public.newsletter_subscriptions; CREATE POLICY "Admins can manage all subscriptions" ON public.newsletter_subscriptions 
 FOR ALL 
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
 
 -- RLS Policies for email_campaigns  
-CREATE POLICY "Admins can manage email campaigns" 
-ON public.email_campaigns 
+DROP POLICY IF EXISTS "Admins can manage email campaigns" ON public.email_campaigns; CREATE POLICY "Admins can manage email campaigns" ON public.email_campaigns 
 FOR ALL 
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
@@ -80,8 +75,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_newsletter_subscriptions_updated_at
-  BEFORE UPDATE ON public.newsletter_subscriptions
+DROP TRIGGER IF EXISTS update_newsletter_subscriptions_updated_at ON public.newsletter_subscriptions; CREATE TRIGGER update_newsletter_subscriptions_updated_at BEFORE UPDATE ON public.newsletter_subscriptions
   FOR EACH ROW
   EXECUTE FUNCTION public.update_newsletter_subscription_updated_at();
 
@@ -94,7 +88,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_email_campaigns_updated_at
-  BEFORE UPDATE ON public.email_campaigns
+DROP TRIGGER IF EXISTS update_email_campaigns_updated_at ON public.email_campaigns; CREATE TRIGGER update_email_campaigns_updated_at BEFORE UPDATE ON public.email_campaigns
   FOR EACH ROW
   EXECUTE FUNCTION public.update_email_campaign_updated_at();

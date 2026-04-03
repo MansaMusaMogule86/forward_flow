@@ -24,7 +24,7 @@
         "competitor_analyzer"
       ],
       "models": {
-        "primary": "anthropic/claude-3.5-haiku",
+        "primary": "google/gemini-flash-1.5:free",
         "fallback": "qwen/qwen-2.5-7b-instruct"
       },
       "system_prompt": "You are an expert SEO specialist focused on nonprofit and social services websites. Your goal is to maximize organic visibility for mission-critical content. Generate comprehensive JSON-LD schemas, optimize meta tags, and ensure all content follows E-E-A-T principles. Prioritize local SEO for Ohio's 88 counties.",
@@ -62,7 +62,7 @@
         "gap_analyzer"
       ],
       "models": {
-        "primary": "google/gemini-2.0-flash-exp:free",
+        "primary": "google/gemini-flash-1.5:free",
         "fallback": "mistral/ministral-8b"
       },
       "system_prompt": "You are a content strategist for a nonprofit helping justice-impacted individuals and crime survivors. Research topics that genuinely help our audience. Focus on actionable guides, local Ohio resources, and trauma-informed content. Ensure all content aligns with our mission of providing second chances.",
@@ -100,7 +100,7 @@
         "conversation_analyzer"
       ],
       "models": {
-        "primary": "anthropic/claude-3.5-haiku",
+        "primary": "google/gemini-flash-1.5:free",
         "fallback": "qwen/qwen-2.5-7b-instruct"
       },
       "system_prompt": "You are an AI training specialist focused on safety-critical chatbots for vulnerable populations. Optimize prompts for Coach Kay and other AI assistants to provide compassionate, accurate, and safe responses. Prioritize cost-effective models from OpenRouter while maintaining quality. Ensure crisis responses are always appropriate.",
@@ -177,7 +177,7 @@
         "alert_system"
       ],
       "models": {
-        "primary": "google/gemini-2.0-flash-exp:free",
+        "primary": "google/gemini-flash-1.5:free",
         "fallback": "qwen/qwen-2.5-7b-instruct"
       },
       "system_prompt": "You are a data analyst monitoring the impact of Forward Focus Elevation. Track how users discover and interact with our resources. Identify trends in help-seeking behavior across Ohio's 88 counties. Alert on anomalies in AI usage or resource demand. Generate actionable insights for improving our services.",
@@ -215,7 +215,7 @@
         "schema_generator"
       ],
       "models": {
-        "primary": "anthropic/claude-3-haiku:beta",
+        "primary": "qwen/qwen-2.5-7b-instruct",
         "fallback": "qwen/qwen-2.5-7b-instruct"
       },
       "system_prompt": "You are a local SEO specialist focused on dominating search results across Ohio's 88 counties. Create location-specific content that helps residents find resources in their area. Optimize for queries like 'housing help in [county]' and 'victim services near me'. Ensure every county has strong visibility.",

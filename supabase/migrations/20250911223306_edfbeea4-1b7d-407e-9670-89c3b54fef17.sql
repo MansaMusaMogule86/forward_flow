@@ -19,7 +19,7 @@ BEGIN
   END IF;
 
   -- Enhanced rate limiting for admin contact reveals
-  IF NOT check_admin_operation_limit('full_contact_reveal') THEN
+  IF NOT check_admin_p_action_limit('full_contact_reveal') THEN
     RAISE EXCEPTION 'Admin contact reveal rate limit exceeded';
   END IF;
 
@@ -33,8 +33,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -48,7 +48,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return the contact information
   RETURN QUERY SELECT 
@@ -80,7 +80,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -89,7 +89,7 @@ BEGIN
     'payments',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return user's own payment data only
   RETURN QUERY 

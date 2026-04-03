@@ -19,18 +19,16 @@ CREATE TABLE IF NOT EXISTS public.partner_verifications (
 ALTER TABLE public.partner_verifications ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for partner_verifications
-CREATE POLICY "Users can view their own verifications"
-ON public.partner_verifications
+DROP POLICY IF EXISTS "Users can view their own verifications" ON public.partner_verifications; CREATE POLICY "Users can view their own verifications" ON public.partner_verifications
 FOR SELECT
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can manage all verifications"
-ON public.partner_verifications
+DROP POLICY IF EXISTS "Admins can manage all verifications" ON public.partner_verifications; CREATE POLICY "Admins can manage all verifications" ON public.partner_verifications
 FOR ALL
 USING (is_user_admin())
 WITH CHECK (is_user_admin());
 
--- Create function to check if user is verified partner
+-- CREATE OR REPLACE FUNCTION to check if user is verified partner
 CREATE OR REPLACE FUNCTION public.is_verified_partner(user_id UUID DEFAULT auth.uid())
 RETURNS boolean
 LANGUAGE plpgsql
@@ -60,8 +58,7 @@ $$;
 -- Update organizations RLS policy to require partner verification for contact access
 DROP POLICY IF EXISTS "authenticated_contact_access" ON public.organizations;
 
-CREATE POLICY "verified_partner_contact_access"
-ON public.organizations
+DROP POLICY IF EXISTS "verified_partner_contact_access" ON public.organizations; CREATE POLICY "verified_partner_contact_access" ON public.organizations
 FOR SELECT
 USING (
   verified = true 
@@ -75,7 +72,7 @@ USING (
   )
 );
 
--- Create function for enhanced contact access logging
+-- CREATE OR REPLACE FUNCTION for enhanced contact access logging
 CREATE OR REPLACE FUNCTION public.log_contact_access(org_id UUID, contact_type TEXT)
 RETURNS void
 LANGUAGE plpgsql
@@ -86,8 +83,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -101,13 +98,12 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 
 -- Create trigger for partner verification updates
-CREATE TRIGGER update_partner_verifications_updated_at
-BEFORE UPDATE ON public.partner_verifications
+DROP TRIGGER IF EXISTS update_partner_verifications_updated_at ON public.partner_verifications; CREATE TRIGGER update_partner_verifications_updated_at BEFORE UPDATE ON public.partner_verifications
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 

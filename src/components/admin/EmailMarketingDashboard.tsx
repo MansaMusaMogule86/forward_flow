@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,11 +66,7 @@ export const EmailMarketingDashboard = () => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadEmailData();
-  }, []);
-
-  const loadEmailData = async () => {
+  const loadEmailData = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -119,7 +115,11 @@ export const EmailMarketingDashboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    void loadEmailData();
+  }, [loadEmailData]);
 
   const exportSubscribers = async () => {
     try {
@@ -240,6 +240,7 @@ export const EmailMarketingDashboard = () => {
           <TabsTrigger value="subscribers">Subscribers</TabsTrigger>
           <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
           <TabsTrigger value="reminders">📧 Reminders</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
         </TabsList>
 
         <TabsContent value="subscribers" className="space-y-4">

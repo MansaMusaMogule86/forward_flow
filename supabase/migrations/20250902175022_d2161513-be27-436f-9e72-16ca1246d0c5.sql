@@ -1,9 +1,9 @@
 -- Security Enhancement: Data masking and field-level access controls for sensitive contact information
 
 -- Drop existing functions to avoid conflicts
-DROP FUNCTION IF EXISTS mask_contact_info(text);
-DROP FUNCTION IF EXISTS get_masked_contact_info(uuid);
-DROP FUNCTION IF EXISTS can_view_org_contacts(uuid);
+-- Removed DROP FUNCTION to avoid dependency issues: mask_contact_text(text);
+-- Removed DROP FUNCTION to avoid dependency issues: get_masked_contact_text(uuid);
+-- Removed DROP FUNCTION to avoid dependency issues: can_view_org_contacts(uuid);
 
 -- Enhanced rate limiting function for sensitive data access
 CREATE OR REPLACE FUNCTION check_admin_rate_limit()
@@ -28,36 +28,36 @@ END;
 $$;
 
 -- Function to mask contact information
-CREATE FUNCTION mask_contact_info(contact_data text)
+CREATE OR REPLACE FUNCTION mask_contact_text(contact_text text)
 RETURNS text
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    IF contact_data IS NULL THEN
+    IF contact_text IS NULL THEN
         RETURN NULL;
     END IF;
     
     -- Mask email addresses
-    IF contact_data ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' THEN
-        RETURN SUBSTRING(contact_data FROM 1 FOR 2) || '***@' || 
-               SPLIT_PART(contact_data, '@', 2);
+    IF contact_text ~ '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$' THEN
+        RETURN SUBSTRING(contact_text FROM 1 FOR 2) || '***@' || 
+               SPLIT_PART(contact_text, '@', 2);
     END IF;
     
     -- Mask phone numbers
-    IF contact_data ~ '^\+?[0-9\s\-\(\)\.]{10,15}$' THEN
-        RETURN SUBSTRING(contact_data FROM 1 FOR 3) || '***' || 
-               SUBSTRING(contact_data FROM LENGTH(contact_data) - 1);
+    IF contact_text ~ '^\+?[0-9\s\-\(\)\.]{10,15}$' THEN
+        RETURN SUBSTRING(contact_text FROM 1 FOR 3) || '***' || 
+               SUBSTRING(contact_text FROM LENGTH(contact_text) - 1);
     END IF;
     
     -- For other text, show first 2 chars + ***
-    RETURN SUBSTRING(contact_data FROM 1 FOR 2) || '***';
+    RETURN SUBSTRING(contact_text FROM 1 FOR 2) || '***';
 END;
 $$;
 
 -- Function to get masked contact info for organizations
-CREATE FUNCTION get_masked_contact_info(org_id uuid)
+CREATE OR REPLACE FUNCTION get_masked_contact_text(org_id uuid)
 RETURNS TABLE(
     id uuid,
     name text,
@@ -75,7 +75,7 @@ SET search_path = public
 AS $$
 BEGIN
     -- Log the access attempt
-    INSERT INTO audit_log (user_id, action, table_name, record_id, sensitive_data_accessed)
+    INSERT INTO audit_log (user_id, action, p_table_name, p_record_id, sensitive_data_accessed)
     VALUES (auth.uid(), 'SELECT', 'organizations', org_id, true);
     
     RETURN QUERY
@@ -85,8 +85,8 @@ BEGIN
         o.description,
         o.verified,
         o.website,
-        mask_contact_info(o.email) as masked_email,
-        mask_contact_info(o.phone) as masked_phone,
+        mask_contact_text(o.email) as masked_email,
+        mask_contact_text(o.phone) as masked_phone,
         o.city,
         o.state_code
     FROM organizations o
@@ -95,7 +95,7 @@ END;
 $$;
 
 -- Function to check if user can view organization contacts
-CREATE FUNCTION can_view_org_contacts(org_id uuid)
+CREATE OR REPLACE FUNCTION can_view_org_contacts(org_id uuid)
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -106,19 +106,18 @@ BEGIN
     RETURN (
         EXISTS (
             SELECT 1 FROM organizations 
-            WHERE id = org_id AND owner_id = auth.uid()
+            WHERE id = org_id AND (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin') IS NOT NULL
         ) OR 
         is_user_admin()
     ) AND check_admin_rate_limit();
 END;
 $$;
 
--- Enhanced audit logging trigger for sensitive operations
-CREATE OR REPLACE FUNCTION log_sensitive_access(
-    table_name text,
-    operation text,
+-- Enhanced audit logging trigger for sensitive p_actions
+CREATE OR REPLACE FUNCTION log_sensitive_access(table_name text,
+    action text,
     record_id uuid,
-    is_sensitive boolean DEFAULT false
+    sensitive_data_accessed boolean DEFAULT false
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -129,17 +128,17 @@ BEGIN
     INSERT INTO audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         sensitive_data_accessed,
         user_agent,
         ip_address
     ) VALUES (
         auth.uid(),
-        operation,
-        table_name,
-        record_id,
-        is_sensitive,
+        p_action,
+        p_table_name,
+        p_record_id,
+        p_sensitive_data,
         current_setting('request.headers', true)::json->>'user-agent',
         inet_client_addr()
     );
@@ -154,7 +153,7 @@ ON organizations
 FOR SELECT 
 USING (
     auth.uid() IS NOT NULL AND (
-        owner_id = auth.uid() OR 
+        (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin') IS NOT NULL OR 
         (is_user_admin() AND check_admin_rate_limit())
     )
 );
@@ -207,7 +206,7 @@ USING (
 CREATE INDEX IF NOT EXISTS idx_audit_log_user_time ON audit_log(user_id, created_at) WHERE sensitive_data_accessed = true;
 CREATE INDEX IF NOT EXISTS idx_audit_log_sensitive ON audit_log(sensitive_data_accessed, created_at);
 
-COMMENT ON FUNCTION mask_contact_info(text) IS 'Masks sensitive contact information for security';
-COMMENT ON FUNCTION get_masked_contact_info(uuid) IS 'Returns organization info with masked contact details';
+COMMENT ON FUNCTION mask_contact_text(text) IS 'Masks sensitive contact information for security';
+COMMENT ON FUNCTION get_masked_contact_text(uuid) IS 'Returns organization info with masked contact details';
 COMMENT ON FUNCTION check_admin_rate_limit() IS 'Rate limits admin access to sensitive data (50 per hour)';
 COMMENT ON VIEW organizations_public_secure IS 'Public view of organizations without sensitive contact information';

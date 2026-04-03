@@ -1,15 +1,15 @@
 -- Fix function search path security issues
--- Drop and recreate functions to ensure proper search_path settings
+-- Drop and reCREATE OR REPLACE FUNCTIONs to ensure proper search_path settings
 
 -- Drop existing functions that need to be updated
-DROP FUNCTION IF EXISTS public.check_enhanced_rate_limit(uuid, text, integer);
-DROP FUNCTION IF EXISTS public.mask_contact_info(text);
-DROP FUNCTION IF EXISTS public.is_user_admin(uuid);
-DROP FUNCTION IF EXISTS public.log_sensitive_access(text, text, uuid, boolean);
-DROP FUNCTION IF EXISTS public.check_admin_rate_limit();
+-- Removed DROP FUNCTION to avoid dependency issues: public.check_enhanced_rate_limit(uuid, text, integer);
+-- Removed DROP FUNCTION to avoid dependency issues: public.mask_contact_text(text);
+-- Removed DROP FUNCTION to avoid dependency issues
+-- Removed DROP FUNCTION to avoid dependency issues: public.log_sensitive_access(text, text, uuid, boolean);
+-- Removed DROP FUNCTION to avoid dependency issues: public.check_admin_rate_limit();
 
--- Recreate functions with proper search_path security
-CREATE OR REPLACE FUNCTION public.mask_contact_info(contact text)
+-- ReCREATE OR REPLACE FUNCTIONs with proper search_path security
+CREATE OR REPLACE FUNCTION public.mask_contact_text(contact text)
 RETURNS text 
 LANGUAGE plpgsql 
 SECURITY DEFINER STABLE 
@@ -35,7 +35,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.is_user_admin(user_id uuid DEFAULT auth.uid())
+CREATE OR REPLACE FUNCTION public.is_user_admin(p_user_id uuid DEFAULT auth.uid())
 RETURNS boolean 
 LANGUAGE plpgsql 
 SECURITY DEFINER STABLE 
@@ -48,7 +48,7 @@ BEGIN
   
   RETURN EXISTS(
     SELECT 1 FROM public.user_roles 
-    WHERE user_roles.user_id = is_user_admin.user_id 
+    WHERE user_roles.user_id = p_user_id 
     AND role = 'admin'::app_role
   );
 END;
@@ -74,7 +74,7 @@ BEGIN
 END;
 $$;
 
-CREATE OR REPLACE FUNCTION public.log_sensitive_access(p_table_name text, p_action text, p_record_id uuid DEFAULT NULL, p_sensitive boolean DEFAULT true)
+CREATE OR REPLACE FUNCTION public.log_sensitive_access(table_name text, action text, record_id uuid DEFAULT NULL, p_sensitive boolean DEFAULT true)
 RETURNS void 
 LANGUAGE plpgsql 
 SECURITY DEFINER 
@@ -84,8 +84,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -99,7 +99,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 

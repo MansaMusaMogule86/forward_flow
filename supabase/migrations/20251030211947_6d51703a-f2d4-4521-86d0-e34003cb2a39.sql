@@ -290,7 +290,7 @@ BEGIN
   END IF;
   
   INSERT INTO public.user_roles (user_id, role)
-  VALUES (target_user_id, 'admin'::app_role);
+  VALUES (target_user_id, 'admin'::app_role) ON CONFLICT DO NOTHING;
   
   RETURN jsonb_build_object('success', true, 'message', 'Admin user created successfully');
 END;
@@ -313,20 +313,17 @@ END;
 $$;
 
 DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles;
-CREATE TRIGGER update_profiles_updated_at
-  BEFORE UPDATE ON public.profiles
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles; CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
 DROP TRIGGER IF EXISTS update_newsletter_subscriptions_updated_at ON public.newsletter_subscriptions;
-CREATE TRIGGER update_newsletter_subscriptions_updated_at
-  BEFORE UPDATE ON public.newsletter_subscriptions
+DROP TRIGGER IF EXISTS update_newsletter_subscriptions_updated_at ON public.newsletter_subscriptions; CREATE TRIGGER update_newsletter_subscriptions_updated_at BEFORE UPDATE ON public.newsletter_subscriptions
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
 DROP TRIGGER IF EXISTS update_email_campaigns_updated_at ON public.email_campaigns;
-CREATE TRIGGER update_email_campaigns_updated_at
-  BEFORE UPDATE ON public.email_campaigns
+DROP TRIGGER IF EXISTS update_email_campaigns_updated_at ON public.email_campaigns; CREATE TRIGGER update_email_campaigns_updated_at BEFORE UPDATE ON public.email_campaigns
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
@@ -351,178 +348,145 @@ ALTER TABLE public.contact_access_justifications ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
 DROP POLICY IF EXISTS "Users can view all profiles" ON public.profiles;
-CREATE POLICY "Users can view all profiles"
-  ON public.profiles FOR SELECT
+DROP POLICY IF EXISTS "Users can view all profiles" ON public.profiles; CREATE POLICY "Users can view all profiles" ON public.profiles FOR SELECT
   USING (true);
 
 DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
-CREATE POLICY "Users can update own profile"
-  ON public.profiles FOR UPDATE
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles; CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE
   USING (auth.uid() = id);
 
 DROP POLICY IF EXISTS "Users can create own profile" ON public.profiles;
-CREATE POLICY "Users can create own profile"
-  ON public.profiles FOR INSERT
+DROP POLICY IF EXISTS "Users can create own profile" ON public.profiles; CREATE POLICY "Users can create own profile" ON public.profiles FOR INSERT
   WITH CHECK (auth.uid() = id);
 
 -- User roles policies
 DROP POLICY IF EXISTS "Users can view own roles" ON public.user_roles;
-CREATE POLICY "Users can view own roles"
-  ON public.user_roles FOR SELECT
+DROP POLICY IF EXISTS "Users can view own roles" ON public.user_roles; CREATE POLICY "Users can view own roles" ON public.user_roles FOR SELECT
   USING (auth.uid() = user_id);
 
 DROP POLICY IF EXISTS "Admins can manage roles" ON public.user_roles;
-CREATE POLICY "Admins can manage roles"
-  ON public.user_roles FOR ALL
+DROP POLICY IF EXISTS "Admins can manage roles" ON public.user_roles; CREATE POLICY "Admins can manage roles" ON public.user_roles FOR ALL
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Newsletter subscriptions policies
 DROP POLICY IF EXISTS "Admins can view subscriptions" ON public.newsletter_subscriptions;
-CREATE POLICY "Admins can view subscriptions"
-  ON public.newsletter_subscriptions FOR SELECT
+DROP POLICY IF EXISTS "Admins can view subscriptions" ON public.newsletter_subscriptions; CREATE POLICY "Admins can view subscriptions" ON public.newsletter_subscriptions FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 DROP POLICY IF EXISTS "Anyone can subscribe" ON public.newsletter_subscriptions;
-CREATE POLICY "Anyone can subscribe"
-  ON public.newsletter_subscriptions FOR INSERT
+DROP POLICY IF EXISTS "Anyone can subscribe" ON public.newsletter_subscriptions; CREATE POLICY "Anyone can subscribe" ON public.newsletter_subscriptions FOR INSERT
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can update own subscription" ON public.newsletter_subscriptions;
-CREATE POLICY "Users can update own subscription"
-  ON public.newsletter_subscriptions FOR UPDATE
+DROP POLICY IF EXISTS "Users can update own subscription" ON public.newsletter_subscriptions; CREATE POLICY "Users can update own subscription" ON public.newsletter_subscriptions FOR UPDATE
   USING (true);
 
 -- NEW: Monetization earnings policies
 DROP POLICY IF EXISTS "Admins can view earnings" ON public.monetization_earnings;
-CREATE POLICY "Admins can view earnings"
-  ON public.monetization_earnings FOR SELECT
+DROP POLICY IF EXISTS "Admins can view earnings" ON public.monetization_earnings; CREATE POLICY "Admins can view earnings" ON public.monetization_earnings FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 DROP POLICY IF EXISTS "System can create earnings" ON public.monetization_earnings;
-CREATE POLICY "System can create earnings"
-  ON public.monetization_earnings FOR INSERT
+DROP POLICY IF EXISTS "System can create earnings" ON public.monetization_earnings; CREATE POLICY "System can create earnings" ON public.monetization_earnings FOR INSERT
   WITH CHECK (true);
 
 -- Email campaigns policies
 DROP POLICY IF EXISTS "Admins can manage campaigns" ON public.email_campaigns;
-CREATE POLICY "Admins can manage campaigns"
-  ON public.email_campaigns FOR ALL
+DROP POLICY IF EXISTS "Admins can manage campaigns" ON public.email_campaigns; CREATE POLICY "Admins can manage campaigns" ON public.email_campaigns FOR ALL
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Organizations policies
 DROP POLICY IF EXISTS "Anyone can view verified organizations" ON public.organizations;
-CREATE POLICY "Anyone can view verified organizations"
-  ON public.organizations FOR SELECT
+DROP POLICY IF EXISTS "Anyone can view verified organizations" ON public.organizations; CREATE POLICY "Anyone can view verified organizations" ON public.organizations FOR SELECT
   USING ((verified = true) OR (auth.uid() IS NOT NULL));
 
 DROP POLICY IF EXISTS "Admins can manage organizations" ON public.organizations;
-CREATE POLICY "Admins can manage organizations"
-  ON public.organizations FOR ALL
+DROP POLICY IF EXISTS "Admins can manage organizations" ON public.organizations; CREATE POLICY "Admins can manage organizations" ON public.organizations FOR ALL
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Resources policies
 DROP POLICY IF EXISTS "Anyone can view verified resources" ON public.resources;
-CREATE POLICY "Anyone can view verified resources"
-  ON public.resources FOR SELECT
+DROP POLICY IF EXISTS "Anyone can view verified resources" ON public.resources; CREATE POLICY "Anyone can view verified resources" ON public.resources FOR SELECT
   USING ((verified = true) OR (auth.uid() IS NOT NULL));
 
 DROP POLICY IF EXISTS "Authenticated users can create resources" ON public.resources;
-CREATE POLICY "Authenticated users can create resources"
-  ON public.resources FOR INSERT
+DROP POLICY IF EXISTS "Authenticated users can create resources" ON public.resources; CREATE POLICY "Authenticated users can create resources" ON public.resources FOR INSERT
   WITH CHECK (auth.uid() = created_by);
 
 DROP POLICY IF EXISTS "Users can update own resources" ON public.resources;
-CREATE POLICY "Users can update own resources"
-  ON public.resources FOR UPDATE
+DROP POLICY IF EXISTS "Users can update own resources" ON public.resources; CREATE POLICY "Users can update own resources" ON public.resources FOR UPDATE
   USING ((auth.uid() = created_by) OR public.has_role(auth.uid(), 'admin'::app_role));
 
 DROP POLICY IF EXISTS "Admins can delete resources" ON public.resources;
-CREATE POLICY "Admins can delete resources"
-  ON public.resources FOR DELETE
+DROP POLICY IF EXISTS "Admins can delete resources" ON public.resources; CREATE POLICY "Admins can delete resources" ON public.resources FOR DELETE
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Analytics policies
 DROP POLICY IF EXISTS "Anyone can create analytics" ON public.analytics_events;
-CREATE POLICY "Anyone can create analytics"
-  ON public.analytics_events FOR INSERT
+DROP POLICY IF EXISTS "Anyone can create analytics" ON public.analytics_events; CREATE POLICY "Anyone can create analytics" ON public.analytics_events FOR INSERT
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Admins can view analytics events" ON public.analytics_events;
-CREATE POLICY "Admins can view analytics events"
-  ON public.analytics_events FOR SELECT
+DROP POLICY IF EXISTS "Admins can view analytics events" ON public.analytics_events; CREATE POLICY "Admins can view analytics events" ON public.analytics_events FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- AI trial sessions policies
 DROP POLICY IF EXISTS "Anyone can create trial sessions" ON public.ai_trial_sessions;
-CREATE POLICY "Anyone can create trial sessions"
-  ON public.ai_trial_sessions FOR INSERT
+DROP POLICY IF EXISTS "Anyone can create trial sessions" ON public.ai_trial_sessions; CREATE POLICY "Anyone can create trial sessions" ON public.ai_trial_sessions FOR INSERT
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can view own trial sessions" ON public.ai_trial_sessions;
-CREATE POLICY "Users can view own trial sessions"
-  ON public.ai_trial_sessions FOR SELECT
+DROP POLICY IF EXISTS "Users can view own trial sessions" ON public.ai_trial_sessions; CREATE POLICY "Users can view own trial sessions" ON public.ai_trial_sessions FOR SELECT
   USING ((user_id = auth.uid()) OR (session_id IN (SELECT COALESCE(current_setting('app.session_id', true), ''))));
 
 DROP POLICY IF EXISTS "Users can update own trial sessions" ON public.ai_trial_sessions;
-CREATE POLICY "Users can update own trial sessions"
-  ON public.ai_trial_sessions FOR UPDATE
+DROP POLICY IF EXISTS "Users can update own trial sessions" ON public.ai_trial_sessions; CREATE POLICY "Users can update own trial sessions" ON public.ai_trial_sessions FOR UPDATE
   USING ((user_id = auth.uid()) OR (session_id IN (SELECT COALESCE(current_setting('app.session_id', true), ''))));
 
 -- Chat history policies
 DROP POLICY IF EXISTS "Anyone can create chat history" ON public.chat_history;
-CREATE POLICY "Anyone can create chat history"
-  ON public.chat_history FOR INSERT
+DROP POLICY IF EXISTS "Anyone can create chat history" ON public.chat_history; CREATE POLICY "Anyone can create chat history" ON public.chat_history FOR INSERT
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Users can view own chat history" ON public.chat_history;
-CREATE POLICY "Users can view own chat history"
-  ON public.chat_history FOR SELECT
+DROP POLICY IF EXISTS "Users can view own chat history" ON public.chat_history; CREATE POLICY "Users can view own chat history" ON public.chat_history FOR SELECT
   USING ((user_id = auth.uid()) OR (session_id IN (SELECT COALESCE(current_setting('app.session_id', true), ''))));
 
 DROP POLICY IF EXISTS "Users can delete own chat history" ON public.chat_history;
-CREATE POLICY "Users can delete own chat history"
-  ON public.chat_history FOR DELETE
+DROP POLICY IF EXISTS "Users can delete own chat history" ON public.chat_history; CREATE POLICY "Users can delete own chat history" ON public.chat_history FOR DELETE
   USING (user_id = auth.uid());
 
 -- Audit logs policies
 DROP POLICY IF EXISTS "System can create audit logs" ON public.audit_logs;
-CREATE POLICY "System can create audit logs"
-  ON public.audit_logs FOR INSERT
+DROP POLICY IF EXISTS "System can create audit logs" ON public.audit_logs; CREATE POLICY "System can create audit logs" ON public.audit_logs FOR INSERT
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs;
-CREATE POLICY "Admins can view all audit logs"
-  ON public.audit_logs FOR SELECT
+DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs; CREATE POLICY "Admins can view all audit logs" ON public.audit_logs FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Security alerts policies
 DROP POLICY IF EXISTS "System can create security alerts" ON public.security_alerts;
-CREATE POLICY "System can create security alerts"
-  ON public.security_alerts FOR INSERT
+DROP POLICY IF EXISTS "System can create security alerts" ON public.security_alerts; CREATE POLICY "System can create security alerts" ON public.security_alerts FOR INSERT
   WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Admins can view all security alerts" ON public.security_alerts;
-CREATE POLICY "Admins can view all security alerts"
-  ON public.security_alerts FOR SELECT
+DROP POLICY IF EXISTS "Admins can view all security alerts" ON public.security_alerts; CREATE POLICY "Admins can view all security alerts" ON public.security_alerts FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 DROP POLICY IF EXISTS "Admins can update security alerts" ON public.security_alerts;
-CREATE POLICY "Admins can update security alerts"
-  ON public.security_alerts FOR UPDATE
+DROP POLICY IF EXISTS "Admins can update security alerts" ON public.security_alerts; CREATE POLICY "Admins can update security alerts" ON public.security_alerts FOR UPDATE
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Contact access policies
 DROP POLICY IF EXISTS "Admins can create justifications" ON public.contact_access_justifications;
-CREATE POLICY "Admins can create justifications"
-  ON public.contact_access_justifications FOR INSERT
+DROP POLICY IF EXISTS "Admins can create justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can create justifications" ON public.contact_access_justifications FOR INSERT
   WITH CHECK (auth.uid() = admin_user_id);
 
 DROP POLICY IF EXISTS "Admins can view all justifications" ON public.contact_access_justifications;
-CREATE POLICY "Admins can view all justifications"
-  ON public.contact_access_justifications FOR SELECT
+DROP POLICY IF EXISTS "Admins can view all justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can view all justifications" ON public.contact_access_justifications FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 DROP POLICY IF EXISTS "Admins can update justifications" ON public.contact_access_justifications;
-CREATE POLICY "Admins can update justifications"
-  ON public.contact_access_justifications FOR UPDATE
+DROP POLICY IF EXISTS "Admins can update justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can update justifications" ON public.contact_access_justifications FOR UPDATE
   USING (public.has_role(auth.uid(), 'admin'::app_role));

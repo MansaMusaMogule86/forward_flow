@@ -53,3 +53,4 @@ export function getUnsubscribeLink(subscriberId: string): string {
 export function getPreferencesLink(subscriberId: string): string {
   return `${SITE_CONFIG.baseUrl}/email-preferences?id=${subscriberId}`;
 }
+

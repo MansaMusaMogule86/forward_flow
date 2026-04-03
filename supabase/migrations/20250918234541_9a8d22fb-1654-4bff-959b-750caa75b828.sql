@@ -6,8 +6,7 @@ DROP POLICY IF EXISTS "Users can view their own referrals" ON public.partner_ref
 
 -- Create secure policy that only allows admins to view referrals
 -- This is needed for the admin dashboard functionality
-CREATE POLICY "Only admins can view referrals for management"
-ON public.partner_referrals
+DROP POLICY IF EXISTS "Only admins can view referrals for management" ON public.partner_referrals; CREATE POLICY "Only admins can view referrals for management" ON public.partner_referrals
 FOR SELECT
 USING (
   auth.uid() IS NOT NULL 
@@ -24,7 +23,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -33,7 +32,7 @@ BEGIN
     'partner_referrals',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 EXCEPTION WHEN OTHERS THEN
   -- Ignore if audit log fails, security fix is more important
   NULL;

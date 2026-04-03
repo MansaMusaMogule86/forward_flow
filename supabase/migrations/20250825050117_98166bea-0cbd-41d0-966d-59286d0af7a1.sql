@@ -10,20 +10,17 @@ DROP POLICY IF EXISTS "Anyone can insert partner referrals" ON public.partner_re
 
 -- Recreate policies with proper restrictions
 -- Only admins can view partner referrals (SELECT)
-CREATE POLICY "Only admins can view partner referrals" 
-ON public.partner_referrals 
+DROP POLICY IF EXISTS "Only admins can view partner referrals" ON public.partner_referrals; CREATE POLICY "Only admins can view partner referrals" ON public.partner_referrals 
 FOR SELECT 
 USING (is_user_admin());
 
 -- Only admins can update partner referrals 
-CREATE POLICY "Only admins can update partner referrals" 
-ON public.partner_referrals 
+DROP POLICY IF EXISTS "Only admins can update partner referrals" ON public.partner_referrals; CREATE POLICY "Only admins can update partner referrals" ON public.partner_referrals 
 FOR UPDATE 
 USING (is_user_admin());
 
 -- Allow anyone to insert partner referrals (for submission forms)
-CREATE POLICY "Anyone can submit partner referrals" 
-ON public.partner_referrals 
+DROP POLICY IF EXISTS "Anyone can submit partner referrals" ON public.partner_referrals; CREATE POLICY "Anyone can submit partner referrals" ON public.partner_referrals 
 FOR INSERT 
 WITH CHECK (true);
 

@@ -33,6 +33,7 @@ CREATE INDEX IF NOT EXISTS idx_expungement_email ON expungement_applications(ema
 ALTER TABLE expungement_applications ENABLE ROW LEVEL SECURITY;
 
 -- Allow anyone to insert (for applications)
+DROP POLICY IF EXISTS "Anyone can submit application" ON expungement_applications;
 CREATE POLICY "Anyone can submit application" 
   ON expungement_applications 
   FOR INSERT 
@@ -40,6 +41,7 @@ CREATE POLICY "Anyone can submit application"
   WITH CHECK (true);
 
 -- Only admins can view/update
+DROP POLICY IF EXISTS "Only admins can view applications" ON expungement_applications;
 CREATE POLICY "Only admins can view applications" 
   ON expungement_applications 
   FOR SELECT 
@@ -52,6 +54,7 @@ CREATE POLICY "Only admins can view applications"
     )
   );
 
+DROP POLICY IF EXISTS "Only admins can update applications" ON expungement_applications;
 CREATE POLICY "Only admins can update applications" 
   ON expungement_applications 
   FOR UPDATE 
@@ -64,7 +67,7 @@ CREATE POLICY "Only admins can update applications"
     )
   );
 
--- Create function to update updated_at
+-- CREATE OR REPLACE FUNCTION to update updated_at
 CREATE OR REPLACE FUNCTION update_expungement_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -73,6 +76,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS expungement_updated_at ON expungement_applications;
 CREATE TRIGGER expungement_updated_at
   BEFORE UPDATE ON expungement_applications
   FOR EACH ROW

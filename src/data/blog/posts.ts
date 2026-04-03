@@ -118,7 +118,7 @@ Ready to find housing? Use our Resource Discovery tool to search for housing res
     },
     schema: {
       articleType: "Article",
-      mainEntityOfPage: "https://forwardfocuselevation.org/blog/ohio-second-chance-housing-guide-2026"
+      mainEntityOfPage: "https://forward-focus-elevation.org/blog/ohio-second-chance-housing-guide-2026"
     }
   },
   {

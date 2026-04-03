@@ -118,29 +118,19 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
   };
 
   const fetchAIResponse = async (query: string) => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-    if (!supabaseUrl || !supabaseKey) {
-      logger.error('Supabase configuration missing in CrisisSupportAI');
-      throw new Error('Service temporarily unavailable');
-    }
-
-    const response = await fetch(`${supabaseUrl}/functions/v1/crisis-support-ai`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${supabaseKey}` },
-      body: JSON.stringify({
+    const { data, error } = await supabase.functions.invoke('crisis-support-ai', {
+      body: {
         query: createPersonalizedQuery(query),
         urgencyLevel: determineUrgency(query),
         previousContext: state.conversationContext,
-      }),
+      }
     });
 
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+    if (error) {
+      throw error;
     }
 
-    return response.json();
+    return data;
   };
 
   const handleFallback = async (error: unknown) => {

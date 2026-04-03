@@ -1,14 +1,14 @@
 -- Fix remaining functions that need proper search_path settings
 -- These functions need to be updated to have proper SECURITY DEFINER search_path
 
-CREATE OR REPLACE FUNCTION public.check_admin_operation_limit(operation_type text DEFAULT 'general'::text)
+CREATE OR REPLACE FUNCTION public.check_admin_p_action_limit(p_action_type text DEFAULT 'general'::text)
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    operation_count integer;
+    p_action_count integer;
     user_id uuid := auth.uid();
 BEGIN
     -- Verify admin status
@@ -16,21 +16,21 @@ BEGIN
         RETURN false;
     END IF;
     
-    -- Check operation-specific limits
-    SELECT COUNT(*) INTO operation_count
+    -- Check p_action-specific limits
+    SELECT COUNT(*) INTO p_action_count
     FROM public.audit_log
-    WHERE audit_log.user_id = check_admin_operation_limit.user_id
-    AND action LIKE '%' || upper(operation_type) || '%'
+    WHERE audit_log.user_id = check_admin_p_action_limit.user_id
+    AND action LIKE '%' || upper(p_action_type) || '%'
     AND created_at > NOW() - INTERVAL '1 hour';
     
-    -- Different limits for different operations
-    CASE operation_type
+    -- Different limits for different p_actions
+    CASE p_action_type
         WHEN 'contact_reveal' THEN
-            RETURN operation_count < 100;
+            RETURN p_action_count < 100;
         WHEN 'status_update' THEN
-            RETURN operation_count < 200;
+            RETURN p_action_count < 200;
         ELSE
-            RETURN operation_count < 50;
+            RETURN p_action_count < 50;
     END CASE;
 END;
 $$;
@@ -73,7 +73,7 @@ BEGIN
         p_limit_per_hour := p_limit_per_hour * 2; -- Double limit for admins
     END IF;
     
-    -- Count requests in the last hour for this user/operation combination
+    -- Count requests in the last hour for this user/p_action combination
     SELECT COUNT(*) INTO request_count
     FROM public.audit_log
     WHERE user_id = p_user_id
@@ -84,8 +84,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         created_at
     ) VALUES (
         p_user_id,
@@ -93,7 +93,7 @@ BEGIN
         'rate_limiting',
         null,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN request_count < p_limit_per_hour;
 END;

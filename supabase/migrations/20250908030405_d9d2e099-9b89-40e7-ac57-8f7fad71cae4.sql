@@ -44,7 +44,7 @@ SET search_path TO 'public'
 AS $$
 BEGIN
     -- Validate input data
-    IF NOT validate_contact_input(NEW.name, NULL, NEW.contact_info) THEN
+    IF NOT validate_contact_input(NEW.name, NULL, NEW.contact_text) THEN
         RAISE EXCEPTION 'Invalid input data provided';
     END IF;
     
@@ -52,8 +52,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -63,7 +63,7 @@ BEGIN
         NEW.id,
         true,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN NEW;
 END;
@@ -90,8 +90,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -101,7 +101,7 @@ BEGIN
         NEW.id,
         true,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN NEW;
 END;

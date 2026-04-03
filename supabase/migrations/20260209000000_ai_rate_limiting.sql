@@ -16,8 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_ai_rate_limits_endpoint ON public.ai_rate_limits(
 ALTER TABLE public.ai_rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- Service role access only for inserts/selects from Edge Functions
-CREATE POLICY "Service role can manage AI rate limits"
-  ON public.ai_rate_limits FOR ALL
+DROP POLICY IF EXISTS "Service role can manage AI rate limits" ON public.ai_rate_limits; CREATE POLICY "Service role can manage AI rate limits" ON public.ai_rate_limits FOR ALL
   USING (true);
 
 -- Function to check rate limit

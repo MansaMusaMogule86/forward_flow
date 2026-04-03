@@ -5,14 +5,12 @@ DROP POLICY IF EXISTS "Public can view verified organizations only" ON public.or
 
 -- Create more restrictive policies for organizations table
 -- Allow public to see basic org info but not contact details
-CREATE POLICY "Public can view basic organization info" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Public can view basic organization info" ON public.organizations; CREATE POLICY "Public can view basic organization info" ON public.organizations 
 FOR SELECT 
 USING (verified = true AND can_view_org_contacts() = false);
 
 -- Allow authenticated users to see contact details with rate limiting
-CREATE POLICY "Authenticated users can view organization contacts" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Authenticated users can view organization contacts" ON public.organizations; CREATE POLICY "Authenticated users can view organization contacts" ON public.organizations 
 FOR SELECT 
 USING (
   verified = true 
@@ -53,11 +51,11 @@ SELECT
   updated_at,
   CASE 
     WHEN auth.uid() IS NOT NULL THEN email
-    ELSE mask_contact_info(email)
+    ELSE mask_contact_text(email)
   END as email,
   CASE 
     WHEN auth.uid() IS NOT NULL THEN phone  
-    ELSE mask_contact_info(phone)
+    ELSE mask_contact_text(phone)
   END as phone
 FROM public.organizations
 WHERE verified = true;

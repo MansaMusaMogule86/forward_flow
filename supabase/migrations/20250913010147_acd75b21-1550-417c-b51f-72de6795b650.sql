@@ -3,8 +3,7 @@
 DROP POLICY IF EXISTS "verified_partner_contact_access" ON public.organizations;
 
 -- Create new secure policy that requires authentication for contact access
-CREATE POLICY "authenticated_partner_contact_access" 
-ON public.organizations 
+DROP POLICY IF EXISTS "authenticated_partner_contact_access" ON public.organizations; CREATE POLICY "authenticated_partner_contact_access" ON public.organizations 
 FOR SELECT 
 USING (
   verified = true 
@@ -24,8 +23,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -35,7 +34,7 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -51,8 +50,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -62,7 +61,7 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -88,7 +87,7 @@ BEGIN
     INSERT INTO public.audit_log (
       user_id,
       action,
-      table_name,
+      p_table_name,
       sensitive_data_accessed,
       created_at
     ) VALUES (
@@ -97,7 +96,7 @@ BEGIN
       'security_monitoring',
       true,
       now()
-    );
+    ) ON CONFLICT DO NOTHING;
   END IF;
 END;
 $function$;

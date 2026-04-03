@@ -17,8 +17,8 @@ const SetupAdmin = () => {
   const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
 
-  const isDevelopment = import.meta.env.DEV;
-  const requiredSetupKey = import.meta.env.VITE_ADMIN_SETUP_KEY;
+    // No local set-up key check for production to prevent secret leakage.
+    // The Edge Function 'validate-auth-security' handles the secure comparison.
 
   const checkAdminExists = async () => {
     try {
@@ -42,18 +42,6 @@ const SetupAdmin = () => {
     if (!adminEmail.trim()) {
       toast.error('Please enter a valid email address');
       return;
-    }
-
-    // Security check for production
-    if (!isDevelopment) {
-      if (!requiredSetupKey) {
-        toast.error('Admin setup is disabled in this environment');
-        return;
-      }
-      if (setupKey !== requiredSetupKey) {
-        toast.error('Invalid setup key');
-        return;
-      }
     }
 
     // Basic email validation
@@ -181,7 +169,6 @@ const SetupAdmin = () => {
               </p>
             </div>
 
-            {!isDevelopment && (
               <div className="space-y-2">
                 <Label htmlFor="setupKey">Setup Authorization Key</Label>
                 <Input
@@ -194,15 +181,14 @@ const SetupAdmin = () => {
                   disabled={loading}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Required for production environment setup
+                  Required for initial administrator setup
                 </p>
               </div>
-            )}
           </div>
           
           <Button 
             onClick={createFirstAdmin} 
-            disabled={loading || !adminEmail.trim() || (!isDevelopment && !setupKey)}
+            disabled={loading || !adminEmail.trim() || !setupKey}
             className="w-full"
           >
             {loading ? (

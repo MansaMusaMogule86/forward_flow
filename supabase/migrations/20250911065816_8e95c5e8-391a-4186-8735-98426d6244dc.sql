@@ -26,7 +26,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -35,7 +35,7 @@ BEGIN
     'organizations',
     false,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN QUERY
   SELECT 
@@ -88,7 +88,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -97,7 +97,7 @@ BEGIN
     'organizations',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN QUERY
   SELECT 
@@ -110,11 +110,11 @@ BEGIN
     o.verified,
     CASE 
       WHEN is_user_admin(auth.uid()) THEN o.email
-      ELSE mask_contact_info(o.email)
+      ELSE mask_contact_text(o.email)
     END as email,
     CASE 
       WHEN is_user_admin(auth.uid()) THEN o.phone
-      ELSE mask_contact_info(o.phone)
+      ELSE mask_contact_text(o.phone)
     END as phone,
     o.address,
     o.created_at,
@@ -124,9 +124,9 @@ BEGIN
 END;
 $$;
 
--- Enhanced audit logging for payment operations
-CREATE OR REPLACE FUNCTION public.log_payment_operation(
-  operation_type text,
+-- Enhanced audit logging for payment p_actions
+CREATE OR REPLACE FUNCTION public.log_payment_p_action(
+  p_action_type text,
   payment_id uuid DEFAULT NULL,
   amount_cents integer DEFAULT NULL,
   additional_data jsonb DEFAULT '{}'::jsonb
@@ -140,18 +140,18 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
     auth.uid(),
-    'PAYMENT_' || upper(operation_type),
+    'PAYMENT_' || upper(p_action_type),
     'payments',
     payment_id,
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 
@@ -186,8 +186,8 @@ BEGIN
   SELECT 
     o.id,
     o.name,
-    mask_contact_info(o.email) as masked_email,
-    mask_contact_info(o.phone) as masked_phone,
+    mask_contact_text(o.email) as masked_email,
+    mask_contact_text(o.phone) as masked_phone,
     o.city,
     o.state_code
   FROM public.organizations o
@@ -203,15 +203,15 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_sensitive_access
 ON public.audit_log (sensitive_data_accessed, created_at DESC) 
 WHERE sensitive_data_accessed = true;
 
--- Enhanced rate limiting for admin operations
-CREATE OR REPLACE FUNCTION public.check_admin_operation_limit(operation_type text DEFAULT 'general')
+-- Enhanced rate limiting for admin p_actions
+CREATE OR REPLACE FUNCTION public.check_admin_p_action_limit(p_action_type text DEFAULT 'general')
 RETURNS boolean
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-    operation_count integer;
+    p_action_count integer;
     user_id uuid := auth.uid();
 BEGIN
     -- Verify admin status
@@ -219,21 +219,21 @@ BEGIN
         RETURN false;
     END IF;
     
-    -- Check operation-specific limits
-    SELECT COUNT(*) INTO operation_count
+    -- Check p_action-specific limits
+    SELECT COUNT(*) INTO p_action_count
     FROM public.audit_log
-    WHERE audit_log.user_id = check_admin_operation_limit.user_id
-    AND action LIKE '%' || upper(operation_type) || '%'
+    WHERE audit_log.user_id = check_admin_p_action_limit.user_id
+    AND action LIKE '%' || upper(p_action_type) || '%'
     AND created_at > NOW() - INTERVAL '1 hour';
     
-    -- Different limits for different operations
-    CASE operation_type
+    -- Different limits for different p_actions
+    CASE p_action_type
         WHEN 'contact_reveal' THEN
-            RETURN operation_count < 100;
+            RETURN p_action_count < 100;
         WHEN 'status_update' THEN
-            RETURN operation_count < 200;
+            RETURN p_action_count < 200;
         ELSE
-            RETURN operation_count < 50;
+            RETURN p_action_count < 50;
     END CASE;
 END;
 $$;

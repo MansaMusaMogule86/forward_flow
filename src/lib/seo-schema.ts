@@ -12,16 +12,16 @@ export function generateOrganizationSchema() {
     "@type": "Organization",
     "name": "Forward Focus Elevation",
     "alternateName": "The Collective | Healing Hub",
-    "url": "https://forwardfocuselevation.org",
+    "url": "https://forward-focus-elevation.org",
     "logo": {
       "@type": "ImageObject",
-      "url": "https://forwardfocuselevation.org/logo-primary.jpg",
+      "url": "https://forward-focus-elevation.org/logo-primary.jpg",
       "width": 1200,
       "height": 630
     },
     "image": {
       "@type": "ImageObject",
-      "url": "https://forwardfocuselevation.org/og-image.jpg",
+      "url": "https://forward-focus-elevation.org/og-image.jpg",
       "width": 1200,
       "height": 630,
       "caption": "Forward Focus Elevation - CEO Logo"
@@ -87,13 +87,13 @@ export function generateWebsiteSchema() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     "name": "Forward Focus Elevation",
-    "url": "https://forwardfocuselevation.org",
+    "url": "https://forward-focus-elevation.org",
     "description": "Ohio's AI-powered hub for second chances, victim services, and life transformation",
     "potentialAction": {
       "@type": "SearchAction",
       "target": {
         "@type": "EntryPoint",
-        "urlTemplate": "https://forwardfocuselevation.org/search?q={search_term_string}"
+        "urlTemplate": "https://forward-focus-elevation.org/search?q={search_term_string}"
       },
       "query-input": "required name=search_term_string"
     }
@@ -107,13 +107,13 @@ export function generateBlogSchema() {
     "@type": "Blog",
     "name": "Forward Focus Elevation Blog",
     "description": "Resources and insights for reentry success, victim support, and life transformation in Ohio",
-    "url": "https://forwardfocuselevation.org/blog",
+    "url": "https://forward-focus-elevation.org/blog",
     "publisher": {
       "@type": "Organization",
       "name": "Forward Focus Elevation",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://forwardfocuselevation.org/logo-primary.jpg"
+        "url": "https://forward-focus-elevation.org/logo-primary.jpg"
       }
     }
   };
@@ -131,7 +131,7 @@ export function generateArticleSchema(post: BlogPost, url: string) {
     "headline": post.title,
     "description": post.excerpt,
     "image": post.featuredImage || post.seo.ogImage 
-      ? `https://forwardfocuselevation.org${post.featuredImage || post.seo.ogImage}`
+      ? `https://forward-focus-elevation.org${post.featuredImage || post.seo.ogImage}`
       : undefined,
     "author": {
       "@type": "Person",
@@ -144,7 +144,7 @@ export function generateArticleSchema(post: BlogPost, url: string) {
       "name": "Forward Focus Elevation",
       "logo": {
         "@type": "ImageObject",
-        "url": "https://forwardfocuselevation.org/logo-primary.jpg",
+        "url": "https://forward-focus-elevation.org/logo-primary.jpg",
         "width": 512,
         "height": 512
       }
@@ -176,7 +176,7 @@ export function generateBreadcrumbSchema(items: Array<{ name: string; url: strin
       "@type": "ListItem",
       "position": index + 1,
       "name": item.name,
-      "item": `https://forwardfocuselevation.org${item.url}`
+      "item": `https://forward-focus-elevation.org${item.url}`
     }))
   };
 }
@@ -205,7 +205,7 @@ export function generateLocalBusinessSchema() {
     "name": "Forward Focus Elevation",
     "alternateName": "The Collective at Forward Focus Elevation",
     "description": "Nonprofit organization providing AI-powered resource navigation, victim services, and reentry support across Ohio's 88 counties",
-    "url": "https://forwardfocuselevation.org",
+    "url": "https://forward-focus-elevation.org",
     "areaServed": {
       "@type": "State",
       "name": "Ohio",

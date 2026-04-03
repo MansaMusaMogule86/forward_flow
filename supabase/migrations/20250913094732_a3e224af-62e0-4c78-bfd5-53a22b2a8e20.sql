@@ -7,8 +7,7 @@ DO $$ BEGIN
         WHERE tablename = 'ai_usage_analytics' 
         AND policyname = 'Admins can view all AI usage analytics'
     ) THEN
-        CREATE POLICY "Admins can view all AI usage analytics"
-        ON public.ai_usage_analytics
+        DROP POLICY IF EXISTS "Admins can view all AI usage analytics" ON public.ai_usage_analytics; CREATE POLICY "Admins can view all AI usage analytics" ON public.ai_usage_analytics
         FOR SELECT
         USING (is_user_admin());
     END IF;
@@ -20,8 +19,7 @@ DO $$ BEGIN
         WHERE tablename = 'ai_usage_analytics' 
         AND policyname = 'System can insert AI usage analytics'
     ) THEN
-        CREATE POLICY "System can insert AI usage analytics"
-        ON public.ai_usage_analytics
+        DROP POLICY IF EXISTS "System can insert AI usage analytics" ON public.ai_usage_analytics; CREATE POLICY "System can insert AI usage analytics" ON public.ai_usage_analytics
         FOR INSERT
         WITH CHECK (true);
     END IF;
@@ -34,8 +32,7 @@ DO $$ BEGIN
         WHERE tablename = 'security_alerts' 
         AND policyname = 'Admins can view all security alerts'
     ) THEN
-        CREATE POLICY "Admins can view all security alerts"
-        ON public.security_alerts
+        DROP POLICY IF EXISTS "Admins can view all security alerts" ON public.security_alerts; CREATE POLICY "Admins can view all security alerts" ON public.security_alerts
         FOR SELECT
         USING (is_user_admin());
     END IF;
@@ -47,8 +44,7 @@ DO $$ BEGIN
         WHERE tablename = 'security_alerts' 
         AND policyname = 'Admins can update security alerts'
     ) THEN
-        CREATE POLICY "Admins can update security alerts"
-        ON public.security_alerts
+        DROP POLICY IF EXISTS "Admins can update security alerts" ON public.security_alerts; CREATE POLICY "Admins can update security alerts" ON public.security_alerts
         FOR UPDATE
         USING (is_user_admin());
     END IF;
@@ -60,8 +56,7 @@ DO $$ BEGIN
         WHERE tablename = 'security_alerts' 
         AND policyname = 'System can insert security alerts'
     ) THEN
-        CREATE POLICY "System can insert security alerts"
-        ON public.security_alerts
+        DROP POLICY IF EXISTS "System can insert security alerts" ON public.security_alerts; CREATE POLICY "System can insert security alerts" ON public.security_alerts
         FOR INSERT
         WITH CHECK (true);
     END IF;
@@ -74,8 +69,7 @@ DO $$ BEGIN
         WHERE tablename = 'system_metrics' 
         AND policyname = 'Admins can view all system metrics'
     ) THEN
-        CREATE POLICY "Admins can view all system metrics"
-        ON public.system_metrics
+        DROP POLICY IF EXISTS "Admins can view all system metrics" ON public.system_metrics; CREATE POLICY "Admins can view all system metrics" ON public.system_metrics
         FOR SELECT
         USING (is_user_admin());
     END IF;
@@ -87,8 +81,7 @@ DO $$ BEGIN
         WHERE tablename = 'system_metrics' 
         AND policyname = 'System can insert system metrics'
     ) THEN
-        CREATE POLICY "System can insert system metrics"
-        ON public.system_metrics
+        DROP POLICY IF EXISTS "System can insert system metrics" ON public.system_metrics; CREATE POLICY "System can insert system metrics" ON public.system_metrics
         FOR INSERT
         WITH CHECK (true);
     END IF;
@@ -121,7 +114,7 @@ BEGIN
         current_setting('request.header.user-agent', true),
         p_response_time_ms,
         p_error_count
-    );
+    ) ON CONFLICT DO NOTHING;
 END;
 $function$;
 
@@ -158,7 +151,7 @@ BEGIN
         p_metadata,
         p_user_id,
         inet_client_addr()
-    ) RETURNING id INTO alert_id;
+    ) RETURNING id INTO alert_id ON CONFLICT DO NOTHING;
     
     RETURN alert_id;
 END;

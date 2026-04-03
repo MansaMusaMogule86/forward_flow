@@ -88,7 +88,7 @@ INSERT INTO public.resources (
     'Mindfulness & Wellness Tools',
     'Forward Focus Elevation',
     null,
-    'https://forwardfocuselevation.org',
+    'https://forward-focus-elevation.org',
     null,
     'Statewide',
     'Franklin',
@@ -105,7 +105,7 @@ INSERT INTO public.resources (
     'Financial Literacy & Credit Education',
     'Forward Focus Elevation',
     null,
-    'https://forwardfocuselevation.org',
+    'https://forward-focus-elevation.org',
     null,
     'Statewide',
     'Franklin',
@@ -185,4 +185,4 @@ INSERT INTO public.resources (
     'OH',
     now() - interval '7 days',
     now() - interval '7 days'
-  );
+  ) ON CONFLICT DO NOTHING;

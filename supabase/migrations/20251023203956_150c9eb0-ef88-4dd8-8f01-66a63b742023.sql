@@ -1,5 +1,5 @@
 -- Drop the old function first
-DROP FUNCTION IF EXISTS public.get_security_metrics_summary();
+-- Removed DROP FUNCTION to avoid dependency issues: public.get_security_metrics_summary();
 
 -- Create updated function with real session tracking
 CREATE OR REPLACE FUNCTION public.get_security_metrics_summary()

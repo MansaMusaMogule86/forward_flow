@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "lib": ["deno.window"],
+    "strict": true
+  },
+  "imports": {
+    "@std/http/server": "https://deno.land/std@0.190.0/http/server.ts",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.57.2",
+    "resend": "https://esm.sh/resend@4.0.0",
+    "stripe": "https://esm.sh/stripe@18.5.0",
+    "xhr": "https://deno.land/x/xhr@0.1.0/mod.ts"
+  }
+}

@@ -1,7 +1,7 @@
 -- Fix the failed function from previous migration
-DROP FUNCTION IF EXISTS public.mask_contact_info(text);
+-- Removed DROP FUNCTION to avoid dependency issues: public.mask_contact_text(text);
 
-CREATE OR REPLACE FUNCTION public.mask_contact_info(contact_value text)
+CREATE OR REPLACE FUNCTION public.mask_contact_text(contact_value text)
 RETURNS text
 LANGUAGE plpgsql
 IMMUTABLE
@@ -28,7 +28,7 @@ BEGIN
 END;
 $$;
 
--- Add missing enhanced rate limit check function for admin operations
+-- Add missing enhanced rate limit check function for admin p_actions
 CREATE OR REPLACE FUNCTION public.check_admin_rate_limit()
 RETURNS boolean
 LANGUAGE plpgsql
@@ -36,21 +36,21 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  admin_operations_count integer;
+  admin_p_actions_count integer;
 BEGIN
   -- Check if user is admin
   IF NOT is_user_admin(auth.uid()) THEN
     RETURN false;
   END IF;
   
-  -- Count admin operations in last hour
-  SELECT COUNT(*) INTO admin_operations_count
+  -- Count admin p_actions in last hour
+  SELECT COUNT(*) INTO admin_p_actions_count
   FROM public.audit_log
   WHERE user_id = auth.uid()
   AND sensitive_data_accessed = true
   AND created_at > NOW() - INTERVAL '1 hour';
   
-  -- Allow up to 100 admin operations per hour
-  RETURN admin_operations_count < 100;
+  -- Allow up to 100 admin p_actions per hour
+  RETURN admin_p_actions_count < 100;
 END;
 $$;

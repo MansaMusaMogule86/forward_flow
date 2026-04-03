@@ -1,4 +1,4 @@
--- Create function to detect suspicious activity patterns
+-- CREATE OR REPLACE FUNCTION to detect suspicious activity patterns
 CREATE OR REPLACE FUNCTION public.detect_advanced_suspicious_activity()
 RETURNS TABLE(
   alert_type text,
@@ -12,12 +12,12 @@ SECURITY DEFINER
 SET search_path = 'public'
 AS $$
 BEGIN
-  -- Detect multiple failed admin operations
+  -- Detect multiple failed admin p_actions
   RETURN QUERY
   SELECT 
-    'multiple_failed_operations'::text,
+    'multiple_failed_p_actions'::text,
     'high'::text,
-    'Multiple failed operations detected from user'::text,
+    'Multiple failed p_actions detected from user'::text,
     al.user_id,
     jsonb_build_object(
       'failed_count', COUNT(*),
@@ -73,7 +73,7 @@ BEGIN
 END;
 $$;
 
--- Create function to resolve security alerts
+-- CREATE OR REPLACE FUNCTION to resolve security alerts
 CREATE OR REPLACE FUNCTION public.resolve_security_alert(p_alert_id uuid)
 RETURNS boolean
 LANGUAGE plpgsql
@@ -106,13 +106,13 @@ BEGIN
     p_alert_id,
     jsonb_build_object('resolved_at', NOW()),
     'info'
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN FOUND;
 END;
 $$;
 
--- Create function to track anonymous AI usage
+-- CREATE OR REPLACE FUNCTION to track anonymous AI usage
 CREATE OR REPLACE FUNCTION public.track_anonymous_ai_usage(
   p_session_id text,
   p_ai_endpoint text
@@ -168,14 +168,14 @@ BEGIN
       1,
       false
     )
-    RETURNING id INTO new_session_id;
+    RETURNING id INTO new_session_id ON CONFLICT DO NOTHING;
     
     RETURN new_session_id;
   END IF;
 END;
 $$;
 
--- Create function to transfer anonymous session to authenticated user
+-- CREATE OR REPLACE FUNCTION to transfer anonymous session to authenticated user
 CREATE OR REPLACE FUNCTION public.transfer_anonymous_session_to_user(
   p_session_id text,
   p_user_id uuid
@@ -207,7 +207,7 @@ BEGIN
     'ANONYMOUS_SESSION_TRANSFERRED',
     jsonb_build_object('session_id', p_session_id, 'timestamp', NOW()),
     'info'
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN FOUND;
 END;
@@ -250,7 +250,7 @@ BEGIN
     p_request_id,
     jsonb_build_object('decision', p_decision, 'timestamp', NOW()),
     'info'
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN FOUND;
 END;

@@ -5,14 +5,13 @@
 DROP POLICY IF EXISTS "Anyone can view states" ON public.states;
 
 -- Add authentication-required policy to protect business intelligence
-CREATE POLICY "Authenticated users can view states" 
-ON public.states 
+DROP POLICY IF EXISTS "Authenticated users can view states" ON public.states; CREATE POLICY "Authenticated users can view states" ON public.states 
 FOR SELECT 
 USING (auth.uid() IS NOT NULL);
 
 -- Enhanced business strategy protection measures
 
--- Create function to add strategic data obfuscation for non-admins
+-- CREATE OR REPLACE FUNCTION to add strategic data obfuscation for non-admins
 CREATE OR REPLACE FUNCTION public.get_states_with_protection()
 RETURNS TABLE(
   id uuid,
@@ -47,7 +46,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -56,7 +55,7 @@ BEGIN
     'states',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   -- Return data with strategic obfuscation for non-admins
   RETURN QUERY
@@ -117,7 +116,7 @@ END;
 $$;
 
 -- Enhanced scraping detection function 
-CREATE OR REPLACE FUNCTION public.detect_data_scraping(table_name_param text)
+CREATE OR REPLACE FUNCTION public.detect_data_scraping(p_table_name_param text)
 RETURNS VOID
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -136,7 +135,7 @@ BEGIN
   SELECT COUNT(*) INTO request_count
   FROM public.audit_log
   WHERE user_id = user_id_val
-  AND table_name = table_name_param
+  AND p_table_name = p_table_name_param
   AND created_at > NOW() - INTERVAL '2 minutes';
   
   -- Create alert if suspicious pattern detected
@@ -145,10 +144,10 @@ BEGIN
       'POTENTIAL_DATA_SCRAPING',
       'high',
       'Rapid data access detected - potential scraping attempt',
-      format('User made %s requests to %s table in 2 minutes', request_count, table_name_param),
+      format('User made %s requests to %s table in 2 minutes', request_count, p_table_name_param),
       jsonb_build_object(
         'user_id', user_id_val,
-        'table_name', table_name_param,
+        'p_table_name', p_table_name_param,
         'request_count', request_count,
         'time_window', '2 minutes'
       ),

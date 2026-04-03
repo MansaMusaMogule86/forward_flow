@@ -2,7 +2,7 @@
 -- This prevents potential SQL injection through search path manipulation
 
 -- Update the is_user_admin function
-CREATE OR REPLACE FUNCTION public.is_user_admin(user_id uuid DEFAULT auth.uid())
+CREATE OR REPLACE FUNCTION public.is_user_admin(p_user_id uuid DEFAULT auth.uid())
  RETURNS boolean
  LANGUAGE sql
  STABLE SECURITY DEFINER
@@ -11,7 +11,7 @@ AS $function$
   SELECT EXISTS (
     SELECT 1 
     FROM public.user_roles 
-    WHERE user_roles.user_id = is_user_admin.user_id 
+    WHERE user_roles.user_id = p_user_id 
     AND role = 'admin'
   );
 $function$;
@@ -52,7 +52,7 @@ BEGIN
   VALUES (
     NEW.id, 
     COALESCE(NEW.raw_user_meta_data ->> 'display_name', NEW.email)
-  );
+  ) ON CONFLICT DO NOTHING;
   RETURN NEW;
 END;
 $function$;

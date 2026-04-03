@@ -1,11 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "@std/http/server";
+import { OPENROUTER_MODELS, callOpenRouterWithFallback, OpenRouterMessage } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -33,14 +34,12 @@ serve(async (req) => {
       });
     }
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY not configured');
     }
 
-    const systemPrompt = `You are a professional content writer specializing in creating compelling success 
-    stories for social services and community organizations. Your goal is to highlight positive outcomes, 
-    celebrate achievements, and inspire others while maintaining dignity and respect for all individuals.`;
+    const systemPrompt = `You are a professional content writer specializing in creating compelling success stories for social services and community organizations. Your goal is to highlight positive outcomes, celebrate achievements, and inspire others while maintaining dignity and respect for all individuals.`;
 
     const userPrompt = `Create a compelling success story based on this information:
 
@@ -50,57 +49,32 @@ serve(async (req) => {
     
     Please generate:
     1. A compelling title (under 80 characters)
-    2. A full story (300-500 words) that:
-       - Has an engaging opening
-       - Describes the journey and challenges
-       - Highlights the intervention and support received
-       - Celebrates the outcome and impact
-       - Ends with hope and inspiration
+    2. A full story (300-500 words)
     3. A brief summary (50-100 words) suitable for social media
     
-    Format as JSON with structure:
+    Return the response as a JSON object with the following structure:
     {
-      "title": "title here",
-      "story": "full story here",
-      "summary": "brief summary here",
-      "suggestedTags": ["tag1", "tag2", "tag3"]
+      "title": "...",
+      "story": "...",
+      "summary": "...",
+      "suggestedTags": ["tag1", "tag2", "..."]
     }`;
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+    // Use OpenRouter for generation
+    const response = await callOpenRouterWithFallback(
+      OPENROUTER_API_KEY,
+      {
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
-        ],
-        tools: [{
-          type: 'function',
-          function: {
-            name: 'generate_story_content',
-            description: 'Generate success story content',
-            parameters: {
-              type: 'object',
-              properties: {
-                title: { type: 'string' },
-                story: { type: 'string' },
-                summary: { type: 'string' },
-                suggestedTags: {
-                  type: 'array',
-                  items: { type: 'string' }
-                }
-              },
-              required: ['title', 'story', 'summary']
-            }
-          }
-        }],
-        tool_choice: { type: 'function', function: { name: 'generate_story_content' } }
-      }),
-    });
+        ] as OpenRouterMessage[],
+        temperature: 0.7,
+        max_tokens: 1500,
+        response_format: { type: 'json_object' }
+      },
+      OPENROUTER_MODELS.COMPLEX_REASONING,
+      OPENROUTER_MODELS.CHAT_STANDARD
+    );
 
     if (!response.ok) {
       if (response.status === 429) {
@@ -115,12 +89,14 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
+      const errorText = await response.text();
+      console.error('OpenRouter error:', errorText);
       throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const toolCall = data.choices[0].message.tool_calls?.[0];
-    const result = JSON.parse(toolCall.function.arguments);
+    const content = data.choices[0].message.content;
+    const result = JSON.parse(content);
 
     console.log('AI story generated');
 
@@ -136,3 +112,4 @@ serve(async (req) => {
     });
   }
 });
+

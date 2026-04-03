@@ -1,6 +1,6 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.76.0";
+import { serve } from "@std/http/server";
+import { Resend } from "resend";
+import { createClient } from "@supabase/supabase-js";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -41,9 +41,9 @@ const handler = async (req: Request): Promise<Response> => {
     );
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims) {
-      console.error("Unauthorized request to send-auth-email");
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      console.error("Unauthorized request to send-auth-email:", authError);
       return new Response(
         JSON.stringify({ success: false, error: "Unauthorized" }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }

@@ -10,7 +10,7 @@ CREATE INDEX idx_partner_verifications_expires_at
 ON partner_verifications(expires_at) 
 WHERE status = 'approved';
 
--- Create function to auto-set expires_at when verification is approved
+-- CREATE OR REPLACE FUNCTION to auto-set expires_at when verification is approved
 CREATE OR REPLACE FUNCTION set_verification_expiration()
 RETURNS trigger AS $$
 BEGIN

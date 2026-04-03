@@ -28,14 +28,13 @@ GRANT SELECT ON public.organizations_public TO authenticated;
 -- Ensure that even if main RLS policies fail, sensitive data is protected
 
 -- Policy to prevent public access to sensitive organization contact info
-CREATE POLICY "Deny public access to sensitive org contact info" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Deny public access to sensitive org contact info" ON public.organizations; CREATE POLICY "Deny public access to sensitive org contact info" ON public.organizations 
 FOR SELECT 
 TO anon
 USING (false); -- Explicit deny for anonymous users
 
 -- 3. Create data masking function for contact information
-CREATE OR REPLACE FUNCTION public.mask_contact_info(contact_text text)
+CREATE OR REPLACE FUNCTION public.mask_contact_text(contact_text text)
 RETURNS text
 LANGUAGE plpgsql
 SECURITY INVOKER
@@ -78,17 +77,16 @@ CREATE TABLE IF NOT EXISTS public.audit_log (
 ALTER TABLE public.audit_log ENABLE ROW LEVEL SECURITY;
 
 -- Only admins can view audit logs
-CREATE POLICY "Only admins can view audit logs" 
-ON public.audit_log 
+DROP POLICY IF EXISTS "Only admins can view audit logs" ON public.audit_log; CREATE POLICY "Only admins can view audit logs" ON public.audit_log 
 FOR SELECT 
 USING (is_user_admin());
 
--- Create function to log sensitive data access
+-- CREATE OR REPLACE FUNCTION to log sensitive data access
 CREATE OR REPLACE FUNCTION public.log_sensitive_access(
-    p_table_name text,
-    p_action text,
-    p_record_id uuid DEFAULT NULL,
-    p_sensitive_data boolean DEFAULT true
+    table_name text,
+    action text,
+    record_id uuid DEFAULT NULL,
+    sensitive_data_accessed boolean DEFAULT true
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -97,9 +95,9 @@ AS $$
 BEGIN
     INSERT INTO public.audit_log (
         user_id,
-        table_name,
+        p_table_name,
         action,
-        record_id,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -109,7 +107,7 @@ BEGIN
         p_record_id,
         p_sensitive_data,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
 END;
 $$;
 
@@ -118,8 +116,7 @@ $$;
 
 -- Enhanced policy for partner referrals - more restrictive
 DROP POLICY IF EXISTS "Only admins can view partner referrals" ON public.partner_referrals;
-CREATE POLICY "Admins only can view partner referrals with logging" 
-ON public.partner_referrals 
+DROP POLICY IF EXISTS "Admins only can view partner referrals with logging" ON public.partner_referrals; CREATE POLICY "Admins only can view partner referrals with logging" ON public.partner_referrals 
 FOR SELECT 
 USING (
     is_user_admin() AND 
@@ -128,8 +125,7 @@ USING (
 
 -- Enhanced policy for partnership requests - more restrictive  
 DROP POLICY IF EXISTS "Admins can view all partnership requests" ON public.partnership_requests;
-CREATE POLICY "Admins only can view partnership requests with logging" 
-ON public.partnership_requests 
+DROP POLICY IF EXISTS "Admins only can view partnership requests with logging" ON public.partnership_requests; CREATE POLICY "Admins only can view partnership requests with logging" ON public.partnership_requests 
 FOR SELECT 
 USING (
     is_user_admin() AND 
@@ -139,7 +135,7 @@ USING (
 -- 7. Create rate limiting function to prevent bulk scraping
 CREATE OR REPLACE FUNCTION public.check_rate_limit(
     p_user_id uuid DEFAULT auth.uid(),
-    p_table_name text DEFAULT 'organizations',
+    table_name text DEFAULT 'organizations',
     p_limit_per_hour integer DEFAULT 100
 )
 RETURNS boolean
@@ -153,7 +149,7 @@ BEGIN
     SELECT COUNT(*) INTO request_count
     FROM public.audit_log
     WHERE user_id = p_user_id
-    AND table_name = p_table_name
+    AND p_table_name = p_table_name
     AND created_at > (now() - interval '1 hour');
     
     -- Return false if limit exceeded
@@ -162,6 +158,6 @@ END;
 $$;
 
 -- Grant necessary permissions
-GRANT EXECUTE ON FUNCTION public.mask_contact_info(text) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.mask_contact_text(text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.log_sensitive_access(text, text, uuid, boolean) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.check_rate_limit(uuid, text, integer) TO authenticated;

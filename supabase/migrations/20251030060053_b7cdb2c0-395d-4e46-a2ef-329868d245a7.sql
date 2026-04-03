@@ -1,6 +1,6 @@
 -- Fix security warning: Drop trigger and function, then recreate with search_path
 DROP TRIGGER IF EXISTS verification_expiration_trigger ON partner_verifications;
-DROP FUNCTION IF EXISTS set_verification_expiration();
+-- Removed DROP FUNCTION to avoid dependency issues: set_verification_expiration();
 
 CREATE OR REPLACE FUNCTION set_verification_expiration()
 RETURNS trigger 

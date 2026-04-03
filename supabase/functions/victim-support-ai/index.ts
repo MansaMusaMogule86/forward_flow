@@ -1,8 +1,8 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.57.2';
+import "xhr";
+import { serve } from "@std/http/server";
+import { createClient } from '@supabase/supabase-js';
 import { corsHeaders } from '../_shared/utils.ts';
-import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback, OpenRouterMessage } from '../_shared/openrouter.ts';
 
 interface VictimSupportQuery {
   query: string;
@@ -12,6 +12,8 @@ interface VictimSupportQuery {
   traumaLevel?: 'recent' | 'ongoing' | 'past' | 'complex';
   previousContext?: Array<{role: string, content: string}>;
 }
+
+type VictimSupportMessage = Pick<OpenRouterMessage, 'role' | 'content'>;
 
 const RATE_LIMIT_MAX_REQUESTS = 10;
 const RATE_LIMIT_WINDOW_MINUTES = 5;
@@ -87,7 +89,7 @@ serve(async (req) => {
     if (rateLimit.limited) {
       console.log(`Rate limit exceeded for ${identifier}`);
       
-      await supabase.from('audit_logs').insert({
+      await supabase.from('audit_log').insert({
         action: 'AI_RATE_LIMIT_EXCEEDED',
         resource_type: 'ai_endpoint',
         details: { endpoint, identifier },
@@ -161,9 +163,12 @@ ${JSON.stringify(resources?.slice(0, 10) || [])}
 
 Remember: You are the guide for healing and second chances. Be the "Google and Perplexity" for survivors by providing verified, structured resource information.`;
 
-    const messages = [
+    const messages: OpenRouterMessage[] = [
       { role: 'system', content: systemPrompt },
-      ...previousContext,
+      ...previousContext.filter(
+        (message): message is VictimSupportMessage =>
+          message.role === 'system' || message.role === 'user' || message.role === 'assistant'
+      ),
       { role: 'user', content: query }
     ];
 
@@ -300,3 +305,4 @@ Remember: You are the guide for healing and second chances. Be the "Google and P
     });
   }
 });
+

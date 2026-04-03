@@ -11,7 +11,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -20,7 +20,7 @@ BEGIN
     'organizations',
     false,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN QUERY
   SELECT 
@@ -52,7 +52,7 @@ BEGIN
   END IF;
 
   -- Enhanced rate limiting for contact access
-  IF NOT check_enhanced_rate_limit(auth.uid(), 'contact_data_access', 10) THEN
+  IF NOT check_enhanced_rate_limit(auth.uid(), 'contact_text_access', 10) THEN
     RAISE EXCEPTION 'Rate limit exceeded for contact access';
   END IF;
 
@@ -60,20 +60,20 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     ip_address,
     user_agent,
     created_at
   ) VALUES (
     auth.uid(),
-    'CONTACT_DATA_ACCESS',
+    'contact_text_ACCESS',
     'organizations',
     true,
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Check for suspicious activity patterns
   PERFORM detect_suspicious_activity();
@@ -89,11 +89,11 @@ BEGIN
     o.verified,
     CASE 
       WHEN is_user_admin() THEN o.email
-      ELSE mask_contact_info(o.email)
+      ELSE mask_contact_text(o.email)
     END as email,
     CASE 
       WHEN is_user_admin() THEN o.phone
-      ELSE mask_contact_info(o.phone)
+      ELSE mask_contact_text(o.phone)
     END as phone,
     o.address,
     o.created_at,
@@ -115,7 +115,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -124,7 +124,7 @@ BEGIN
     'organizations',
     false,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN QUERY
   SELECT 

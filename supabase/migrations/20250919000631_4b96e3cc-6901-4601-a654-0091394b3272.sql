@@ -5,8 +5,7 @@
 DROP POLICY IF EXISTS "Anyone can view resources" ON public.resources;
 
 -- Create secure resource access policy that protects contact information
-CREATE POLICY "Secure resource access with contact protection"
-ON public.resources
+DROP POLICY IF EXISTS "Secure resource access with contact protection" ON public.resources; CREATE POLICY "Secure resource access with contact protection" ON public.resources
 FOR SELECT
 USING (
   -- Allow authenticated users to view resources with masked contact info
@@ -54,7 +53,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -63,7 +62,7 @@ BEGIN
     'resources',
     CASE WHEN is_user_admin(auth.uid()) THEN true ELSE false END,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return data with conditional masking
   RETURN QUERY
@@ -79,7 +78,7 @@ BEGIN
     r.website,
     CASE 
       WHEN is_user_admin(auth.uid()) THEN r.phone
-      ELSE mask_contact_info(r.phone)
+      ELSE mask_contact_text(r.phone)
     END as phone,
     CASE 
       WHEN is_user_admin(auth.uid()) THEN r.address
@@ -121,7 +120,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -130,7 +129,7 @@ BEGIN
     'resources',
     false,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return only non-sensitive data
   RETURN QUERY
@@ -159,20 +158,17 @@ DROP POLICY IF EXISTS "owners_can_manage_own_orgs" ON public.organizations;
 DROP POLICY IF EXISTS "admins_can_manage_all_orgs" ON public.organizations;
 
 -- Create comprehensive secure policies for organizations
-CREATE POLICY "Admins can manage all organizations"
-ON public.organizations
+DROP POLICY IF EXISTS "Admins can manage all organizations" ON public.organizations; CREATE POLICY "Admins can manage all organizations" ON public.organizations
 FOR ALL
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
 
-CREATE POLICY "Organization owners can manage their own organizations"
-ON public.organizations
+DROP POLICY IF EXISTS "Organization owners can manage their own organizations" ON public.organizations; CREATE POLICY "Organization owners can manage their own organizations" ON public.organizations
 FOR ALL
 USING (auth.uid() = owner_id AND auth.uid() IS NOT NULL)
 WITH CHECK (auth.uid() = owner_id AND auth.uid() IS NOT NULL);
 
-CREATE POLICY "Authenticated users can view organizations through secure function only"
-ON public.organizations
+DROP POLICY IF EXISTS "Authenticated users can view organizations through secure function only" ON public.organizations; CREATE POLICY "Authenticated users can view organizations through secure function only" ON public.organizations
 FOR SELECT
 USING (
   auth.uid() IS NOT NULL 
@@ -181,8 +177,7 @@ USING (
 );
 
 -- Block all anonymous access to organizations table
-CREATE POLICY "Block all anonymous organization access"
-ON public.organizations
+DROP POLICY IF EXISTS "Block all anonymous organization access" ON public.organizations; CREATE POLICY "Block all anonymous organization access" ON public.organizations
 FOR ALL
 TO anon
 USING (false)
@@ -200,8 +195,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -215,7 +210,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -225,7 +220,7 @@ $$;
 INSERT INTO public.audit_log (
   user_id,
   action,
-  table_name,
+  p_table_name,
   sensitive_data_accessed,
   created_at
 ) VALUES (
@@ -234,4 +229,4 @@ INSERT INTO public.audit_log (
   'resources_and_organizations',
   true,
   now()
-);
+) ON CONFLICT DO NOTHING;

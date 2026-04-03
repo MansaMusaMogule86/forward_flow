@@ -39,7 +39,7 @@ BEGIN
         )
         AND p.proname IN (
             'cleanup_audit_logs',
-            'log_payment_operation', 
+            'log_payment_p_action', 
             'get_organizations_with_contacts',
             'get_masked_organization_contact',
             'get_partner_stats'

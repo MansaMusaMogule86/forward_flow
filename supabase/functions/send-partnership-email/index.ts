@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { Resend } from "https://esm.sh/resend@4.0.0";
+import { serve } from "@std/http/server";
+import { Resend } from "resend";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -62,8 +62,8 @@ const handler = async (req: Request): Promise<Response> => {
           
           <div style="background: linear-gradient(135deg, #BB0000, #666666); padding: 20px; border-radius: 8px; margin: 30px 0; text-align: center;">
             <p style="color: white; margin: 0 0 15px 0;">While you wait, explore our current resources:</p>
-            <a href="https://forwardfocuselevation.org" style="background: white; color: #BB0000; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 10px;">Visit Our Website</a>
-            <a href="https://forwardfocuselevation.org/about" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Learn About Us</a>
+            <a href="https://forward-focus-elevation.org" style="background: white; color: #BB0000; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; margin-right: 10px;">Visit Our Website</a>
+            <a href="https://forward-focus-elevation.org/about" style="background: rgba(255,255,255,0.2); color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">Learn About Us</a>
           </div>
           
           <p style="color: #6B7280; font-size: 14px; margin-top: 30px;">

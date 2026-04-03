@@ -1,7 +1,7 @@
 -- Create security monitoring and analytics tables
 
 -- AI endpoint usage analytics table
-CREATE TABLE public.ai_usage_analytics (
+CREATE TABLE IF NOT EXISTS public.ai_usage_analytics (
     id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     endpoint_name TEXT NOT NULL,
     user_id UUID REFERENCES auth.users(id),
@@ -18,7 +18,7 @@ CREATE TABLE public.ai_usage_analytics (
 ALTER TABLE public.ai_usage_analytics ENABLE ROW LEVEL SECURITY;
 
 -- Security alerts table for automated monitoring
-CREATE TABLE public.security_alerts (
+CREATE TABLE IF NOT EXISTS public.security_alerts (
     id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     alert_type TEXT NOT NULL,
     severity TEXT NOT NULL CHECK (severity IN ('low', 'medium', 'high', 'critical')),
@@ -37,7 +37,7 @@ CREATE TABLE public.security_alerts (
 ALTER TABLE public.security_alerts ENABLE ROW LEVEL SECURITY;
 
 -- System metrics table for performance and security monitoring
-CREATE TABLE public.system_metrics (
+CREATE TABLE IF NOT EXISTS public.system_metrics (
     id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
     metric_type TEXT NOT NULL,
     metric_name TEXT NOT NULL,
@@ -50,40 +50,33 @@ CREATE TABLE public.system_metrics (
 ALTER TABLE public.system_metrics ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for AI usage analytics (admin only)
-CREATE POLICY "Admins can view all AI usage analytics"
-ON public.ai_usage_analytics
+DROP POLICY IF EXISTS "Admins can view all AI usage analytics" ON public.ai_usage_analytics; CREATE POLICY "Admins can view all AI usage analytics" ON public.ai_usage_analytics
 FOR SELECT
 USING (is_user_admin());
 
-CREATE POLICY "System can insert AI usage analytics"
-ON public.ai_usage_analytics
+DROP POLICY IF EXISTS "System can insert AI usage analytics" ON public.ai_usage_analytics; CREATE POLICY "System can insert AI usage analytics" ON public.ai_usage_analytics
 FOR INSERT
 WITH CHECK (true);
 
 -- Create policies for security alerts (admin only)
-CREATE POLICY "Admins can view all security alerts"
-ON public.security_alerts
+DROP POLICY IF EXISTS "Admins can view all security alerts" ON public.security_alerts; CREATE POLICY "Admins can view all security alerts" ON public.security_alerts
 FOR SELECT
 USING (is_user_admin());
 
-CREATE POLICY "Admins can update security alerts"
-ON public.security_alerts
+DROP POLICY IF EXISTS "Admins can update security alerts" ON public.security_alerts; CREATE POLICY "Admins can update security alerts" ON public.security_alerts
 FOR UPDATE
 USING (is_user_admin());
 
-CREATE POLICY "System can insert security alerts"
-ON public.security_alerts
+DROP POLICY IF EXISTS "System can insert security alerts" ON public.security_alerts; CREATE POLICY "System can insert security alerts" ON public.security_alerts
 FOR INSERT
 WITH CHECK (true);
 
 -- Create policies for system metrics (admin only)
-CREATE POLICY "Admins can view all system metrics"
-ON public.system_metrics
+DROP POLICY IF EXISTS "Admins can view all system metrics" ON public.system_metrics; CREATE POLICY "Admins can view all system metrics" ON public.system_metrics
 FOR SELECT
 USING (is_user_admin());
 
-CREATE POLICY "System can insert system metrics"
-ON public.system_metrics
+DROP POLICY IF EXISTS "System can insert system metrics" ON public.system_metrics; CREATE POLICY "System can insert system metrics" ON public.system_metrics
 FOR INSERT
 WITH CHECK (true);
 
@@ -114,7 +107,7 @@ BEGIN
         current_setting('request.header.user-agent', true),
         p_response_time_ms,
         p_error_count
-    );
+    ) ON CONFLICT DO NOTHING;
 END;
 $function$;
 
@@ -151,7 +144,7 @@ BEGIN
         p_metadata,
         p_user_id,
         inet_client_addr()
-    ) RETURNING id INTO alert_id;
+    ) RETURNING id INTO alert_id ON CONFLICT DO NOTHING;
     
     RETURN alert_id;
 END;
@@ -306,7 +299,6 @@ CREATE INDEX idx_security_alerts_resolved ON public.security_alerts(resolved, cr
 CREATE INDEX idx_system_metrics_type_time ON public.system_metrics(metric_type, recorded_at DESC);
 
 -- Create trigger for automatic timestamp updates
-CREATE TRIGGER update_ai_usage_analytics_updated_at
-BEFORE UPDATE ON public.ai_usage_analytics
+DROP TRIGGER IF EXISTS update_ai_usage_analytics_updated_at ON public.ai_usage_analytics; CREATE TRIGGER update_ai_usage_analytics_updated_at BEFORE UPDATE ON public.ai_usage_analytics
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();

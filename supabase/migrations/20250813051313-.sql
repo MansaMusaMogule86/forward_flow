@@ -53,59 +53,68 @@ $$;
 
 -- 4) Update RLS policies that directly queried auth.users
 -- otp_codes
-DROP POLICY IF EXISTS "Users can create OTP codes for their own email" ON public.otp_codes;
-DROP POLICY IF EXISTS "Users can update their own OTP codes" ON public.otp_codes;
-DROP POLICY IF EXISTS "Users can view their own OTP codes" ON public.otp_codes;
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND p_table_name = 'otp_codes') THEN
+    DROP POLICY IF EXISTS "Users can create OTP codes for their own email" ON public.otp_codes;
+    DROP POLICY IF EXISTS "Users can update their own OTP codes" ON public.otp_codes;
+    DROP POLICY IF EXISTS "Users can view their own OTP codes" ON public.otp_codes;
 
-CREATE POLICY "Users can create OTP codes for their own email"
-ON public.otp_codes
-AS PERMISSIVE
-FOR INSERT
-TO authenticated
-WITH CHECK (email = public.get_user_email(auth.uid()));
+    DROP POLICY IF EXISTS "Users can create OTP codes for their own email" ON public.otp_codes; CREATE POLICY "Users can create OTP codes for their own email" ON public.otp_codes
+    AS PERMISSIVE
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (email = public.get_user_email(auth.uid()));
 
-CREATE POLICY "Users can update their own OTP codes"
-ON public.otp_codes
-AS PERMISSIVE
-FOR UPDATE
-TO authenticated
-USING (email = public.get_user_email(auth.uid()))
-WITH CHECK (email = public.get_user_email(auth.uid()));
+    DROP POLICY IF EXISTS "Users can update their own OTP codes" ON public.otp_codes; CREATE POLICY "Users can update their own OTP codes" ON public.otp_codes
+    AS PERMISSIVE
+    FOR UPDATE
+    TO authenticated
+    USING (email = public.get_user_email(auth.uid()))
+    WITH CHECK (email = public.get_user_email(auth.uid()));
 
-CREATE POLICY "Users can view their own OTP codes"
-ON public.otp_codes
-AS PERMISSIVE
-FOR SELECT
-TO authenticated
-USING (email = public.get_user_email(auth.uid()));
+    DROP POLICY IF EXISTS "Users can view their own OTP codes" ON public.otp_codes; CREATE POLICY "Users can view their own OTP codes" ON public.otp_codes
+    AS PERMISSIVE
+    FOR SELECT
+    TO authenticated
+    USING (email = public.get_user_email(auth.uid()));
+  END IF;
+END $$;
 
 -- user_access
-DROP POLICY IF EXISTS "user_access_select_owner_or_admin" ON public.user_access;
-DROP POLICY IF EXISTS "user_access_insert_all" ON public.user_access;
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND p_table_name = 'user_access') THEN
+    DROP POLICY IF EXISTS "user_access_select_owner_or_admin" ON public.user_access;
+    DROP POLICY IF EXISTS "user_access_insert_all" ON public.user_access;
 
-CREATE POLICY "user_access_select_owner_or_admin"
-ON public.user_access
-AS PERMISSIVE
-FOR SELECT
-TO authenticated
-USING (
-  email = public.get_user_email(auth.uid())
-  OR public.is_user_admin(auth.uid())
-);
+    DROP POLICY IF EXISTS "user_access_select_owner_or_admin" ON public.user_access; CREATE POLICY "user_access_select_owner_or_admin" ON public.user_access
+    AS PERMISSIVE
+    FOR SELECT
+    TO authenticated
+    USING (
+      email = public.get_user_email(auth.uid())
+      OR public.is_user_admin(auth.uid())
+    );
 
-CREATE POLICY "user_access_insert_admin"
-ON public.user_access
-AS PERMISSIVE
-FOR INSERT
-TO authenticated
-WITH CHECK (public.is_user_admin(auth.uid()));
+    DROP POLICY IF EXISTS "user_access_insert_admin" ON public.user_access; CREATE POLICY "user_access_insert_admin" ON public.user_access
+    AS PERMISSIVE
+    FOR INSERT
+    TO authenticated
+    WITH CHECK (public.is_user_admin(auth.uid()));
+  END IF;
+END $$;
 
 -- 5) Tighten orders INSERT policy
-DROP POLICY IF EXISTS "orders_insert_all" ON public.orders;
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = 'public' AND p_table_name = 'orders') THEN
+    DROP POLICY IF EXISTS "orders_insert_all" ON public.orders;
 
-CREATE POLICY "orders_insert_owner_or_server"
-ON public.orders
-AS PERMISSIVE
-FOR INSERT
-TO authenticated
-WITH CHECK ((user_id IS NULL) OR (auth.uid() = user_id));
+    DROP POLICY IF EXISTS "orders_insert_owner_or_server" ON public.orders; CREATE POLICY "orders_insert_owner_or_server" ON public.orders
+    AS PERMISSIVE
+    FOR INSERT
+    TO authenticated
+    WITH CHECK ((user_id IS NULL) OR (auth.uid() = user_id));
+  END IF;
+END $$;

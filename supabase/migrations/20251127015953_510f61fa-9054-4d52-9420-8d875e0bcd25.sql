@@ -38,8 +38,7 @@ ALTER TABLE public.email_automation_rules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.email_automation_queue ENABLE ROW LEVEL SECURITY;
 
 -- Admins can manage automation rules
-CREATE POLICY "Admins can manage automation rules"
-  ON public.email_automation_rules
+DROP POLICY IF EXISTS "Admins can manage automation rules" ON public.email_automation_rules; CREATE POLICY "Admins can manage automation rules" ON public.email_automation_rules
   FOR ALL
   TO authenticated
   USING (
@@ -50,15 +49,13 @@ CREATE POLICY "Admins can manage automation rules"
   );
 
 -- Users can view their own queue items
-CREATE POLICY "Users can view their queue items"
-  ON public.email_automation_queue
+DROP POLICY IF EXISTS "Users can view their queue items" ON public.email_automation_queue; CREATE POLICY "Users can view their queue items" ON public.email_automation_queue
   FOR SELECT
   TO authenticated
   USING (user_id = auth.uid());
 
 -- Admins can manage all queue items
-CREATE POLICY "Admins can manage queue"
-  ON public.email_automation_queue
+DROP POLICY IF EXISTS "Admins can manage queue" ON public.email_automation_queue; CREATE POLICY "Admins can manage queue" ON public.email_automation_queue
   FOR ALL
   TO authenticated
   USING (
@@ -69,13 +66,11 @@ CREATE POLICY "Admins can manage queue"
   );
 
 -- Triggers for updated_at
-CREATE TRIGGER update_email_automation_rules_updated_at
-  BEFORE UPDATE ON public.email_automation_rules
+DROP TRIGGER IF EXISTS update_email_automation_rules_updated_at ON public.email_automation_rules; CREATE TRIGGER update_email_automation_rules_updated_at BEFORE UPDATE ON public.email_automation_rules
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_email_automation_queue_updated_at
-  BEFORE UPDATE ON public.email_automation_queue
+DROP TRIGGER IF EXISTS update_email_automation_queue_updated_at ON public.email_automation_queue; CREATE TRIGGER update_email_automation_queue_updated_at BEFORE UPDATE ON public.email_automation_queue
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
@@ -190,8 +185,7 @@ BEGIN
 END;
 $$;
 
-CREATE TRIGGER on_learning_progress_milestone
-  AFTER UPDATE ON public.learning_progress
+DROP TRIGGER IF EXISTS on_learning_progress_milestone ON public.learning_progress; CREATE TRIGGER on_learning_progress_milestone AFTER UPDATE ON public.learning_progress
   FOR EACH ROW
   EXECUTE FUNCTION public.trigger_milestone_email();
 

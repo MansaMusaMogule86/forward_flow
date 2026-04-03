@@ -20,7 +20,7 @@ export default function BlogPost() {
   }
 
   const relatedPosts = getRecentPosts(3).filter(p => p.id !== post.id).slice(0, 2);
-  const articleUrl = `https://forwardfocuselevation.org/blog/${post.slug}`;
+  const articleUrl = `https://forward-focus-elevation.org/blog/${post.slug}`;
   
   // Generate schemas
   const articleSchema = generateArticleSchema(post, articleUrl);
@@ -72,7 +72,7 @@ export default function BlogPost() {
         <meta property="og:url" content={articleUrl} />
         <meta property="og:site_name" content="Forward Focus Elevation" />
         {post.seo.ogImage && (
-          <meta property="og:image" content={`https://forwardfocuselevation.org${post.seo.ogImage}`} />
+          <meta property="og:image" content={`https://forward-focus-elevation.org${post.seo.ogImage}`} />
         )}
         <meta property="article:published_time" content={post.publishedAt} />
         {post.updatedAt && (
@@ -89,7 +89,7 @@ export default function BlogPost() {
         <meta name="twitter:title" content={post.title} />
         <meta name="twitter:description" content={post.excerpt} />
         {post.seo.ogImage && (
-          <meta name="twitter:image" content={`https://forwardfocuselevation.org${post.seo.ogImage}`} />
+          <meta name="twitter:image" content={`https://forward-focus-elevation.org${post.seo.ogImage}`} />
         )}
         
         {/* Structured Data - Article */}

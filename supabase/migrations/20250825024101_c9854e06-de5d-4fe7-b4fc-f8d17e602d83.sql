@@ -2,8 +2,7 @@
 DROP POLICY "Public can view basic organization info" ON public.organizations;
 
 -- Create a new policy that only allows authenticated users to see full organization data
-CREATE POLICY "Authenticated users can view full organization info" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Authenticated users can view full organization info" ON public.organizations; CREATE POLICY "Authenticated users can view full organization info" ON public.organizations 
 FOR SELECT 
 USING (auth.uid() IS NOT NULL);
 

@@ -22,14 +22,16 @@ Updated ALL 8 AI edge functions to use OpenRouter with cheapest+strongest models
 - `supabase/functions/ai-resource-discovery/index.ts`
 - `supabase/functions/partner-support-chat/index.ts`
 
-### Model Selection Strategy
+### Model Selection Strategy (HYBRID - CHEAP + SAFE)
 
 | Use Case | Primary Model | Fallback | Cost (per 1M tokens) |
 |----------|--------------|----------|---------------------|
-| General Chat/Streaming | `google/gemini-flash-1.5:free` | `qwen/qwen-2.5-7b-instruct` | FREE / $0.10 |
-| Crisis/Emergency | `anthropic/claude-3-haiku:beta` | `qwen/qwen-2.5-7b-instruct` | $0.25-$1.25 |
-| Structured Output | `mistral/ministral-8b` | `qwen/qwen-2.5-7b-instruct` | $0.10 |
-| Complex Reasoning | `google/gemini-2.0-flash-exp:free` | `qwen/qwen-2.5-7b-instruct` | FREE |
+| General Chat/Streaming | `google/gemini-flash-1.5:free` | `qwen/qwen-2.5-7b-instruct` | **FREE** / $0.10 |
+| Crisis/Emergency | `anthropic/claude-3-haiku` | `qwen/qwen-2.5-7b-instruct` | **$0.25/$1.25** ⚠️ |
+| Structured Output | `mistral/ministral-8b` | `qwen/qwen-2.5-7b-instruct` | **$0.10** |
+| Complex Reasoning | `google/gemini-flash-1.5:free` | `qwen/qwen-2.5-7b-instruct` | **FREE** |
+
+**Strategy**: Claude is reserved ONLY for crisis situations (~1% of traffic). Everything else uses free/cheap models.
 
 ### Key Features:
 - ✅ Automatic fallback when primary model fails
@@ -145,7 +147,7 @@ Updated `src/App.tsx` to include:
 
 ---
 
-## Cost Optimization Summary
+## Cost Optimization Summary (HYBRID APPROACH)
 
 ### Before (OpenAI Direct):
 - GPT-4o-mini: $0.15 / $0.60 per 1M tokens
@@ -153,18 +155,19 @@ Updated `src/App.tsx` to include:
 - No fallback mechanism
 - Single provider risk
 
-### After (OpenRouter):
-- Gemini Flash 1.5: FREE (with limits)
-- Qwen 2.5 7B: $0.10 / $0.10 per 1M tokens
-- Ministral 8B: $0.10 / $0.10 per 1M tokens
-- Claude Haiku: $0.25 / $1.25 per 1M tokens (crisis only)
-- Automatic fallback to cheaper models
-- Multi-provider redundancy
+### After (OpenRouter - HYBRID CONFIG):
+| Traffic Type | Model | Cost | % of Traffic |
+|-------------|-------|------|--------------|
+| General chat | Gemini Flash 1.5 | **FREE** | ~90% |
+| Fallbacks | Qwen 2.5 7B | **$0.10** | ~9% |
+| Structured output | Ministral 8B | **$0.10** | ~1% |
+| **Crisis only** | Claude 3 Haiku | **$0.25/$1.25** | **~0.1%** |
 
 ### Estimated Savings:
-- **70-90% cost reduction** for general chat
-- **Free tier available** for high-volume use
-- **Crisis chat** maintains quality with safety-aligned models
+- **90-95% cost reduction** overall
+- **Crisis situations** get proper safety-tuned Claude (critical!)
+- **Expected monthly cost**: $5-15 (depending on crisis volume)
+- **Best of both**: Cheap for scale, safe for emergencies
 
 ---
 

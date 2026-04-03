@@ -21,8 +21,7 @@ CREATE INDEX idx_email_events_created_at ON public.email_events(created_at DESC)
 ALTER TABLE public.email_events ENABLE ROW LEVEL SECURITY;
 
 -- Only admins can view email events
-CREATE POLICY "Admins can view email events"
-  ON public.email_events
+DROP POLICY IF EXISTS "Admins can view email events" ON public.email_events; CREATE POLICY "Admins can view email events" ON public.email_events
   FOR SELECT
   TO authenticated
   USING (
@@ -33,8 +32,7 @@ CREATE POLICY "Admins can view email events"
   );
 
 -- Create trigger for updated_at
-CREATE TRIGGER update_email_events_updated_at
-  BEFORE UPDATE ON public.email_events
+DROP TRIGGER IF EXISTS update_email_events_updated_at ON public.email_events; CREATE TRIGGER update_email_events_updated_at BEFORE UPDATE ON public.email_events
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 

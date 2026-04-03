@@ -25,16 +25,13 @@ CREATE INDEX IF NOT EXISTS idx_email_preferences_subscriber_id ON public.email_p
 ALTER TABLE public.email_preferences ENABLE ROW LEVEL SECURITY;
 
 -- Allow public access to update their own preferences via token
-CREATE POLICY "Anyone can view their own preferences"
-  ON public.email_preferences FOR SELECT
+DROP POLICY IF EXISTS "Anyone can view their own preferences" ON public.email_preferences; CREATE POLICY "Anyone can view their own preferences" ON public.email_preferences FOR SELECT
   USING (true);
 
-CREATE POLICY "Anyone can update their own preferences"
-  ON public.email_preferences FOR UPDATE
+DROP POLICY IF EXISTS "Anyone can update their own preferences" ON public.email_preferences; CREATE POLICY "Anyone can update their own preferences" ON public.email_preferences FOR UPDATE
   USING (true);
 
-CREATE POLICY "Anyone can insert their own preferences"
-  ON public.email_preferences FOR INSERT
+DROP POLICY IF EXISTS "Anyone can insert their own preferences" ON public.email_preferences; CREATE POLICY "Anyone can insert their own preferences" ON public.email_preferences FOR INSERT
   WITH CHECK (true);
 
 -- 3. Create email_templates table
@@ -57,8 +54,7 @@ CREATE INDEX IF NOT EXISTS idx_email_templates_active ON public.email_templates(
 -- Enable RLS on email_templates
 ALTER TABLE public.email_templates ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage email templates"
-  ON public.email_templates FOR ALL
+DROP POLICY IF EXISTS "Admins can manage email templates" ON public.email_templates; CREATE POLICY "Admins can manage email templates" ON public.email_templates FOR ALL
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- 4. Create email_send_queue table
@@ -86,12 +82,10 @@ CREATE INDEX IF NOT EXISTS idx_email_send_queue_retry ON public.email_send_queue
 -- Enable RLS on email_send_queue
 ALTER TABLE public.email_send_queue ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can view email queue"
-  ON public.email_send_queue FOR SELECT
+DROP POLICY IF EXISTS "Admins can view email queue" ON public.email_send_queue; CREATE POLICY "Admins can view email queue" ON public.email_send_queue FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Service role can manage queue"
-  ON public.email_send_queue FOR ALL
+DROP POLICY IF EXISTS "Service role can manage queue" ON public.email_send_queue; CREATE POLICY "Service role can manage queue" ON public.email_send_queue FOR ALL
   USING (true);
 
 -- 5. Create email_campaign_settings table
@@ -109,8 +103,7 @@ CREATE INDEX IF NOT EXISTS idx_email_campaign_settings_key ON public.email_campa
 -- Enable RLS on email_campaign_settings
 ALTER TABLE public.email_campaign_settings ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage campaign settings"
-  ON public.email_campaign_settings FOR ALL
+DROP POLICY IF EXISTS "Admins can manage campaign settings" ON public.email_campaign_settings; CREATE POLICY "Admins can manage campaign settings" ON public.email_campaign_settings FOR ALL
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- 6. Create trigger for updated_at columns
@@ -122,23 +115,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER email_preferences_updated_at
-  BEFORE UPDATE ON public.email_preferences
+DROP TRIGGER IF EXISTS email_preferences_updated_at ON public.email_preferences; CREATE TRIGGER email_preferences_updated_at BEFORE UPDATE ON public.email_preferences
   FOR EACH ROW
   EXECUTE FUNCTION update_email_updated_at();
 
-CREATE TRIGGER email_templates_updated_at
-  BEFORE UPDATE ON public.email_templates
+DROP TRIGGER IF EXISTS email_templates_updated_at ON public.email_templates; CREATE TRIGGER email_templates_updated_at BEFORE UPDATE ON public.email_templates
   FOR EACH ROW
   EXECUTE FUNCTION update_email_updated_at();
 
-CREATE TRIGGER email_send_queue_updated_at
-  BEFORE UPDATE ON public.email_send_queue
+DROP TRIGGER IF EXISTS email_send_queue_updated_at ON public.email_send_queue; CREATE TRIGGER email_send_queue_updated_at BEFORE UPDATE ON public.email_send_queue
   FOR EACH ROW
   EXECUTE FUNCTION update_email_updated_at();
 
-CREATE TRIGGER email_campaign_settings_updated_at
-  BEFORE UPDATE ON public.email_campaign_settings
+DROP TRIGGER IF EXISTS email_campaign_settings_updated_at ON public.email_campaign_settings; CREATE TRIGGER email_campaign_settings_updated_at BEFORE UPDATE ON public.email_campaign_settings
   FOR EACH ROW
   EXECUTE FUNCTION update_email_updated_at();
 

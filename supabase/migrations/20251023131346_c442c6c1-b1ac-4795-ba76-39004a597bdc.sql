@@ -1,5 +1,5 @@
 -- Create ai_trial_sessions table for tracking AI feature trials
-CREATE TABLE public.ai_trial_sessions (
+CREATE TABLE IF NOT EXISTS public.ai_trial_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   session_id TEXT NOT NULL UNIQUE,
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
@@ -18,7 +18,7 @@ CREATE INDEX idx_ai_trial_sessions_session_id ON public.ai_trial_sessions(sessio
 CREATE INDEX idx_ai_trial_sessions_user_id ON public.ai_trial_sessions(user_id);
 
 -- Create support_requests table for various support forms
-CREATE TABLE public.support_requests (
+CREATE TABLE IF NOT EXISTS public.support_requests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   request_type TEXT NOT NULL, -- 'ai_consultation', 'corporate_training', 'grant_inquiry', 'speaker_application'
@@ -43,7 +43,7 @@ CREATE INDEX idx_support_requests_type ON public.support_requests(request_type);
 CREATE INDEX idx_support_requests_status ON public.support_requests(status);
 
 -- Create bookings table for consultations/appointments
-CREATE TABLE public.bookings (
+CREATE TABLE IF NOT EXISTS public.bookings (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   booking_type TEXT NOT NULL, -- 'consultation', 'coaching_session', etc.
@@ -67,7 +67,7 @@ CREATE INDEX idx_bookings_scheduled_date ON public.bookings(scheduled_date);
 CREATE INDEX idx_bookings_status ON public.bookings(status);
 
 -- Create community_applications table
-CREATE TABLE public.community_applications (
+CREATE TABLE IF NOT EXISTS public.community_applications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   pathway_id TEXT NOT NULL,
@@ -87,7 +87,7 @@ CREATE INDEX idx_community_applications_pathway_id ON public.community_applicati
 CREATE INDEX idx_community_applications_status ON public.community_applications(status);
 
 -- Create healing_sessions table for tracking healing toolkit usage
-CREATE TABLE public.healing_sessions (
+CREATE TABLE IF NOT EXISTS public.healing_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   session_type TEXT NOT NULL, -- 'breathing', 'frequency', 'meditation', etc.
@@ -104,7 +104,7 @@ CREATE INDEX idx_healing_sessions_type ON public.healing_sessions(session_type);
 CREATE INDEX idx_healing_sessions_created_at ON public.healing_sessions(created_at DESC);
 
 -- Create audit_logs table for security auditing
-CREATE TABLE public.audit_logs (
+CREATE TABLE IF NOT EXISTS public.audit_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   action TEXT NOT NULL,
@@ -125,7 +125,7 @@ CREATE INDEX idx_audit_logs_created_at ON public.audit_logs(created_at DESC);
 CREATE INDEX idx_audit_logs_severity ON public.audit_logs(severity);
 
 -- Create security_alerts table for monitoring suspicious activity
-CREATE TABLE public.security_alerts (
+CREATE TABLE IF NOT EXISTS public.security_alerts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
   alert_type TEXT NOT NULL,
@@ -148,7 +148,7 @@ CREATE INDEX idx_security_alerts_acknowledged ON public.security_alerts(acknowle
 CREATE INDEX idx_security_alerts_created_at ON public.security_alerts(created_at DESC);
 
 -- Create user_sessions table for session tracking
-CREATE TABLE public.user_sessions (
+CREATE TABLE IF NOT EXISTS public.user_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
   session_token TEXT NOT NULL UNIQUE,
@@ -168,7 +168,7 @@ CREATE INDEX idx_user_sessions_expires_at ON public.user_sessions(expires_at);
 CREATE INDEX idx_user_sessions_is_active ON public.user_sessions(is_active);
 
 -- Create emergency_contacts table for crisis support
-CREATE TABLE public.emergency_contacts (
+CREATE TABLE IF NOT EXISTS public.emergency_contacts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   phone TEXT NOT NULL,
@@ -187,7 +187,7 @@ CREATE INDEX idx_emergency_contacts_category ON public.emergency_contacts(catego
 CREATE INDEX idx_emergency_contacts_state ON public.emergency_contacts(state);
 
 -- Create chat_history table for AI chat conversations
-CREATE TABLE public.chat_history (
+CREATE TABLE IF NOT EXISTS public.chat_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
   session_id TEXT NOT NULL,
@@ -205,122 +205,122 @@ CREATE INDEX idx_chat_history_session_id ON public.chat_history(session_id);
 CREATE INDEX idx_chat_history_created_at ON public.chat_history(created_at DESC);
 
 -- Add update triggers for new tables
-CREATE TRIGGER update_ai_trial_sessions_updated_at BEFORE UPDATE ON public.ai_trial_sessions
+DROP TRIGGER IF EXISTS update_ai_trial_sessions_updated_at ON public.ai_trial_sessions; CREATE TRIGGER update_ai_trial_sessions_updated_at BEFORE UPDATE ON public.ai_trial_sessions
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_support_requests_updated_at BEFORE UPDATE ON public.support_requests
+DROP TRIGGER IF EXISTS update_support_requests_updated_at ON public.support_requests; CREATE TRIGGER update_support_requests_updated_at BEFORE UPDATE ON public.support_requests
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON public.bookings
+DROP TRIGGER IF EXISTS update_bookings_updated_at ON public.bookings; CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON public.bookings
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_community_applications_updated_at BEFORE UPDATE ON public.community_applications
+DROP TRIGGER IF EXISTS update_community_applications_updated_at ON public.community_applications; CREATE TRIGGER update_community_applications_updated_at BEFORE UPDATE ON public.community_applications
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_emergency_contacts_updated_at BEFORE UPDATE ON public.emergency_contacts
+DROP TRIGGER IF EXISTS update_emergency_contacts_updated_at ON public.emergency_contacts; CREATE TRIGGER update_emergency_contacts_updated_at BEFORE UPDATE ON public.emergency_contacts
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- RLS Policies for ai_trial_sessions
-CREATE POLICY "Users can view own trial sessions" ON public.ai_trial_sessions
+DROP POLICY IF EXISTS "Users can view own trial sessions" ON public.ai_trial_sessions; CREATE POLICY "Users can view own trial sessions" ON public.ai_trial_sessions
   FOR SELECT USING (user_id = auth.uid() OR session_id IN (
     SELECT COALESCE(current_setting('app.session_id', true), '')
   ));
 
-CREATE POLICY "Anyone can create trial sessions" ON public.ai_trial_sessions
+DROP POLICY IF EXISTS "Anyone can create trial sessions" ON public.ai_trial_sessions; CREATE POLICY "Anyone can create trial sessions" ON public.ai_trial_sessions
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Users can update own trial sessions" ON public.ai_trial_sessions
+DROP POLICY IF EXISTS "Users can update own trial sessions" ON public.ai_trial_sessions; CREATE POLICY "Users can update own trial sessions" ON public.ai_trial_sessions
   FOR UPDATE USING (user_id = auth.uid() OR session_id IN (
     SELECT COALESCE(current_setting('app.session_id', true), '')
   ));
 
 -- RLS Policies for support_requests
-CREATE POLICY "Users can view own support requests" ON public.support_requests
+DROP POLICY IF EXISTS "Users can view own support requests" ON public.support_requests; CREATE POLICY "Users can view own support requests" ON public.support_requests
   FOR SELECT USING (user_id = auth.uid() OR email = (
     SELECT email FROM public.profiles WHERE id = auth.uid()
   ) OR public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "Anyone can create support requests" ON public.support_requests
+DROP POLICY IF EXISTS "Anyone can create support requests" ON public.support_requests; CREATE POLICY "Anyone can create support requests" ON public.support_requests
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Admins can update support requests" ON public.support_requests
+DROP POLICY IF EXISTS "Admins can update support requests" ON public.support_requests; CREATE POLICY "Admins can update support requests" ON public.support_requests
   FOR UPDATE USING (public.has_role(auth.uid(), 'admin'));
 
 -- RLS Policies for bookings
-CREATE POLICY "Users can view own bookings" ON public.bookings
+DROP POLICY IF EXISTS "Users can view own bookings" ON public.bookings; CREATE POLICY "Users can view own bookings" ON public.bookings
   FOR SELECT USING (user_id = auth.uid() OR public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "Authenticated users can create bookings" ON public.bookings
+DROP POLICY IF EXISTS "Authenticated users can create bookings" ON public.bookings; CREATE POLICY "Authenticated users can create bookings" ON public.bookings
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own bookings" ON public.bookings
+DROP POLICY IF EXISTS "Users can update own bookings" ON public.bookings; CREATE POLICY "Users can update own bookings" ON public.bookings
   FOR UPDATE USING (user_id = auth.uid() OR public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "Users can delete own bookings" ON public.bookings
+DROP POLICY IF EXISTS "Users can delete own bookings" ON public.bookings; CREATE POLICY "Users can delete own bookings" ON public.bookings
   FOR DELETE USING (user_id = auth.uid());
 
 -- RLS Policies for community_applications
-CREATE POLICY "Users can view own applications" ON public.community_applications
+DROP POLICY IF EXISTS "Users can view own applications" ON public.community_applications; CREATE POLICY "Users can view own applications" ON public.community_applications
   FOR SELECT USING (user_id = auth.uid() OR public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "Authenticated users can create applications" ON public.community_applications
+DROP POLICY IF EXISTS "Authenticated users can create applications" ON public.community_applications; CREATE POLICY "Authenticated users can create applications" ON public.community_applications
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Admins can update applications" ON public.community_applications
+DROP POLICY IF EXISTS "Admins can update applications" ON public.community_applications; CREATE POLICY "Admins can update applications" ON public.community_applications
   FOR UPDATE USING (public.has_role(auth.uid(), 'admin'));
 
 -- RLS Policies for healing_sessions
-CREATE POLICY "Users can view own healing sessions" ON public.healing_sessions
+DROP POLICY IF EXISTS "Users can view own healing sessions" ON public.healing_sessions; CREATE POLICY "Users can view own healing sessions" ON public.healing_sessions
   FOR SELECT USING (user_id = auth.uid());
 
-CREATE POLICY "Users can create own healing sessions" ON public.healing_sessions
+DROP POLICY IF EXISTS "Users can create own healing sessions" ON public.healing_sessions; CREATE POLICY "Users can create own healing sessions" ON public.healing_sessions
   FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- RLS Policies for audit_logs
-CREATE POLICY "Admins can view all audit logs" ON public.audit_logs
+DROP POLICY IF EXISTS "Admins can view all audit logs" ON public.audit_logs; CREATE POLICY "Admins can view all audit logs" ON public.audit_logs
   FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "System can create audit logs" ON public.audit_logs
+DROP POLICY IF EXISTS "System can create audit logs" ON public.audit_logs; CREATE POLICY "System can create audit logs" ON public.audit_logs
   FOR INSERT WITH CHECK (true);
 
 -- RLS Policies for security_alerts
-CREATE POLICY "Admins can view all security alerts" ON public.security_alerts
+DROP POLICY IF EXISTS "Admins can view all security alerts" ON public.security_alerts; CREATE POLICY "Admins can view all security alerts" ON public.security_alerts
   FOR SELECT USING (public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "System can create security alerts" ON public.security_alerts
+DROP POLICY IF EXISTS "System can create security alerts" ON public.security_alerts; CREATE POLICY "System can create security alerts" ON public.security_alerts
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Admins can update security alerts" ON public.security_alerts
+DROP POLICY IF EXISTS "Admins can update security alerts" ON public.security_alerts; CREATE POLICY "Admins can update security alerts" ON public.security_alerts
   FOR UPDATE USING (public.has_role(auth.uid(), 'admin'));
 
 -- RLS Policies for user_sessions
-CREATE POLICY "Users can view own sessions" ON public.user_sessions
+DROP POLICY IF EXISTS "Users can view own sessions" ON public.user_sessions; CREATE POLICY "Users can view own sessions" ON public.user_sessions
   FOR SELECT USING (user_id = auth.uid() OR public.has_role(auth.uid(), 'admin'));
 
-CREATE POLICY "System can create sessions" ON public.user_sessions
+DROP POLICY IF EXISTS "System can create sessions" ON public.user_sessions; CREATE POLICY "System can create sessions" ON public.user_sessions
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Users can update own sessions" ON public.user_sessions
+DROP POLICY IF EXISTS "Users can update own sessions" ON public.user_sessions; CREATE POLICY "Users can update own sessions" ON public.user_sessions
   FOR UPDATE USING (user_id = auth.uid());
 
-CREATE POLICY "Users can delete own sessions" ON public.user_sessions
+DROP POLICY IF EXISTS "Users can delete own sessions" ON public.user_sessions; CREATE POLICY "Users can delete own sessions" ON public.user_sessions
   FOR DELETE USING (user_id = auth.uid());
 
 -- RLS Policies for emergency_contacts
-CREATE POLICY "Anyone can view emergency contacts" ON public.emergency_contacts
+DROP POLICY IF EXISTS "Anyone can view emergency contacts" ON public.emergency_contacts; CREATE POLICY "Anyone can view emergency contacts" ON public.emergency_contacts
   FOR SELECT USING (true);
 
-CREATE POLICY "Admins can manage emergency contacts" ON public.emergency_contacts
+DROP POLICY IF EXISTS "Admins can manage emergency contacts" ON public.emergency_contacts; CREATE POLICY "Admins can manage emergency contacts" ON public.emergency_contacts
   FOR ALL USING (public.has_role(auth.uid(), 'admin'));
 
 -- RLS Policies for chat_history
-CREATE POLICY "Users can view own chat history" ON public.chat_history
+DROP POLICY IF EXISTS "Users can view own chat history" ON public.chat_history; CREATE POLICY "Users can view own chat history" ON public.chat_history
   FOR SELECT USING (user_id = auth.uid() OR session_id IN (
     SELECT COALESCE(current_setting('app.session_id', true), '')
   ));
 
-CREATE POLICY "Anyone can create chat history" ON public.chat_history
+DROP POLICY IF EXISTS "Anyone can create chat history" ON public.chat_history; CREATE POLICY "Anyone can create chat history" ON public.chat_history
   FOR INSERT WITH CHECK (true);
 
-CREATE POLICY "Users can delete own chat history" ON public.chat_history
+DROP POLICY IF EXISTS "Users can delete own chat history" ON public.chat_history; CREATE POLICY "Users can delete own chat history" ON public.chat_history
   FOR DELETE USING (user_id = auth.uid());

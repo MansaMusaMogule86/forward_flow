@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,11 +46,7 @@ export default function EmailDeliverabilityDashboard() {
   const [loading, setLoading] = useState(true);
   const [timeRange, setTimeRange] = useState<'24h' | '7d' | '30d'>('7d');
 
-  useEffect(() => {
-    loadEmailMetrics();
-  }, [timeRange]);
-
-  const loadEmailMetrics = async () => {
+  const loadEmailMetrics = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -111,7 +107,11 @@ export default function EmailDeliverabilityDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
+
+  useEffect(() => {
+    void loadEmailMetrics();
+  }, [loadEmailMetrics]);
 
   const getEmailTypeData = () => {
     const typeCount = recentEvents.reduce((acc, event) => {

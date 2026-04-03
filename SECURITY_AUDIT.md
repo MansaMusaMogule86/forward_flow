@@ -474,4 +474,4 @@ The platform is production-ready from a security perspective. Continue with reco
 
 **Audit Conducted By:** System Security Audit  
 **Next Review Date:** January 23, 2026  
-**Contact:** security@forwardfocuselevation.org
+**Contact:** security@forward-focus-elevation.org

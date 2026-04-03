@@ -28,7 +28,7 @@ BEGIN
     INSERT INTO public.audit_log (
       user_id,
       action,
-      table_name,
+      p_table_name,
       sensitive_data_accessed,
       created_at
     ) VALUES (
@@ -37,7 +37,7 @@ BEGIN
       'user_roles',
       true,
       now()
-    );
+    ) ON CONFLICT DO NOTHING;
   ELSE
     RAISE EXCEPTION 'User with email % not found in auth.users', admin_email;
   END IF;
@@ -53,15 +53,13 @@ DROP POLICY IF EXISTS "referrals_deny_unauthenticated" ON public.partner_referra
 
 -- Create more secure RLS policies for partner_referrals
 -- 1. Allow anyone to submit referrals (business requirement)
-CREATE POLICY "Allow referral submissions"
-ON public.partner_referrals
+DROP POLICY IF EXISTS "Allow referral submissions" ON public.partner_referrals; CREATE POLICY "Allow referral submissions" ON public.partner_referrals
 FOR INSERT
 TO public
 WITH CHECK (true);
 
 -- 2. Only authenticated admins can view referrals with enhanced security
-CREATE POLICY "Admins can view referrals with security checks"
-ON public.partner_referrals
+DROP POLICY IF EXISTS "Admins can view referrals with security checks" ON public.partner_referrals; CREATE POLICY "Admins can view referrals with security checks" ON public.partner_referrals
 FOR SELECT
 TO authenticated
 USING (
@@ -73,8 +71,7 @@ USING (
 );
 
 -- 3. Only authenticated admins can update referrals
-CREATE POLICY "Admins can update referrals"
-ON public.partner_referrals
+DROP POLICY IF EXISTS "Admins can update referrals" ON public.partner_referrals; CREATE POLICY "Admins can update referrals" ON public.partner_referrals
 FOR UPDATE
 TO authenticated
 USING (
@@ -87,15 +84,13 @@ WITH CHECK (
 );
 
 -- 4. Prevent any access by anonymous users
-CREATE POLICY "Deny all anonymous access"
-ON public.partner_referrals
+DROP POLICY IF EXISTS "Deny all anonymous access" ON public.partner_referrals; CREATE POLICY "Deny all anonymous access" ON public.partner_referrals
 FOR ALL
 TO anon
 USING (false);
 
--- 5. Deny delete operations completely (data preservation)
-CREATE POLICY "Prevent data deletion"
-ON public.partner_referrals
+-- 5. Deny delete p_actions completely (data preservation)
+DROP POLICY IF EXISTS "Prevent data deletion" ON public.partner_referrals; CREATE POLICY "Prevent data deletion" ON public.partner_referrals
 FOR DELETE
 TO authenticated
 USING (false);
@@ -123,7 +118,7 @@ BEGIN
     INSERT INTO audit_log (
       user_id,
       action,
-      table_name,
+      p_table_name,
       sensitive_data_accessed,
       created_at
     ) VALUES (

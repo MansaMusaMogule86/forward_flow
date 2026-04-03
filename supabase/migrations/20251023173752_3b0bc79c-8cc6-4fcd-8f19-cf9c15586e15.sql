@@ -15,16 +15,13 @@ CREATE TABLE IF NOT EXISTS public.partner_verifications (
 
 ALTER TABLE public.partner_verifications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Users can view own verifications"
-  ON public.partner_verifications FOR SELECT
+DROP POLICY IF EXISTS "Users can view own verifications" ON public.partner_verifications; CREATE POLICY "Users can view own verifications" ON public.partner_verifications FOR SELECT
   USING (user_id = auth.uid() OR has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Authenticated users can create verifications"
-  ON public.partner_verifications FOR INSERT
+DROP POLICY IF EXISTS "Authenticated users can create verifications" ON public.partner_verifications; CREATE POLICY "Authenticated users can create verifications" ON public.partner_verifications FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Admins can update verifications"
-  ON public.partner_verifications FOR UPDATE
+DROP POLICY IF EXISTS "Admins can update verifications" ON public.partner_verifications; CREATE POLICY "Admins can update verifications" ON public.partner_verifications FOR UPDATE
   USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Create contact_access_justifications table
@@ -44,16 +41,13 @@ CREATE TABLE IF NOT EXISTS public.contact_access_justifications (
 
 ALTER TABLE public.contact_access_justifications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can view all justifications"
-  ON public.contact_access_justifications FOR SELECT
+DROP POLICY IF EXISTS "Admins can view all justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can view all justifications" ON public.contact_access_justifications FOR SELECT
   USING (has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Admins can create justifications"
-  ON public.contact_access_justifications FOR INSERT
+DROP POLICY IF EXISTS "Admins can create justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can create justifications" ON public.contact_access_justifications FOR INSERT
   WITH CHECK (auth.uid() = admin_user_id);
 
-CREATE POLICY "Admins can update justifications"
-  ON public.contact_access_justifications FOR UPDATE
+DROP POLICY IF EXISTS "Admins can update justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can update justifications" ON public.contact_access_justifications FOR UPDATE
   USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Create partnership_requests table
@@ -70,29 +64,23 @@ CREATE TABLE IF NOT EXISTS public.partnership_requests (
 
 ALTER TABLE public.partnership_requests ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can create partnership requests"
-  ON public.partnership_requests FOR INSERT
+DROP POLICY IF EXISTS "Anyone can create partnership requests" ON public.partnership_requests; CREATE POLICY "Anyone can create partnership requests" ON public.partnership_requests FOR INSERT
   WITH CHECK (true);
 
-CREATE POLICY "Admins can view partnership requests"
-  ON public.partnership_requests FOR SELECT
+DROP POLICY IF EXISTS "Admins can view partnership requests" ON public.partnership_requests; CREATE POLICY "Admins can view partnership requests" ON public.partnership_requests FOR SELECT
   USING (has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Admins can update partnership requests"
-  ON public.partnership_requests FOR UPDATE
+DROP POLICY IF EXISTS "Admins can update partnership requests" ON public.partnership_requests; CREATE POLICY "Admins can update partnership requests" ON public.partnership_requests FOR UPDATE
   USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Create triggers for updated_at
-CREATE TRIGGER update_partner_verifications_updated_at
-  BEFORE UPDATE ON public.partner_verifications
+DROP TRIGGER IF EXISTS update_partner_verifications_updated_at ON public.partner_verifications; CREATE TRIGGER update_partner_verifications_updated_at BEFORE UPDATE ON public.partner_verifications
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_contact_access_justifications_updated_at
-  BEFORE UPDATE ON public.contact_access_justifications
+DROP TRIGGER IF EXISTS update_contact_access_justifications_updated_at ON public.contact_access_justifications; CREATE TRIGGER update_contact_access_justifications_updated_at BEFORE UPDATE ON public.contact_access_justifications
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_partnership_requests_updated_at
-  BEFORE UPDATE ON public.partnership_requests
+DROP TRIGGER IF EXISTS update_partnership_requests_updated_at ON public.partnership_requests; CREATE TRIGGER update_partnership_requests_updated_at BEFORE UPDATE ON public.partnership_requests
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Function to check if admin exists
@@ -138,7 +126,7 @@ BEGIN
   
   -- Create admin role
   INSERT INTO public.user_roles (user_id, role)
-  VALUES (target_user_id, 'admin'::app_role);
+  VALUES (target_user_id, 'admin'::app_role) ON CONFLICT DO NOTHING;
   
   RETURN jsonb_build_object('success', true, 'message', 'Admin user created successfully');
 END;
@@ -171,7 +159,7 @@ BEGIN
     p_access_purpose,
     now() + interval '30 days'
   )
-  RETURNING id INTO new_request_id;
+  RETURNING id INTO new_request_id ON CONFLICT DO NOTHING;
   
   RETURN new_request_id;
 END;

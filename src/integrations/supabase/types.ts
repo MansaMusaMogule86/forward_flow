@@ -10,1111 +10,200 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5"
+    PostgrestVersion: "14.5"
   }
   public: {
     Tables: {
-      account_lockouts: {
-        Row: {
-          created_at: string
-          email: string
-          failed_attempts: number
-          id: string
-          locked_at: string
-          lockout_reason: string | null
-          unlock_at: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          failed_attempts?: number
-          id?: string
-          locked_at?: string
-          lockout_reason?: string | null
-          unlock_at: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          failed_attempts?: number
-          id?: string
-          locked_at?: string
-          lockout_reason?: string | null
-          unlock_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      admin_ip_whitelist: {
-        Row: {
-          added_by: string | null
-          created_at: string
-          description: string | null
-          id: string
-          ip_address: string
-          is_active: boolean
-          updated_at: string
-        }
-        Insert: {
-          added_by?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          ip_address: string
-          is_active?: boolean
-          updated_at?: string
-        }
-        Update: {
-          added_by?: string | null
-          created_at?: string
-          description?: string | null
-          id?: string
-          ip_address?: string
-          is_active?: boolean
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "admin_ip_whitelist_added_by_fkey"
-            columns: ["added_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      ai_rate_limits: {
-        Row: {
-          created_at: string
-          endpoint: string
-          id: string
-          identifier: string
-        }
-        Insert: {
-          created_at?: string
-          endpoint: string
-          id?: string
-          identifier: string
-        }
-        Update: {
-          created_at?: string
-          endpoint?: string
-          id?: string
-          identifier?: string
-        }
-        Relationships: []
-      }
-      ai_trial_sessions: {
-        Row: {
-          ai_endpoint: string
-          created_at: string
-          id: string
-          is_expired: boolean | null
-          session_id: string
-          trial_end: string | null
-          trial_start: string
-          updated_at: string
-          usage_count: number | null
-          user_id: string | null
-        }
-        Insert: {
-          ai_endpoint: string
-          created_at?: string
-          id?: string
-          is_expired?: boolean | null
-          session_id: string
-          trial_end?: string | null
-          trial_start?: string
-          updated_at?: string
-          usage_count?: number | null
-          user_id?: string | null
-        }
-        Update: {
-          ai_endpoint?: string
-          created_at?: string
-          id?: string
-          is_expired?: boolean | null
-          session_id?: string
-          trial_end?: string | null
-          trial_start?: string
-          updated_at?: string
-          usage_count?: number | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "ai_trial_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      analytics_events: {
-        Row: {
-          created_at: string
-          event_action: string
-          event_data: Json | null
-          event_type: string
-          id: string
-          page_url: string | null
-          referrer: string | null
-          session_id: string
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          event_action: string
-          event_data?: Json | null
-          event_type: string
-          id?: string
-          page_url?: string | null
-          referrer?: string | null
-          session_id: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          event_action?: string
-          event_data?: Json | null
-          event_type?: string
-          id?: string
-          page_url?: string | null
-          referrer?: string | null
-          session_id?: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "analytics_events_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      api_key_rotation_tracking: {
-        Row: {
-          created_at: string
-          id: string
-          is_critical: boolean | null
-          key_description: string | null
-          key_name: string
-          last_rotated_at: string | null
-          notes: string | null
-          rotated_by: string | null
-          rotation_interval_days: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          is_critical?: boolean | null
-          key_description?: string | null
-          key_name: string
-          last_rotated_at?: string | null
-          notes?: string | null
-          rotated_by?: string | null
-          rotation_interval_days?: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          is_critical?: boolean | null
-          key_description?: string | null
-          key_name?: string
-          last_rotated_at?: string | null
-          notes?: string | null
-          rotated_by?: string | null
-          rotation_interval_days?: number
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "api_key_rotation_tracking_rotated_by_fkey"
-            columns: ["rotated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      audit_logs: {
+      audit_log: {
         Row: {
           action: string
-          created_at: string
-          details: Json | null
+          created_at: string | null
           id: string
-          ip_address: string | null
-          resource_id: string | null
-          resource_type: string | null
-          severity: string | null
+          ip_address: unknown
+          record_id: string | null
+          sensitive_data_accessed: boolean | null
+          table_name: string
           user_agent: string | null
           user_id: string | null
         }
         Insert: {
           action: string
-          created_at?: string
-          details?: Json | null
+          created_at?: string | null
           id?: string
-          ip_address?: string | null
-          resource_id?: string | null
-          resource_type?: string | null
-          severity?: string | null
+          ip_address?: unknown
+          record_id?: string | null
+          sensitive_data_accessed?: boolean | null
+          table_name: string
           user_agent?: string | null
           user_id?: string | null
         }
         Update: {
           action?: string
-          created_at?: string
-          details?: Json | null
+          created_at?: string | null
           id?: string
-          ip_address?: string | null
-          resource_id?: string | null
-          resource_type?: string | null
-          severity?: string | null
+          ip_address?: unknown
+          record_id?: string | null
+          sensitive_data_accessed?: boolean | null
+          table_name?: string
           user_agent?: string | null
           user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "audit_logs_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      bookings: {
+      expungement_applications: {
         Row: {
-          booking_type: string
-          created_at: string
-          duration_minutes: number | null
+          additional_info: string | null
+          annual_income: string | null
+          city: string
+          conviction_county: string
+          conviction_date: string
+          conviction_type: string
+          county: string
+          court_case_number: string | null
+          created_at: string | null
           email: string
+          first_name: string
           id: string
-          name: string
+          last_name: string
           notes: string | null
-          phone: string | null
-          reminder_sent: boolean | null
-          scheduled_date: string
-          scheduled_time: string
-          status: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          booking_type: string
-          created_at?: string
-          duration_minutes?: number | null
-          email: string
-          id?: string
-          name: string
-          notes?: string | null
-          phone?: string | null
-          reminder_sent?: boolean | null
-          scheduled_date: string
-          scheduled_time: string
-          status?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          booking_type?: string
-          created_at?: string
-          duration_minutes?: number | null
-          email?: string
-          id?: string
-          name?: string
-          notes?: string | null
-          phone?: string | null
-          reminder_sent?: boolean | null
-          scheduled_date?: string
-          scheduled_time?: string
-          status?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "bookings_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      chat_history: {
-        Row: {
-          ai_endpoint: string
-          created_at: string
-          id: string
-          message_content: string
-          message_metadata: Json | null
-          message_role: string
-          session_id: string
-          user_id: string | null
-        }
-        Insert: {
-          ai_endpoint: string
-          created_at?: string
-          id?: string
-          message_content: string
-          message_metadata?: Json | null
-          message_role: string
-          session_id: string
-          user_id?: string | null
-        }
-        Update: {
-          ai_endpoint?: string
-          created_at?: string
-          id?: string
-          message_content?: string
-          message_metadata?: Json | null
-          message_role?: string
-          session_id?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "chat_history_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      community_applications: {
-        Row: {
-          application_data: Json
-          created_at: string
-          id: string
-          pathway_id: string
-          review_notes: string | null
+          offense_description: string
+          phone: string
+          probation_completed: boolean | null
+          restitution_paid: boolean | null
           reviewed_at: string | null
           reviewed_by: string | null
           status: string | null
-          updated_at: string
-          user_id: string
+          updated_at: string | null
         }
         Insert: {
-          application_data: Json
-          created_at?: string
+          additional_info?: string | null
+          annual_income?: string | null
+          city: string
+          conviction_county: string
+          conviction_date: string
+          conviction_type: string
+          county: string
+          court_case_number?: string | null
+          created_at?: string | null
+          email: string
+          first_name: string
           id?: string
-          pathway_id: string
-          review_notes?: string | null
+          last_name: string
+          notes?: string | null
+          offense_description: string
+          phone: string
+          probation_completed?: boolean | null
+          restitution_paid?: boolean | null
           reviewed_at?: string | null
           reviewed_by?: string | null
           status?: string | null
-          updated_at?: string
-          user_id: string
+          updated_at?: string | null
         }
         Update: {
-          application_data?: Json
-          created_at?: string
-          id?: string
-          pathway_id?: string
-          review_notes?: string | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "community_applications_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "community_applications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contact_access_justifications: {
-        Row: {
-          access_purpose: string
-          admin_user_id: string
-          approved_at: string | null
-          approved_by: string | null
-          business_justification: string
-          created_at: string
-          expires_at: string | null
-          id: string
-          organization_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          access_purpose: string
-          admin_user_id: string
-          approved_at?: string | null
-          approved_by?: string | null
-          business_justification: string
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          organization_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          access_purpose?: string
-          admin_user_id?: string
-          approved_at?: string | null
-          approved_by?: string | null
-          business_justification?: string
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          organization_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "contact_access_justifications_admin_user_id_fkey"
-            columns: ["admin_user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_access_justifications_approved_by_fkey"
-            columns: ["approved_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "contact_access_justifications_organization_id_fkey"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_organization"
-            columns: ["organization_id"]
-            isOneToOne: false
-            referencedRelation: "organizations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      contact_submissions: {
-        Row: {
-          created_at: string
-          email: string
-          email_status: string | null
-          form_type: string | null
-          id: string
-          message: string
-          name: string
-          resend_email_id: string | null
-          status: string | null
-          subject: string | null
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          email_status?: string | null
-          form_type?: string | null
-          id?: string
-          message: string
-          name: string
-          resend_email_id?: string | null
-          status?: string | null
-          subject?: string | null
-        }
-        Update: {
-          created_at?: string
+          additional_info?: string | null
+          annual_income?: string | null
+          city?: string
+          conviction_county?: string
+          conviction_date?: string
+          conviction_type?: string
+          county?: string
+          court_case_number?: string | null
+          created_at?: string | null
           email?: string
-          email_status?: string | null
-          form_type?: string | null
+          first_name?: string
           id?: string
-          message?: string
-          name?: string
-          resend_email_id?: string | null
-          status?: string | null
-          subject?: string | null
-        }
-        Relationships: []
-      }
-      email_automation_queue: {
-        Row: {
-          created_at: string
-          error_message: string | null
-          id: string
-          resend_email_id: string | null
-          rule_id: string
-          scheduled_for: string
-          sent_at: string | null
-          status: string | null
-          trigger_data: Json | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          resend_email_id?: string | null
-          rule_id: string
-          scheduled_for: string
-          sent_at?: string | null
-          status?: string | null
-          trigger_data?: Json | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          error_message?: string | null
-          id?: string
-          resend_email_id?: string | null
-          rule_id?: string
-          scheduled_for?: string
-          sent_at?: string | null
-          status?: string | null
-          trigger_data?: Json | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "email_automation_queue_rule_id_fkey"
-            columns: ["rule_id"]
-            isOneToOne: false
-            referencedRelation: "email_automation_rules"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "email_automation_queue_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      email_automation_rules: {
-        Row: {
-          conditions: Json | null
-          created_at: string
-          delay_minutes: number | null
-          email_subject: string
-          email_type: string
-          enabled: boolean | null
-          id: string
-          rule_name: string
-          trigger_type: string
-          updated_at: string
-        }
-        Insert: {
-          conditions?: Json | null
-          created_at?: string
-          delay_minutes?: number | null
-          email_subject: string
-          email_type: string
-          enabled?: boolean | null
-          id?: string
-          rule_name: string
-          trigger_type: string
-          updated_at?: string
-        }
-        Update: {
-          conditions?: Json | null
-          created_at?: string
-          delay_minutes?: number | null
-          email_subject?: string
-          email_type?: string
-          enabled?: boolean | null
-          id?: string
-          rule_name?: string
-          trigger_type?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      email_campaign_settings: {
-        Row: {
-          created_at: string | null
-          id: string
-          setting_key: string
-          setting_value: Json
-          updated_at: string | null
-          updated_by: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          setting_key: string
-          setting_value?: Json
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          setting_key?: string
-          setting_value?: Json
-          updated_at?: string | null
-          updated_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "email_campaign_settings_updated_by_fkey"
-            columns: ["updated_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      email_campaigns: {
-        Row: {
-          click_count: number | null
-          content: string
-          created_at: string
-          created_by: string | null
-          id: string
-          name: string
-          open_count: number | null
-          scheduled_at: string | null
-          sent_at: string | null
-          sent_count: number | null
-          status: string
-          subject: string
-          total_recipients: number | null
-          updated_at: string
-        }
-        Insert: {
-          click_count?: number | null
-          content: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          name: string
-          open_count?: number | null
-          scheduled_at?: string | null
-          sent_at?: string | null
-          sent_count?: number | null
-          status?: string
-          subject: string
-          total_recipients?: number | null
-          updated_at?: string
-        }
-        Update: {
-          click_count?: number | null
-          content?: string
-          created_at?: string
-          created_by?: string | null
-          id?: string
-          name?: string
-          open_count?: number | null
-          scheduled_at?: string | null
-          sent_at?: string | null
-          sent_count?: number | null
-          status?: string
-          subject?: string
-          total_recipients?: number | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "email_campaigns_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      email_events: {
-        Row: {
-          created_at: string
-          email_id: string
-          email_type: string | null
-          event_data: Json | null
-          event_type: string
-          id: string
-          recipient_email: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email_id: string
-          email_type?: string | null
-          event_data?: Json | null
-          event_type: string
-          id?: string
-          recipient_email: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email_id?: string
-          email_type?: string | null
-          event_data?: Json | null
-          event_type?: string
-          id?: string
-          recipient_email?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      email_preferences: {
-        Row: {
-          created_at: string | null
-          friday_recap: boolean | null
-          id: string
-          monday_newsletter: boolean | null
-          subscriber_id: string
-          sunday_community_call: boolean | null
-          updated_at: string | null
-          wednesday_collective: boolean | null
-        }
-        Insert: {
-          created_at?: string | null
-          friday_recap?: boolean | null
-          id?: string
-          monday_newsletter?: boolean | null
-          subscriber_id: string
-          sunday_community_call?: boolean | null
-          updated_at?: string | null
-          wednesday_collective?: boolean | null
-        }
-        Update: {
-          created_at?: string | null
-          friday_recap?: boolean | null
-          id?: string
-          monday_newsletter?: boolean | null
-          subscriber_id?: string
-          sunday_community_call?: boolean | null
-          updated_at?: string | null
-          wednesday_collective?: boolean | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "email_preferences_subscriber_id_fkey"
-            columns: ["subscriber_id"]
-            isOneToOne: true
-            referencedRelation: "newsletter_subscriptions"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      email_send_queue: {
-        Row: {
-          created_at: string | null
-          email_content: string
-          email_type: string
-          error_message: string | null
-          id: string
-          last_attempt_at: string | null
-          max_retries: number | null
-          recipient_email: string
-          recipient_name: string | null
-          retry_count: number | null
-          scheduled_for: string | null
-          sent_at: string | null
-          status: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          email_content: string
-          email_type: string
-          error_message?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          max_retries?: number | null
-          recipient_email: string
-          recipient_name?: string | null
-          retry_count?: number | null
-          scheduled_for?: string | null
-          sent_at?: string | null
-          status?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          email_content?: string
-          email_type?: string
-          error_message?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          max_retries?: number | null
-          recipient_email?: string
-          recipient_name?: string | null
-          retry_count?: number | null
-          scheduled_for?: string | null
-          sent_at?: string | null
+          last_name?: string
+          notes?: string | null
+          offense_description?: string
+          phone?: string
+          probation_completed?: boolean | null
+          restitution_paid?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           status?: string | null
           updated_at?: string | null
         }
         Relationships: []
       }
-      email_templates: {
+      learning_modules: {
         Row: {
-          content_blocks: Json
-          created_at: string | null
+          compliance_note: string | null
+          created_at: string
           id: string
-          is_active: boolean | null
-          last_edited_by: string | null
-          subject: string
-          template_name: string
-          updated_at: string | null
-          variables: Json
-          version: number | null
+          link: string | null
+          minutes: number | null
+          order_index: number | null
+          pathway_id: string | null
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
         }
         Insert: {
-          content_blocks?: Json
-          created_at?: string | null
+          compliance_note?: string | null
+          created_at?: string
           id?: string
-          is_active?: boolean | null
-          last_edited_by?: string | null
-          subject: string
-          template_name: string
-          updated_at?: string | null
-          variables?: Json
-          version?: number | null
+          link?: string | null
+          minutes?: number | null
+          order_index?: number | null
+          pathway_id?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
         }
         Update: {
-          content_blocks?: Json
-          created_at?: string | null
+          compliance_note?: string | null
+          created_at?: string
           id?: string
-          is_active?: boolean | null
-          last_edited_by?: string | null
-          subject?: string
-          template_name?: string
-          updated_at?: string | null
-          variables?: Json
-          version?: number | null
+          link?: string | null
+          minutes?: number | null
+          order_index?: number | null
+          pathway_id?: string | null
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "email_templates_last_edited_by_fkey"
-            columns: ["last_edited_by"]
+            foreignKeyName: "learning_modules_pathway_id_fkey"
+            columns: ["pathway_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "learning_pathways"
             referencedColumns: ["id"]
           },
         ]
       }
-      emergency_contacts: {
+      learning_pathways: {
         Row: {
-          available_24_7: boolean | null
           category: string
-          city: string | null
           created_at: string
           description: string | null
+          educational_only: boolean
+          free: boolean
           id: string
-          name: string
-          phone: string
-          state: string | null
+          title: string
           updated_at: string
         }
         Insert: {
-          available_24_7?: boolean | null
           category: string
-          city?: string | null
           created_at?: string
           description?: string | null
-          id?: string
-          name: string
-          phone: string
-          state?: string | null
+          educational_only?: boolean
+          free?: boolean
+          id: string
+          title: string
           updated_at?: string
         }
         Update: {
-          available_24_7?: boolean | null
           category?: string
-          city?: string | null
           created_at?: string
           description?: string | null
+          educational_only?: boolean
+          free?: boolean
           id?: string
-          name?: string
-          phone?: string
-          state?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      healing_sessions: {
-        Row: {
-          completed: boolean | null
-          created_at: string
-          duration_seconds: number | null
-          id: string
-          session_data: Json | null
-          session_type: string
-          user_id: string
-        }
-        Insert: {
-          completed?: boolean | null
-          created_at?: string
-          duration_seconds?: number | null
-          id?: string
-          session_data?: Json | null
-          session_type: string
-          user_id: string
-        }
-        Update: {
-          completed?: boolean | null
-          created_at?: string
-          duration_seconds?: number | null
-          id?: string
-          session_data?: Json | null
-          session_type?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "healing_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      learning_progress: {
-        Row: {
-          completed: boolean | null
-          created_at: string
-          id: string
-          module_id: string
-          pathway_id: string
-          progress_data: Json | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          completed?: boolean | null
-          created_at?: string
-          id?: string
-          module_id: string
-          pathway_id: string
-          progress_data?: Json | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          completed?: boolean | null
-          created_at?: string
-          id?: string
-          module_id?: string
-          pathway_id?: string
-          progress_data?: Json | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "learning_progress_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      login_attempts: {
-        Row: {
-          attempt_type: string
-          created_at: string
-          email: string | null
-          failure_reason: string | null
-          id: string
-          ip_address: string | null
-          success: boolean
-          user_agent: string | null
-        }
-        Insert: {
-          attempt_type?: string
-          created_at?: string
-          email?: string | null
-          failure_reason?: string | null
-          id?: string
-          ip_address?: string | null
-          success?: boolean
-          user_agent?: string | null
-        }
-        Update: {
-          attempt_type?: string
-          created_at?: string
-          email?: string | null
-          failure_reason?: string | null
-          id?: string
-          ip_address?: string | null
-          success?: boolean
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
-      newsletter_subscriptions: {
-        Row: {
-          created_at: string
-          email: string
-          id: string
-          last_login_at: string | null
-          name: string | null
-          status: string
-          subscribed_at: string
-          subscriber_type: string | null
-          subscription_source: string | null
-          token_expires_at: string | null
-          unsubscribe_token: string | null
-          unsubscribed_at: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          email: string
-          id?: string
-          last_login_at?: string | null
-          name?: string | null
-          status?: string
-          subscribed_at?: string
-          subscriber_type?: string | null
-          subscription_source?: string | null
-          token_expires_at?: string | null
-          unsubscribe_token?: string | null
-          unsubscribed_at?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          email?: string
-          id?: string
-          last_login_at?: string | null
-          name?: string | null
-          status?: string
-          subscribed_at?: string
-          subscriber_type?: string | null
-          subscription_source?: string | null
-          token_expires_at?: string | null
-          unsubscribe_token?: string | null
-          unsubscribed_at?: string | null
+          title?: string
           updated_at?: string
         }
         Relationships: []
@@ -1124,42 +213,42 @@ export type Database = {
           address: string | null
           city: string | null
           created_at: string
+          description: string | null
           email: string | null
           id: string
           name: string
-          organization_type: string | null
           phone: string | null
-          state: string | null
+          state_code: string | null
           updated_at: string
-          verified: boolean | null
+          verified: boolean
           website: string | null
         }
         Insert: {
           address?: string | null
           city?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
           id?: string
           name: string
-          organization_type?: string | null
           phone?: string | null
-          state?: string | null
+          state_code?: string | null
           updated_at?: string
-          verified?: boolean | null
+          verified?: boolean
           website?: string | null
         }
         Update: {
           address?: string | null
           city?: string | null
           created_at?: string
+          description?: string | null
           email?: string | null
           id?: string
           name?: string
-          organization_type?: string | null
           phone?: string | null
-          state?: string | null
+          state_code?: string | null
           updated_at?: string
-          verified?: boolean | null
+          verified?: boolean
           website?: string | null
         }
         Relationships: []
@@ -1170,9 +259,8 @@ export type Database = {
           created_at: string
           id: string
           name: string
-          notes: string | null
-          partner_id: string
-          status: string | null
+          notes: string
+          status: string
           updated_at: string
         }
         Insert: {
@@ -1180,9 +268,8 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
-          notes?: string | null
-          partner_id: string
-          status?: string | null
+          notes: string
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -1190,177 +277,37 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
-          notes?: string | null
-          partner_id?: string
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "partner_referrals_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "partners"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      partner_verifications: {
-        Row: {
-          contact_email: string | null
-          contact_name: string | null
-          contact_phone: string | null
-          created_at: string
-          expires_at: string | null
-          id: string
-          notes: string | null
-          organization_name: string
-          organization_type: string
-          renewal_reminder_sent: boolean | null
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string
-          updated_at: string
-          user_id: string
-          verification_documents: Json | null
-          verified_at: string | null
-          verified_by: string | null
-        }
-        Insert: {
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          notes?: string | null
-          organization_name: string
-          organization_type: string
-          renewal_reminder_sent?: boolean | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
+          notes?: string
           status?: string
           updated_at?: string
-          user_id: string
-          verification_documents?: Json | null
-          verified_at?: string | null
-          verified_by?: string | null
         }
-        Update: {
-          contact_email?: string | null
-          contact_name?: string | null
-          contact_phone?: string | null
-          created_at?: string
-          expires_at?: string | null
-          id?: string
-          notes?: string | null
-          organization_name?: string
-          organization_type?: string
-          renewal_reminder_sent?: boolean | null
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string
-          updated_at?: string
-          user_id?: string
-          verification_documents?: Json | null
-          verified_at?: string | null
-          verified_by?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "partner_verifications_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "partner_verifications_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      partners: {
-        Row: {
-          address: string | null
-          created_at: string
-          id: string
-          organization_name: string
-          organization_type: string | null
-          phone: string | null
-          updated_at: string
-          user_id: string
-          verification_status: string | null
-          verified: boolean | null
-          website: string | null
-        }
-        Insert: {
-          address?: string | null
-          created_at?: string
-          id?: string
-          organization_name: string
-          organization_type?: string | null
-          phone?: string | null
-          updated_at?: string
-          user_id: string
-          verification_status?: string | null
-          verified?: boolean | null
-          website?: string | null
-        }
-        Update: {
-          address?: string | null
-          created_at?: string
-          id?: string
-          organization_name?: string
-          organization_type?: string | null
-          phone?: string | null
-          updated_at?: string
-          user_id?: string
-          verification_status?: string | null
-          verified?: boolean | null
-          website?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "partners_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: true
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       partnership_requests: {
         Row: {
+          contact_email: string
           created_at: string
-          email: string
+          description: string
           id: string
-          message: string
-          name: string
-          organization: string
+          organization_name: string
           status: string
           updated_at: string
         }
         Insert: {
+          contact_email: string
           created_at?: string
-          email: string
+          description: string
           id?: string
-          message: string
-          name: string
-          organization: string
+          organization_name: string
           status?: string
           updated_at?: string
         }
         Update: {
+          contact_email?: string
           created_at?: string
-          email?: string
+          description?: string
           id?: string
-          message?: string
-          name?: string
-          organization?: string
+          organization_name?: string
           status?: string
           updated_at?: string
         }
@@ -1398,281 +345,107 @@ export type Database = {
       }
       resources: {
         Row: {
-          address: string | null
-          category: string
-          city: string | null
-          county: string | null
+          category: string | null
+          contact_info: string | null
           created_at: string
-          created_by: string | null
           description: string | null
-          email: string | null
           id: string
-          justice_friendly: boolean | null
-          name: string
+          is_active: boolean
           organization: string | null
-          phone: string | null
-          rating: number | null
-          state: string | null
           state_code: string | null
-          tags: string[] | null
           title: string
-          type: string | null
           updated_at: string
-          verified: boolean | null
           website_url: string | null
         }
         Insert: {
-          address?: string | null
-          category: string
-          city?: string | null
-          county?: string | null
+          category?: string | null
+          contact_info?: string | null
           created_at?: string
-          created_by?: string | null
           description?: string | null
-          email?: string | null
           id?: string
-          justice_friendly?: boolean | null
-          name: string
+          is_active?: boolean
           organization?: string | null
-          phone?: string | null
-          rating?: number | null
-          state?: string | null
           state_code?: string | null
-          tags?: string[] | null
           title: string
-          type?: string | null
           updated_at?: string
-          verified?: boolean | null
           website_url?: string | null
         }
         Update: {
-          address?: string | null
-          category?: string
-          city?: string | null
-          county?: string | null
+          category?: string | null
+          contact_info?: string | null
           created_at?: string
-          created_by?: string | null
           description?: string | null
-          email?: string | null
           id?: string
-          justice_friendly?: boolean | null
-          name?: string
+          is_active?: boolean
           organization?: string | null
-          phone?: string | null
-          rating?: number | null
-          state?: string | null
           state_code?: string | null
-          tags?: string[] | null
           title?: string
-          type?: string | null
           updated_at?: string
-          verified?: boolean | null
           website_url?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "resources_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
-      security_alerts: {
+      states: {
         Row: {
-          acknowledged: boolean | null
-          acknowledged_at: string | null
-          acknowledged_by: string | null
-          alert_data: Json | null
-          alert_type: string
+          active: boolean
+          code: string
+          coming_soon: boolean
           created_at: string
-          description: string
           id: string
-          resolved: boolean | null
-          resolved_at: string | null
-          severity: string
-          user_id: string | null
-        }
-        Insert: {
-          acknowledged?: boolean | null
-          acknowledged_at?: string | null
-          acknowledged_by?: string | null
-          alert_data?: Json | null
-          alert_type: string
-          created_at?: string
-          description: string
-          id?: string
-          resolved?: boolean | null
-          resolved_at?: string | null
-          severity: string
-          user_id?: string | null
-        }
-        Update: {
-          acknowledged?: boolean | null
-          acknowledged_at?: string | null
-          acknowledged_by?: string | null
-          alert_data?: Json | null
-          alert_type?: string
-          created_at?: string
-          description?: string
-          id?: string
-          resolved?: boolean | null
-          resolved_at?: string | null
-          severity?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "security_alerts_acknowledged_by_fkey"
-            columns: ["acknowledged_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "security_alerts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      success_stories: {
-        Row: {
-          created_at: string
-          featured: boolean | null
-          id: string
-          images: Json | null
-          impact_metrics: Json | null
-          outcome: string | null
-          participant_name: string | null
-          participant_testimonial: string | null
-          partner_id: string | null
-          published: boolean | null
-          published_at: string | null
-          referral_id: string | null
-          story: string
-          title: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          featured?: boolean | null
-          id?: string
-          images?: Json | null
-          impact_metrics?: Json | null
-          outcome?: string | null
-          participant_name?: string | null
-          participant_testimonial?: string | null
-          partner_id?: string | null
-          published?: boolean | null
-          published_at?: string | null
-          referral_id?: string | null
-          story: string
-          title: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          featured?: boolean | null
-          id?: string
-          images?: Json | null
-          impact_metrics?: Json | null
-          outcome?: string | null
-          participant_name?: string | null
-          participant_testimonial?: string | null
-          partner_id?: string | null
-          published?: boolean | null
-          published_at?: string | null
-          referral_id?: string | null
-          story?: string
-          title?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "success_stories_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "success_stories_referral_id_fkey"
-            columns: ["referral_id"]
-            isOneToOne: false
-            referencedRelation: "partner_referrals"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      support_requests: {
-        Row: {
-          assigned_to: string | null
-          created_at: string
-          email: string
-          id: string
-          message: string
           name: string
-          notes: string | null
-          organization: string | null
-          phone: string | null
-          request_data: Json | null
-          request_type: string
-          status: string | null
-          subject: string | null
-          updated_at: string
-          user_id: string | null
         }
         Insert: {
-          assigned_to?: string | null
+          active?: boolean
+          code: string
+          coming_soon?: boolean
           created_at?: string
-          email: string
           id?: string
-          message: string
           name: string
-          notes?: string | null
-          organization?: string | null
-          phone?: string | null
-          request_data?: Json | null
-          request_type: string
-          status?: string | null
-          subject?: string | null
-          updated_at?: string
-          user_id?: string | null
         }
         Update: {
-          assigned_to?: string | null
+          active?: boolean
+          code?: string
+          coming_soon?: boolean
           created_at?: string
-          email?: string
           id?: string
-          message?: string
           name?: string
-          notes?: string | null
-          organization?: string | null
-          phone?: string | null
-          request_data?: Json | null
-          request_type?: string
-          status?: string | null
-          subject?: string | null
+        }
+        Relationships: []
+      }
+      user_learning_progress: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          id: string
+          module_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string | null
           updated_at?: string
-          user_id?: string | null
+          user_id: string
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          module_id?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "support_requests_assigned_to_fkey"
-            columns: ["assigned_to"]
+            foreignKeyName: "user_learning_progress_module_id_fkey"
+            columns: ["module_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "support_requests_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "learning_modules"
             referencedColumns: ["id"]
           },
         ]
@@ -1681,274 +454,94 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          mfa_required: boolean | null
-          mfa_verified_at: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
-          mfa_required?: boolean | null
-          mfa_verified_at?: string | null
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
-          mfa_required?: boolean | null
-          mfa_verified_at?: string | null
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
         Relationships: []
       }
-      user_sessions: {
-        Row: {
-          created_at: string
-          expires_at: string
-          id: string
-          ip_address: string | null
-          is_active: boolean | null
-          last_activity: string
-          session_token: string
-          user_agent: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          expires_at: string
-          id?: string
-          ip_address?: string | null
-          is_active?: boolean | null
-          last_activity?: string
-          session_token: string
-          user_agent?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          expires_at?: string
-          id?: string
-          ip_address?: string | null
-          is_active?: boolean | null
-          last_activity?: string
-          session_token?: string
-          user_agent?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      verification_requests: {
-        Row: {
-          created_at: string
-          id: string
-          justification: string
-          partner_id: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: string | null
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          justification: string
-          partner_id: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          justification?: string
-          partner_id?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "verification_requests_partner_id_fkey"
-            columns: ["partner_id"]
-            isOneToOne: false
-            referencedRelation: "partners"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "verification_requests_reviewed_by_fkey"
-            columns: ["reviewed_by"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      website_analytics: {
-        Row: {
-          action_type: string
-          created_at: string
-          event_data: Json | null
-          id: string
-          ip_address: string | null
-          page_path: string
-          referrer: string | null
-          session_id: string
-          user_agent: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action_type: string
-          created_at?: string
-          event_data?: Json | null
-          id?: string
-          ip_address?: string | null
-          page_path: string
-          referrer?: string | null
-          session_id: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action_type?: string
-          created_at?: string
-          event_data?: Json | null
-          id?: string
-          ip_address?: string | null
-          page_path?: string
-          referrer?: string | null
-          session_id?: string
-          user_agent?: string | null
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "website_analytics_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
-      [_ in never]: never
+      organizations_public: {
+        Row: {
+          city: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          name: string | null
+          state_code: string | null
+          updated_at: string | null
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          state_code?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          city?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string | null
+          name?: string | null
+          state_code?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      approve_admin_contact_access: {
-        Args: { p_decision: string; p_request_id: string }
-        Returns: boolean
-      }
-      check_admin_exists: { Args: never; Returns: boolean }
-      check_admin_ip_whitelist: {
-        Args: { p_ip_address: string }
-        Returns: boolean
-      }
-      check_admin_operation_limit: { Args: never; Returns: boolean }
-      check_ai_rate_limit: {
+      can_view_org_contacts: { Args: never; Returns: boolean }
+      check_admin_rate_limit: { Args: { p_user_id?: string }; Returns: boolean }
+      check_rate_limit: {
         Args: {
-          p_endpoint: string
-          p_identifier: string
-          p_max_requests?: number
-          p_window_minutes?: number
+          p_limit_per_hour?: number
+          p_table_name?: string
+          p_user_id?: string
         }
-        Returns: {
-          current_count: number
-          is_rate_limited: boolean
-          reset_at: string
-        }[]
+        Returns: boolean
       }
-      check_login_rate_limit: {
-        Args: { p_email?: string; p_ip_address: string }
-        Returns: {
-          attempts_remaining: number
-          is_locked_out: boolean
-          is_rate_limited: boolean
-          lockout_until: string
-          requires_captcha: boolean
-          reset_at: string
-        }[]
+      create_user_profile: {
+        Args: { p_email: string; p_user_id: string }
+        Returns: undefined
       }
-      cleanup_old_login_attempts: { Args: never; Returns: number }
-      cleanup_old_rate_limits: { Args: never; Returns: number }
-      create_first_admin_user: { Args: { admin_email: string }; Returns: Json }
-      detect_advanced_suspicious_activity: {
+      get_masked_contact_info: {
+        Args: { contact_text: string; user_id?: string }
+        Returns: string
+      }
+      get_user_email: { Args: { p_user_id: string }; Returns: string }
+      get_verified_organizations: {
         Args: never
         Returns: {
-          alert_data: Json
-          alert_type: string
-          description: string
-          severity: string
-          user_id: string
-        }[]
-      }
-      get_partner_stats: {
-        Args: never
-        Returns: {
-          pending_partners: number
-          total_partners: number
-          total_referrals: number
-          verified_partners: number
-        }[]
-      }
-      get_partner_stats_detailed: {
-        Args: never
-        Returns: {
-          pending_partners: number
-          published_success_stories: number
-          total_partners: number
-          total_referrals: number
-          total_success_stories: number
-          verified_partners: number
-        }[]
-      }
-      get_resources_public: {
-        Args: never
-        Returns: {
-          address: string
-          category: string
           city: string
-          county: string
           created_at: string
           description: string
-          email: string
           id: string
-          justice_friendly: boolean
           name: string
-          organization: string
-          phone: string
-          state: string
-          tags: string[]
-          title: string
-          type: string
+          state_code: string
           updated_at: string
           verified: boolean
-          website_url: string
-        }[]
-      }
-      get_security_metrics_summary: {
-        Args: never
-        Returns: {
-          ai_requests_24h: number
-          avg_response_time_ms: number
-          critical_alerts: number
-          high_alerts: number
-          total_alerts: number
-          unique_users_24h: number
-          unresolved_alerts: number
+          website: string
         }[]
       }
       has_role: {
@@ -1958,47 +551,20 @@ export type Database = {
         }
         Returns: boolean
       }
-      is_user_admin: { Args: never; Returns: boolean }
-      log_profile_access: { Args: never; Returns: undefined }
-      queue_automation_email: {
-        Args: { p_rule_name: string; p_trigger_data?: Json; p_user_id: string }
-        Returns: string
-      }
-      record_ai_request: {
-        Args: { p_endpoint: string; p_identifier: string }
-        Returns: string
-      }
-      record_login_attempt: {
+      is_user_admin: { Args: { p_user_id?: string }; Returns: boolean }
+      log_sensitive_access: {
         Args: {
-          p_attempt_type?: string
-          p_email: string
-          p_failure_reason?: string
-          p_ip_address: string
-          p_success: boolean
-          p_user_agent: string
+          p_action: string
+          p_record_id?: string
+          p_sensitive_data?: boolean
+          p_table_name: string
         }
-        Returns: string
+        Returns: undefined
       }
-      request_admin_contact_access: {
-        Args: {
-          p_access_purpose: string
-          p_business_justification: string
-          p_organization_id: string
-        }
-        Returns: string
-      }
-      resolve_security_alert: { Args: { p_alert_id: string }; Returns: boolean }
-      track_anonymous_ai_usage: {
-        Args: { p_ai_endpoint: string; p_session_id: string }
-        Returns: string
-      }
-      transfer_anonymous_session_to_user: {
-        Args: { p_session_id: string; p_user_id: string }
-        Returns: boolean
-      }
+      mask_contact_info: { Args: { contact_text: string }; Returns: string }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user"
+      app_role: "admin" | "moderator" | "user" | "partner"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2126,7 +692,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user"],
+      app_role: ["admin", "moderator", "user", "partner"],
     },
   },
 } as const

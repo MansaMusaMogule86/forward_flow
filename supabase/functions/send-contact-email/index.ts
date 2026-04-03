@@ -1,9 +1,7 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { Resend } from "https://esm.sh/resend@4.0.0";
-import React from 'https://esm.sh/react@18.3.1';
-import { renderAsync } from 'https://esm.sh/@react-email/components@0.0.22';
-import { ContactConfirmation } from '../_shared/email-templates/ContactConfirmation.tsx';
+import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
+import { SITE_CONFIG } from '../_shared/site-config.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -15,6 +13,11 @@ const corsHeaders = {
   "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "strict-origin-when-cross-origin",
 };
+
+// Brand colors
+const OSU_SCARLET = '#BB0000';
+const OSU_DARK_RED = '#990000';
+const TEXT_DARK = '#2B2B2B';
 
 // Escape HTML entities to prevent injection in admin email body
 const escapeHtml = (str: string): string =>
@@ -33,7 +36,97 @@ interface ContactEmailRequest {
   email: string;
   subject: string;
   message: string;
-  type: 'contact' | 'coaching' | 'booking';
+  type: 'contact' | 'coaching' | 'booking' | 'expungement_application';
+}
+
+// Simple HTML email template (no React/JSX)
+function getContactConfirmationEmail(name: string, subject: string, type: string): string {
+  const getTypeMessage = () => {
+    switch (type) {
+      case 'coaching':
+        return "Coach Kay will personally review your inquiry and respond within 24-48 hours. In the meantime, feel free to explore our learning community and resources.";
+      case 'booking':
+        return "We'll be in touch within 24 hours to schedule your consultation. Please check your calendar for availability in the coming week.";
+      default:
+        return "We'll get back to you as soon as possible, typically within 24-48 hours.";
+    }
+  };
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${SITE_CONFIG.name}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+    body { margin: 0; padding: 0; font-family: 'Outfit', Arial, sans-serif; background-color: #F4F4F4; -webkit-font-smoothing: antialiased; }
+    table { border-collapse: collapse; }
+    .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border: 1px solid #D6D6D6; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    .header { background: linear-gradient(135deg, ${OSU_SCARLET} 0%, ${OSU_DARK_RED} 100%); padding: 48px 32px; text-align: center; }
+    .header-title { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; letter-spacing: 0.02em; }
+    .header-subtitle { color: rgba(255, 255, 255, 0.85); font-size: 14px; margin-top: 8px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .content { padding: 40px 32px; position: relative; }
+    .greeting { font-size: 24px; font-weight: 700; color: ${TEXT_DARK}; margin: 0 0 24px 0; }
+    .text { color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 24px 0; }
+    .message-box { background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 0 0 24px 0; }
+    .message-box-text { color: #374151; font-size: 14px; margin: 0 0 8px 0; }
+    .message-box-subject { color: #6b7280; font-size: 16px; font-style: italic; margin: 0; }
+    .cta-section { background: linear-gradient(135deg, ${OSU_SCARLET} 0%, ${OSU_DARK_RED} 100%); padding: 30px; border-radius: 8px; margin: 24px 0; text-align: center; }
+    .cta-text { color: #ffffff; font-size: 16px; margin: 0 0 20px 0; }
+    .button { background-color: #ffffff; color: ${OSU_SCARLET}; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin: 0 6px; }
+    .button-secondary { background-color: rgba(255,255,255,0.2); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; margin: 0 6px; }
+    .footer { background: #FAFAFA; padding: 40px 32px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #E0E0E0; }
+    .footer a { color: ${OSU_SCARLET}; text-decoration: none; font-weight: 600; }
+    @media only screen and (max-width: 600px) {
+      .container { margin: 0; width: 100%; border-radius: 0; }
+      .content { padding: 32px 20px; }
+      .greeting { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0">
+          <tr>
+            <td class="header">
+              <h1 class="header-title">${SITE_CONFIG.name}</h1>
+              <div class="header-subtitle">Empowering Justice-Impacted Families</div>
+            </td>
+          </tr>
+          <tr>
+            <td class="content">
+              <h2 class="greeting">Hi ${escapeHtml(name)}! 👋</h2>
+              <p class="text">Thank you for reaching out to us!</p>
+              
+              <div class="message-box">
+                <p class="message-box-text">We have received your message regarding:</p>
+                <p class="message-box-subject">"${escapeHtml(subject)}"</p>
+              </div>
+              
+              <p class="text">${getTypeMessage()}</p>
+              
+              <div class="cta-section">
+                <p class="cta-text">While you wait, explore our community resources:</p>
+                <a href="${SITE_CONFIG.baseUrl}/learn" class="button">Learning Community</a>
+                <a href="${SITE_CONFIG.baseUrl}/victim-services" class="button-secondary">Healing Hub</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="footer">
+              <p style="margin: 0 0 12px 0;"><strong>${SITE_CONFIG.name}</strong> • ${new Date().getFullYear()}</p>
+              <p style="margin: 0; color: #9A9A9A; line-height: 1.5;">Empowering Ohio's 88 counties with healing, growth, and second chances.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 const handler = async (req: Request): Promise<Response> => {
@@ -58,14 +151,13 @@ const handler = async (req: Request): Promise<Response> => {
     try {
       const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
       const { data: recentRequests, error } = await supabaseClient
-        .from("audit_logs")
+        .from("audit_log")
         .select("id")
         .eq("action", "CONTACT_FORM_SUBMIT")
         .eq("ip_address", clientIP)
         .gte("created_at", fiveMinutesAgo);
 
       if (error) {
-        // Fail-closed: cannot verify rate limit, deny request
         console.error("Rate limit DB error — denying request:", error.message);
         return new Response(
           JSON.stringify({ success: false, error: "Service temporarily unavailable. Please try again shortly." }),
@@ -80,7 +172,6 @@ const handler = async (req: Request): Promise<Response> => {
         );
       }
     } catch (rateLimitError) {
-      // Fail-closed: unknown error, deny request
       console.error("Rate limit check exception — denying request:", rateLimitError);
       return new Response(
         JSON.stringify({ success: false, error: "Service temporarily unavailable. Please try again shortly." }),
@@ -120,7 +211,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     
-    if (!type || !['contact', 'coaching', 'booking'].includes(type)) {
+    if (!type || !['contact', 'coaching', 'booking', 'expungement_application'].includes(type)) {
       return new Response(
         JSON.stringify({ success: false, error: "Invalid request type" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
@@ -129,16 +220,8 @@ const handler = async (req: Request): Promise<Response> => {
     
     console.log("Processing email request:", { name, email, subject, type });
 
-    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
-    // Render React Email template
-    const emailHtml = await renderAsync(
-      React.createElement(ContactConfirmation, {
-        name,
-        subject,
-        type,
-      })
-    );
+    // Generate HTML email (no React needed!)
+    const emailHtml = getContactConfirmationEmail(name, subject, type);
 
     // Send confirmation to user
     const userEmailResponse = await resend.emails.send({
@@ -151,18 +234,28 @@ const handler = async (req: Request): Promise<Response> => {
     // Store Resend email ID for tracking
     const resendEmailId = userEmailResponse.data?.id;
     
-    // Update contact submission with email ID
+    // Update contact submission with email ID (if table exists)
     if (resendEmailId) {
       try {
-        await supabaseClient
-          .from("contact_submissions")
-          .update({ 
-            resend_email_id: resendEmailId,
-            email_status: 'sent'
-          })
-          .eq("email", email)
-          .order("created_at", { ascending: false })
-          .limit(1);
+        // First check if the table exists to avoid non-critical errors
+        const { data: tableExists } = await supabaseClient
+          .from("information_schema.tables")
+          .select("table_name")
+          .eq("table_name", "contact_submissions")
+          .eq("table_schema", "public")
+          .single();
+
+        if (tableExists) {
+          await supabaseClient
+            .from("contact_submissions")
+            .update({ 
+              resend_email_id: resendEmailId,
+              email_status: 'sent'
+            })
+            .eq("email", email)
+            .order("created_at", { ascending: false })
+            .limit(1);
+        }
       } catch (updateError) {
         console.error("Failed to update contact submission with email ID (non-critical):", updateError);
       }
@@ -200,9 +293,8 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Log successful contact form submission (for rate limiting)
     try {
-      // Do not store PII (email/subject) in audit log — used only for rate limiting
       await supabaseClient
-        .from("audit_logs")
+        .from("audit_log")
         .insert({
           action: "CONTACT_FORM_SUBMIT",
           ip_address: clientIP,
@@ -245,3 +337,4 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+

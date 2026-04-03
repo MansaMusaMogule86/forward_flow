@@ -57,5 +57,5 @@ CREATE POLICY "Only admins can view queue" ON email_send_queue
 FOR SELECT
 USING (has_role(auth.uid(), 'admin'::app_role));
 
--- Service role operations (from edge functions) will work regardless of RLS policies
+-- Service role p_actions (from edge functions) will work regardless of RLS policies
 -- This prevents any non-admin client access while allowing service role backend access

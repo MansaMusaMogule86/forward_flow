@@ -22,13 +22,11 @@ CREATE TABLE IF NOT EXISTS public.contact_access_permissions (
 ALTER TABLE public.contact_access_permissions ENABLE ROW LEVEL SECURITY;
 
 -- Step 3: Create RLS policies for contact access permissions
-CREATE POLICY "Users can view their own access requests"
-ON public.contact_access_permissions
+DROP POLICY IF EXISTS "Users can view their own access requests" ON public.contact_access_permissions; CREATE POLICY "Users can view their own access requests" ON public.contact_access_permissions
 FOR SELECT
 USING (auth.uid() = requester_id);
 
-CREATE POLICY "Users can create access requests"
-ON public.contact_access_permissions
+DROP POLICY IF EXISTS "Users can create access requests" ON public.contact_access_permissions; CREATE POLICY "Users can create access requests" ON public.contact_access_permissions
 FOR INSERT
 WITH CHECK (
   auth.uid() = requester_id
@@ -36,19 +34,17 @@ WITH CHECK (
   AND check_enhanced_rate_limit(auth.uid(), 'access_request', 5)
 );
 
-CREATE POLICY "Users can update their own pending requests"
-ON public.contact_access_permissions
+DROP POLICY IF EXISTS "Users can update their own pending requests" ON public.contact_access_permissions; CREATE POLICY "Users can update their own pending requests" ON public.contact_access_permissions
 FOR UPDATE
 USING (auth.uid() = requester_id AND status = 'pending')
 WITH CHECK (auth.uid() = requester_id);
 
-CREATE POLICY "Admins can manage all access requests"
-ON public.contact_access_permissions
+DROP POLICY IF EXISTS "Admins can manage all access requests" ON public.contact_access_permissions; CREATE POLICY "Admins can manage all access requests" ON public.contact_access_permissions
 FOR ALL
 USING (is_user_admin())
 WITH CHECK (is_user_admin());
 
--- Step 4: Create function to check if user has contact access permission
+-- Step 4: CREATE OR REPLACE FUNCTION to check if user has contact access permission
 CREATE OR REPLACE FUNCTION public.has_contact_access_permission(user_id UUID, org_id UUID)
 RETURNS BOOLEAN
 LANGUAGE plpgsql
@@ -76,8 +72,7 @@ $$;
 -- Step 5: Replace the overly permissive policy with a secure one
 DROP POLICY IF EXISTS "authenticated_partner_contact_access" ON public.organizations;
 
-CREATE POLICY "secure_contact_access_with_permission"
-ON public.organizations
+DROP POLICY IF EXISTS "secure_contact_access_with_permission" ON public.organizations; CREATE POLICY "secure_contact_access_with_permission" ON public.organizations
 FOR SELECT
 USING (
   verified = true
@@ -91,7 +86,7 @@ USING (
   AND check_enhanced_rate_limit(auth.uid(), 'org_contact_access', 20)
 );
 
--- Step 6: Create function to request contact access
+-- Step 6: CREATE OR REPLACE FUNCTION to request contact access
 CREATE OR REPLACE FUNCTION public.request_contact_access(
   org_id UUID,
   reason TEXT,
@@ -142,14 +137,14 @@ BEGIN
     business_justification = EXCLUDED.business_justification,
     status = 'pending',
     updated_at = now()
-  RETURNING id INTO request_id;
+  RETURNING id INTO request_id ON CONFLICT DO NOTHING;
   
   -- Log the access request
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -159,13 +154,13 @@ BEGIN
     request_id,
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN request_id;
 END;
 $$;
 
--- Step 7: Create function for admins to approve/deny requests
+-- Step 7: CREATE OR REPLACE FUNCTION for admins to approve/deny requests
 CREATE OR REPLACE FUNCTION public.manage_contact_access_request(
   request_id UUID,
   new_status TEXT,
@@ -208,8 +203,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -219,7 +214,7 @@ BEGIN
     request_id,
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 

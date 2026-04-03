@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
 import { corsHeaders, errorResponse } from "../_shared/utils.ts";
 import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
@@ -48,7 +48,7 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    
+
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     if (!OPENROUTER_API_KEY) {
       throw new Error('OPENROUTER_API_KEY not configured');
@@ -64,7 +64,7 @@ serve(async (req) => {
     if (error) throw error;
 
     // Create context for AI
-    const resourceContext = (resources || []).map(r => 
+    const resourceContext = (resources || []).map(r =>
       `${r.name}: ${r.description} (Category: ${r.category}, Location: ${r.city}, ${r.state})`
     ).join('\n') || 'No resources available in database.';
 
@@ -167,3 +167,4 @@ serve(async (req) => {
     });
   }
 });
+

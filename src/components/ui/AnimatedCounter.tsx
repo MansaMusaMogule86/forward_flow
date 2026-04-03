@@ -20,6 +20,7 @@ export const AnimatedCounter = ({
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    const element = counterRef.current;
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -29,13 +30,13 @@ export const AnimatedCounter = ({
       { threshold: 0.1 }
     );
 
-    if (counterRef.current) {
-      observer.observe(counterRef.current);
+    if (element) {
+      observer.observe(element);
     }
 
     return () => {
-      if (counterRef.current) {
-        observer.unobserve(counterRef.current);
+      if (element) {
+        observer.unobserve(element);
       }
     };
   }, []);

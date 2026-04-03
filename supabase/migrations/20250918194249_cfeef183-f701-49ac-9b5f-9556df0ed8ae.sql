@@ -4,22 +4,22 @@
 ALTER TABLE public.partner_referrals ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for partner_referrals
-CREATE POLICY "Authenticated users can submit referrals" ON public.partner_referrals
+DROP POLICY IF EXISTS "Authenticated users can submit referrals" ON public.partner_referrals; CREATE POLICY "Authenticated users can submit referrals" ON public.partner_referrals
   FOR INSERT 
   TO authenticated
   WITH CHECK (auth.uid() IS NOT NULL);
 
-CREATE POLICY "Users can view their own referrals" ON public.partner_referrals
+DROP POLICY IF EXISTS "Users can view their own referrals" ON public.partner_referrals; CREATE POLICY "Users can view their own referrals" ON public.partner_referrals
   FOR SELECT 
   TO authenticated
   USING (true); -- Allow viewing for tracking purposes
 
-CREATE POLICY "Admins can manage all referrals" ON public.partner_referrals
+DROP POLICY IF EXISTS "Admins can manage all referrals" ON public.partner_referrals; CREATE POLICY "Admins can manage all referrals" ON public.partner_referrals
   FOR ALL 
   TO authenticated
   USING (is_user_admin());
 
--- Create function to get partner statistics
+-- CREATE OR REPLACE FUNCTION to get partner statistics
 CREATE OR REPLACE FUNCTION get_partner_stats(partner_user_id UUID DEFAULT auth.uid())
 RETURNS JSON
 LANGUAGE plpgsql

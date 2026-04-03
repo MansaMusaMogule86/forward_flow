@@ -55,15 +55,15 @@ export default function Blog() {
           name="keywords" 
           content="second chance resources, Ohio reentry, victim services, expungement guide, trauma-informed care, housing assistance" 
         />
-        <link rel="canonical" href="https://forwardfocuselevation.org/blog" />
+        <link rel="canonical" href="https://forward-focus-elevation.org/blog" />
         
         {/* Open Graph */}
         <meta property="og:title" content="Forward Focus Elevation Blog" />
         <meta property="og:description" content="Resources and insights for reentry success, victim support, and life transformation in Ohio" />
         <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://forwardfocuselevation.org/blog" />
+        <meta property="og:url" content="https://forward-focus-elevation.org/blog" />
         <meta property="og:site_name" content="Forward Focus Elevation" />
-        <meta property="og:image" content="https://forwardfocuselevation.org/og-image.jpg" />
+        <meta property="og:image" content="https://forward-focus-elevation.org/og-image.jpg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:image:alt" content="Forward Focus Elevation - CEO Logo" />
@@ -72,7 +72,7 @@ export default function Blog() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Forward Focus Elevation Blog" />
         <meta name="twitter:description" content="Resources for second chances in Ohio" />
-        <meta name="twitter:image" content="https://forwardfocuselevation.org/og-image.jpg" />
+        <meta name="twitter:image" content="https://forward-focus-elevation.org/og-image.jpg" />
         <meta name="twitter:image:alt" content="Forward Focus Elevation - CEO Logo" />
         
         {/* Structured Data */}

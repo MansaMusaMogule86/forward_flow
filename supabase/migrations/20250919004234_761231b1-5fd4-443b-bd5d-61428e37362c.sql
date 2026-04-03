@@ -5,14 +5,13 @@
 DROP POLICY IF EXISTS "Anyone can view states" ON public.states;
 
 -- Add authentication-required policy to protect business intelligence
-CREATE POLICY "Authenticated users can view states" 
-ON public.states 
+DROP POLICY IF EXISTS "Authenticated users can view states" ON public.states; CREATE POLICY "Authenticated users can view states" ON public.states 
 FOR SELECT 
 USING (auth.uid() IS NOT NULL);
 
 -- Enhanced business strategy protection measures
 
--- Create function to detect and block scraping attempts
+-- CREATE OR REPLACE FUNCTION to detect and block scraping attempts
 CREATE OR REPLACE FUNCTION public.detect_scraping_activity()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -27,7 +26,7 @@ BEGIN
   SELECT COUNT(*) INTO request_count
   FROM public.audit_log
   WHERE user_id = user_id_val
-  AND table_name = TG_TABLE_NAME
+  AND p_table_name = TG_p_table_name
   AND action = 'SELECT'
   AND created_at > NOW() - INTERVAL '2 minutes';
   
@@ -38,10 +37,10 @@ BEGIN
       'POTENTIAL_DATA_SCRAPING',
       'high',
       'Rapid data access detected - potential scraping attempt',
-      format('User made %s requests to %s table in 2 minutes', request_count, TG_TABLE_NAME),
+      format('User made %s requests to %s table in 2 minutes', request_count, TG_p_table_name),
       jsonb_build_object(
         'user_id', user_id_val,
-        'table_name', TG_TABLE_NAME,
+        'p_table_name', TG_p_table_name,
         'request_count', request_count,
         'time_window', '2 minutes'
       ),
@@ -62,7 +61,7 @@ CREATE TRIGGER detect_states_scraping
   FOR EACH STATEMENT
   EXECUTE FUNCTION public.detect_scraping_activity();
 
--- Create function to add strategic data obfuscation
+-- CREATE OR REPLACE FUNCTION to add strategic data obfuscation
 CREATE OR REPLACE FUNCTION public.get_states_with_protection()
 RETURNS TABLE(
   id uuid,
@@ -97,7 +96,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -106,7 +105,7 @@ BEGIN
     'states',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   -- Return data with strategic obfuscation for non-admins
   RETURN QUERY
@@ -178,8 +177,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -193,7 +192,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;

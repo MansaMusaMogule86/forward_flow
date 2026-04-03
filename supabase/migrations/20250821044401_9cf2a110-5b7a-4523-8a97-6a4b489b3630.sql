@@ -8,8 +8,8 @@
 -- Some functions might have been created without it previously
 
 -- Drop and recreate any system functions that might exist
-DROP FUNCTION IF EXISTS handle_new_auth_user();
-DROP FUNCTION IF EXISTS get_current_user_role();
+-- Removed DROP FUNCTION to avoid dependency issues: handle_new_auth_user();
+-- Removed DROP FUNCTION to avoid dependency issues: get_current_user_role();
 
 -- The auth OTP expiry warning is a configuration setting that needs to be 
 -- changed in the Supabase dashboard under Authentication > Settings

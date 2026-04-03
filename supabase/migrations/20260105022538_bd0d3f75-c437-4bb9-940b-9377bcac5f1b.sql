@@ -1,5 +1,5 @@
 -- API Key Rotation Tracking Table
-CREATE TABLE public.api_key_rotation_tracking (
+CREATE TABLE IF NOT EXISTS public.api_key_rotation_tracking (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   key_name TEXT NOT NULL UNIQUE,
   key_description TEXT,
@@ -16,24 +16,20 @@ CREATE TABLE public.api_key_rotation_tracking (
 ALTER TABLE public.api_key_rotation_tracking ENABLE ROW LEVEL SECURITY;
 
 -- Only admins can view and manage API key rotation tracking
-CREATE POLICY "Admins can view api key rotation tracking"
-  ON public.api_key_rotation_tracking
+DROP POLICY IF EXISTS "Admins can view api key rotation tracking" ON public.api_key_rotation_tracking; CREATE POLICY "Admins can view api key rotation tracking" ON public.api_key_rotation_tracking
   FOR SELECT
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Admins can insert api key rotation tracking"
-  ON public.api_key_rotation_tracking
+DROP POLICY IF EXISTS "Admins can insert api key rotation tracking" ON public.api_key_rotation_tracking; CREATE POLICY "Admins can insert api key rotation tracking" ON public.api_key_rotation_tracking
   FOR INSERT
   WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Admins can update api key rotation tracking"
-  ON public.api_key_rotation_tracking
+DROP POLICY IF EXISTS "Admins can update api key rotation tracking" ON public.api_key_rotation_tracking; CREATE POLICY "Admins can update api key rotation tracking" ON public.api_key_rotation_tracking
   FOR UPDATE
   USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- Add trigger for updated_at
-CREATE TRIGGER update_api_key_rotation_tracking_updated_at
-  BEFORE UPDATE ON public.api_key_rotation_tracking
+DROP TRIGGER IF EXISTS update_api_key_rotation_tracking_updated_at ON public.api_key_rotation_tracking; CREATE TRIGGER update_api_key_rotation_tracking_updated_at BEFORE UPDATE ON public.api_key_rotation_tracking
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
@@ -45,10 +41,10 @@ INSERT INTO public.api_key_rotation_tracking (key_name, key_description, rotatio
   ('PERPLEXITY_API_KEY', 'Perplexity API key for AI search', 90, false),
   ('SPARKLOOP_API_KEY', 'SparkLoop API key for newsletter growth', 180, false),
   ('BEEHIVE_API_KEY', 'Beehive API key for newsletter integration', 180, false),
-  ('CRON_SECRET_TOKEN', 'Secret token for cron job authentication', 180, false);
+  ('CRON_SECRET_TOKEN', 'Secret token for cron job authentication', 180, false) ON CONFLICT DO NOTHING;
 
 -- AI Rate Limiting Table for tracking requests
-CREATE TABLE public.ai_rate_limits (
+CREATE TABLE IF NOT EXISTS public.ai_rate_limits (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   identifier TEXT NOT NULL,
   endpoint TEXT NOT NULL,
@@ -62,8 +58,7 @@ CREATE INDEX idx_ai_rate_limits_lookup ON public.ai_rate_limits(identifier, endp
 ALTER TABLE public.ai_rate_limits ENABLE ROW LEVEL SECURITY;
 
 -- Service role can manage rate limits (edge functions use service role)
-CREATE POLICY "Service role manages ai rate limits"
-  ON public.ai_rate_limits
+DROP POLICY IF EXISTS "Service role manages ai rate limits" ON public.ai_rate_limits; CREATE POLICY "Service role manages ai rate limits" ON public.ai_rate_limits
   FOR ALL
   USING (true)
   WITH CHECK (true);
@@ -119,7 +114,7 @@ DECLARE
 BEGIN
   INSERT INTO public.ai_rate_limits (identifier, endpoint)
   VALUES (p_identifier, p_endpoint)
-  RETURNING id INTO v_id;
+  RETURNING id INTO v_id ON CONFLICT DO NOTHING;
   
   RETURN v_id;
 END;

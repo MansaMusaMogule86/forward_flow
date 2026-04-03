@@ -16,12 +16,10 @@ CREATE TABLE IF NOT EXISTS public.organizations (
 
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can view verified organizations"
-  ON public.organizations FOR SELECT
+DROP POLICY IF EXISTS "Anyone can view verified organizations" ON public.organizations; CREATE POLICY "Anyone can view verified organizations" ON public.organizations FOR SELECT
   USING (verified = true OR auth.uid() IS NOT NULL);
 
-CREATE POLICY "Admins can manage organizations"
-  ON public.organizations FOR ALL
+DROP POLICY IF EXISTS "Admins can manage organizations" ON public.organizations; CREATE POLICY "Admins can manage organizations" ON public.organizations FOR ALL
   USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Update contact_access_justifications to reference organizations
@@ -49,8 +47,7 @@ CREATE TABLE IF NOT EXISTS public.email_campaigns (
 
 ALTER TABLE public.email_campaigns ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Admins can manage campaigns"
-  ON public.email_campaigns FOR ALL
+DROP POLICY IF EXISTS "Admins can manage campaigns" ON public.email_campaigns; CREATE POLICY "Admins can manage campaigns" ON public.email_campaigns FOR ALL
   USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Create newsletter_subscriptions table (rename existing newsletter_subscribers)
@@ -68,16 +65,13 @@ CREATE TABLE IF NOT EXISTS public.newsletter_subscriptions (
 
 ALTER TABLE public.newsletter_subscriptions ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can subscribe"
-  ON public.newsletter_subscriptions FOR INSERT
+DROP POLICY IF EXISTS "Anyone can subscribe" ON public.newsletter_subscriptions; CREATE POLICY "Anyone can subscribe" ON public.newsletter_subscriptions FOR INSERT
   WITH CHECK (true);
 
-CREATE POLICY "Users can update own subscription"
-  ON public.newsletter_subscriptions FOR UPDATE
+DROP POLICY IF EXISTS "Users can update own subscription" ON public.newsletter_subscriptions; CREATE POLICY "Users can update own subscription" ON public.newsletter_subscriptions FOR UPDATE
   USING (true);
 
-CREATE POLICY "Admins can view subscriptions"
-  ON public.newsletter_subscriptions FOR SELECT
+DROP POLICY IF EXISTS "Admins can view subscriptions" ON public.newsletter_subscriptions; CREATE POLICY "Admins can view subscriptions" ON public.newsletter_subscriptions FOR SELECT
   USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Create website_analytics table
@@ -96,12 +90,10 @@ CREATE TABLE IF NOT EXISTS public.website_analytics (
 
 ALTER TABLE public.website_analytics ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Anyone can create analytics"
-  ON public.website_analytics FOR INSERT
+DROP POLICY IF EXISTS "Anyone can create analytics" ON public.website_analytics; CREATE POLICY "Anyone can create analytics" ON public.website_analytics FOR INSERT
   WITH CHECK (true);
 
-CREATE POLICY "Admins can view analytics"
-  ON public.website_analytics FOR SELECT
+DROP POLICY IF EXISTS "Admins can view analytics" ON public.website_analytics; CREATE POLICY "Admins can view analytics" ON public.website_analytics FOR SELECT
   USING (has_role(auth.uid(), 'admin'::app_role));
 
 -- Create indexes for performance
@@ -111,14 +103,11 @@ CREATE INDEX idx_website_analytics_created_at ON public.website_analytics(create
 CREATE INDEX idx_website_analytics_page_path ON public.website_analytics(page_path);
 
 -- Create triggers for updated_at
-CREATE TRIGGER update_organizations_updated_at
-  BEFORE UPDATE ON public.organizations
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations; CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON public.organizations
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_email_campaigns_updated_at
-  BEFORE UPDATE ON public.email_campaigns
+DROP TRIGGER IF EXISTS update_email_campaigns_updated_at ON public.email_campaigns; CREATE TRIGGER update_email_campaigns_updated_at BEFORE UPDATE ON public.email_campaigns
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_newsletter_subscriptions_updated_at
-  BEFORE UPDATE ON public.newsletter_subscriptions
+DROP TRIGGER IF EXISTS update_newsletter_subscriptions_updated_at ON public.newsletter_subscriptions; CREATE TRIGGER update_newsletter_subscriptions_updated_at BEFORE UPDATE ON public.newsletter_subscriptions
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();

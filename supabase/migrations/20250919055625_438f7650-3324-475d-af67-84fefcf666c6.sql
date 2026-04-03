@@ -1,7 +1,7 @@
 -- Create comprehensive admin tracking tables for all user interactions
 
 -- Contact submissions from contact forms
-CREATE TABLE public.contact_submissions (
+CREATE TABLE IF NOT EXISTS public.contact_submissions (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -17,7 +17,7 @@ CREATE TABLE public.contact_submissions (
 );
 
 -- Support program applications and requests
-CREATE TABLE public.support_requests (
+CREATE TABLE IF NOT EXISTS public.support_requests (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   request_type TEXT NOT NULL, -- speaker, corporate_training, ai_consultation, grant_inquiry
   name TEXT NOT NULL,
@@ -36,7 +36,7 @@ CREATE TABLE public.support_requests (
 );
 
 -- Booking requests from calendar
-CREATE TABLE public.booking_requests (
+CREATE TABLE IF NOT EXISTS public.booking_requests (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE public.booking_requests (
 );
 
 -- Website analytics and visitor tracking
-CREATE TABLE public.website_analytics (
+CREATE TABLE IF NOT EXISTS public.website_analytics (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   page_path TEXT NOT NULL,
   user_id UUID REFERENCES auth.users(id),
@@ -73,74 +73,63 @@ ALTER TABLE public.booking_requests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.website_analytics ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for contact_submissions
-CREATE POLICY "Admins can manage all contact submissions"
-ON public.contact_submissions
+DROP POLICY IF EXISTS "Admins can manage all contact submissions" ON public.contact_submissions; CREATE POLICY "Admins can manage all contact submissions" ON public.contact_submissions
 FOR ALL
 TO authenticated
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
 
-CREATE POLICY "Users can view their own contact submissions"
-ON public.contact_submissions
+DROP POLICY IF EXISTS "Users can view their own contact submissions" ON public.contact_submissions; CREATE POLICY "Users can view their own contact submissions" ON public.contact_submissions
 FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Anyone can insert contact submissions"
-ON public.contact_submissions
+DROP POLICY IF EXISTS "Anyone can insert contact submissions" ON public.contact_submissions; CREATE POLICY "Anyone can insert contact submissions" ON public.contact_submissions
 FOR INSERT
 TO authenticated, anon
 WITH CHECK (true);
 
 -- Create RLS policies for support_requests
-CREATE POLICY "Admins can manage all support requests"
-ON public.support_requests
+DROP POLICY IF EXISTS "Admins can manage all support requests" ON public.support_requests; CREATE POLICY "Admins can manage all support requests" ON public.support_requests
 FOR ALL
 TO authenticated
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
 
-CREATE POLICY "Users can view their own support requests"
-ON public.support_requests
+DROP POLICY IF EXISTS "Users can view their own support requests" ON public.support_requests; CREATE POLICY "Users can view their own support requests" ON public.support_requests
 FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Anyone can insert support requests"
-ON public.support_requests
+DROP POLICY IF EXISTS "Anyone can insert support requests" ON public.support_requests; CREATE POLICY "Anyone can insert support requests" ON public.support_requests
 FOR INSERT
 TO authenticated, anon
 WITH CHECK (true);
 
 -- Create RLS policies for booking_requests
-CREATE POLICY "Admins can manage all booking requests"
-ON public.booking_requests
+DROP POLICY IF EXISTS "Admins can manage all booking requests" ON public.booking_requests; CREATE POLICY "Admins can manage all booking requests" ON public.booking_requests
 FOR ALL
 TO authenticated
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
 
-CREATE POLICY "Users can view their own booking requests"
-ON public.booking_requests
+DROP POLICY IF EXISTS "Users can view their own booking requests" ON public.booking_requests; CREATE POLICY "Users can view their own booking requests" ON public.booking_requests
 FOR SELECT
 TO authenticated
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Anyone can insert booking requests"
-ON public.booking_requests
+DROP POLICY IF EXISTS "Anyone can insert booking requests" ON public.booking_requests; CREATE POLICY "Anyone can insert booking requests" ON public.booking_requests
 FOR INSERT
 TO authenticated, anon
 WITH CHECK (true);
 
 -- Create RLS policies for website_analytics
-CREATE POLICY "Admins can view all website analytics"
-ON public.website_analytics
+DROP POLICY IF EXISTS "Admins can view all website analytics" ON public.website_analytics; CREATE POLICY "Admins can view all website analytics" ON public.website_analytics
 FOR SELECT
 TO authenticated
 USING (is_user_admin(auth.uid()));
 
-CREATE POLICY "System can insert website analytics"
-ON public.website_analytics
+DROP POLICY IF EXISTS "System can insert website analytics" ON public.website_analytics; CREATE POLICY "System can insert website analytics" ON public.website_analytics
 FOR INSERT
 TO authenticated, anon
 WITH CHECK (true);
@@ -171,17 +160,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SET search_path = public;
 
-CREATE TRIGGER update_contact_submissions_updated_at
-  BEFORE UPDATE ON public.contact_submissions
+DROP TRIGGER IF EXISTS update_contact_submissions_updated_at ON public.contact_submissions; CREATE TRIGGER update_contact_submissions_updated_at BEFORE UPDATE ON public.contact_submissions
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_support_requests_updated_at
-  BEFORE UPDATE ON public.support_requests
+DROP TRIGGER IF EXISTS update_support_requests_updated_at ON public.support_requests; CREATE TRIGGER update_support_requests_updated_at BEFORE UPDATE ON public.support_requests
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_booking_requests_updated_at
-  BEFORE UPDATE ON public.booking_requests
+DROP TRIGGER IF EXISTS update_booking_requests_updated_at ON public.booking_requests; CREATE TRIGGER update_booking_requests_updated_at BEFORE UPDATE ON public.booking_requests
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();

@@ -145,10 +145,7 @@ export default function YouthFutures() {
                   <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Budget mastery</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Business ideation</li>
                 </ul>
-                <div className="pt-4 border-t text-center">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Sponsor Investment</p>
-                  <p className="text-2xl font-bold text-osu-scarlet">$150 / youth</p>
-                </div>
+
               </CardContent>
             </Card>
 
@@ -167,10 +164,7 @@ export default function YouthFutures() {
                   <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Weekly mentorship</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Interview training</li>
                 </ul>
-                <div className="pt-4 border-t text-center">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Sponsor Investment</p>
-                  <p className="text-2xl font-bold text-osu-scarlet">$400 / youth</p>
-                </div>
+
               </CardContent>
             </Card>
 
@@ -189,10 +183,7 @@ export default function YouthFutures() {
                   <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Family support</li>
                   <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-osu-scarlet" /> Lifetime access</li>
                 </ul>
-                <div className="pt-4 border-t text-center">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">Sponsor Investment</p>
-                  <p className="text-2xl font-bold text-osu-scarlet">$1,200 / youth</p>
-                </div>
+
               </CardContent>
             </Card>
           </div>

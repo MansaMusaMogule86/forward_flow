@@ -3,8 +3,7 @@
 DROP POLICY IF EXISTS "verified_partner_contact_access" ON public.organizations;
 
 -- Create new secure policy that requires authentication for contact access
-CREATE POLICY "authenticated_partner_contact_access" 
-ON public.organizations 
+DROP POLICY IF EXISTS "authenticated_partner_contact_access" ON public.organizations; CREATE POLICY "authenticated_partner_contact_access" ON public.organizations 
 FOR SELECT 
 USING (
   verified = true 
@@ -14,8 +13,7 @@ USING (
 );
 
 -- Add a separate policy for public access to basic organization info (no contact details)
-CREATE POLICY "public_basic_org_info" 
-ON public.organizations 
+DROP POLICY IF EXISTS "public_basic_org_info" ON public.organizations; CREATE POLICY "public_basic_org_info" ON public.organizations 
 FOR SELECT 
 USING (verified = true);
 
@@ -33,8 +31,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -44,7 +42,7 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -61,8 +59,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -72,7 +70,7 @@ BEGIN
     COALESCE(NEW.id, OLD.id),
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;
@@ -100,7 +98,7 @@ BEGIN
     INSERT INTO public.audit_log (
       user_id,
       action,
-      table_name,
+      p_table_name,
       sensitive_data_accessed,
       created_at
     ) VALUES (
@@ -109,7 +107,7 @@ BEGIN
       'security_monitoring',
       true,
       now()
-    );
+    ) ON CONFLICT DO NOTHING;
   END IF;
 END;
 $function$;
@@ -197,7 +195,7 @@ CREATE OR REPLACE FUNCTION public.validate_partner_referral_input()
 AS $function$
 BEGIN
     -- Validate input data
-    IF NOT validate_contact_input(NEW.name, NULL, NEW.contact_info) THEN
+    IF NOT validate_contact_input(NEW.name, NULL, NEW.contact_text) THEN
         RAISE EXCEPTION 'Invalid input data provided';
     END IF;
     
@@ -205,8 +203,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -216,7 +214,7 @@ BEGIN
         NEW.id,
         true,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN NEW;
 END;
@@ -242,8 +240,8 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
-        record_id,
+        p_table_name,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -253,7 +251,7 @@ BEGIN
         NEW.id,
         true,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN NEW;
 END;

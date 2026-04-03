@@ -38,7 +38,7 @@ GRANT SELECT ON public.organizations_public TO authenticated;
 -- Ensure the search_path is set for all SECURITY DEFINER functions to prevent schema attacks
 
 -- Update is_user_admin function with better security
-CREATE OR REPLACE FUNCTION public.is_user_admin(user_id uuid DEFAULT auth.uid())
+CREATE OR REPLACE FUNCTION public.is_user_admin(p_user_id uuid DEFAULT auth.uid())
 RETURNS boolean
 LANGUAGE sql
 STABLE SECURITY DEFINER
@@ -47,7 +47,7 @@ AS $function$
   SELECT EXISTS (
     SELECT 1 
     FROM public.user_roles 
-    WHERE user_roles.user_id = is_user_admin.user_id 
+    WHERE user_roles.user_id = p_user_id 
     AND role = 'admin'
   );
 $function$;

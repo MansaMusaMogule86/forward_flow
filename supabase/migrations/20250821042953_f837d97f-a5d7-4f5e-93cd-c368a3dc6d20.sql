@@ -1,5 +1,5 @@
 -- Create profiles table for user information
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL,
   display_name TEXT,
@@ -11,7 +11,7 @@ CREATE TABLE public.profiles (
 );
 
 -- Create states table
-CREATE TABLE public.states (
+CREATE TABLE IF NOT EXISTS public.states (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   code TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
@@ -21,7 +21,7 @@ CREATE TABLE public.states (
 );
 
 -- Create resources table
-CREATE TABLE public.resources (
+CREATE TABLE IF NOT EXISTS public.resources (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   organization TEXT NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE public.resources (
 );
 
 -- Create learning pathways table
-CREATE TABLE public.learning_pathways (
+CREATE TABLE IF NOT EXISTS public.learning_pathways (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   slug TEXT NOT NULL UNIQUE,
   title TEXT NOT NULL,
@@ -54,7 +54,7 @@ CREATE TABLE public.learning_pathways (
 );
 
 -- Create learning modules table
-CREATE TABLE public.learning_modules (
+CREATE TABLE IF NOT EXISTS public.learning_modules (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   pathway_id UUID REFERENCES public.learning_pathways(id) ON DELETE CASCADE,
   slug TEXT NOT NULL UNIQUE,
@@ -70,7 +70,7 @@ CREATE TABLE public.learning_modules (
 );
 
 -- Create user learning progress table
-CREATE TABLE public.user_learning_progress (
+CREATE TABLE IF NOT EXISTS public.user_learning_progress (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL,
   module_id UUID REFERENCES public.learning_modules(id) ON DELETE CASCADE,
@@ -82,7 +82,7 @@ CREATE TABLE public.user_learning_progress (
 );
 
 -- Create organizations table
-CREATE TABLE public.organizations (
+CREATE TABLE IF NOT EXISTS public.organizations (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   name TEXT NOT NULL,
   description TEXT,
@@ -107,125 +107,102 @@ ALTER TABLE public.user_learning_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
 -- Profiles policies
-CREATE POLICY "Users can view all profiles" 
-ON public.profiles 
+DROP POLICY IF EXISTS "Users can view all profiles" ON public.profiles; CREATE POLICY "Users can view all profiles" ON public.profiles 
 FOR SELECT 
 USING (true);
 
-CREATE POLICY "Users can update their own profile" 
-ON public.profiles 
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles; CREATE POLICY "Users can update their own profile" ON public.profiles 
 FOR UPDATE 
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert their own profile" 
-ON public.profiles 
+DROP POLICY IF EXISTS "Users can insert their own profile" ON public.profiles; CREATE POLICY "Users can insert their own profile" ON public.profiles 
 FOR INSERT 
 WITH CHECK (auth.uid() = user_id);
 
 -- States policies (public read access)
-CREATE POLICY "Anyone can view states" 
-ON public.states 
+DROP POLICY IF EXISTS "Anyone can view states" ON public.states; CREATE POLICY "Anyone can view states" ON public.states 
 FOR SELECT 
 USING (true);
 
-CREATE POLICY "Admins can manage states" 
-ON public.states 
+DROP POLICY IF EXISTS "Admins can manage states" ON public.states; CREATE POLICY "Admins can manage states" ON public.states 
 FOR ALL 
 USING (is_user_admin());
 
 -- Resources policies (public read access)
-CREATE POLICY "Anyone can view resources" 
-ON public.resources 
+DROP POLICY IF EXISTS "Anyone can view resources" ON public.resources; CREATE POLICY "Anyone can view resources" ON public.resources 
 FOR SELECT 
 USING (true);
 
-CREATE POLICY "Admins can manage resources" 
-ON public.resources 
+DROP POLICY IF EXISTS "Admins can manage resources" ON public.resources; CREATE POLICY "Admins can manage resources" ON public.resources 
 FOR ALL 
 USING (is_user_admin());
 
 -- Learning pathways policies (public read access)
-CREATE POLICY "Anyone can view learning pathways" 
-ON public.learning_pathways 
+DROP POLICY IF EXISTS "Anyone can view learning pathways" ON public.learning_pathways; CREATE POLICY "Anyone can view learning pathways" ON public.learning_pathways 
 FOR SELECT 
 USING (true);
 
-CREATE POLICY "Admins can manage learning pathways" 
-ON public.learning_pathways 
+DROP POLICY IF EXISTS "Admins can manage learning pathways" ON public.learning_pathways; CREATE POLICY "Admins can manage learning pathways" ON public.learning_pathways 
 FOR ALL 
 USING (is_user_admin());
 
 -- Learning modules policies (public read access)
-CREATE POLICY "Anyone can view learning modules" 
-ON public.learning_modules 
+DROP POLICY IF EXISTS "Anyone can view learning modules" ON public.learning_modules; CREATE POLICY "Anyone can view learning modules" ON public.learning_modules 
 FOR SELECT 
 USING (true);
 
-CREATE POLICY "Admins can manage learning modules" 
-ON public.learning_modules 
+DROP POLICY IF EXISTS "Admins can manage learning modules" ON public.learning_modules; CREATE POLICY "Admins can manage learning modules" ON public.learning_modules 
 FOR ALL 
 USING (is_user_admin());
 
 -- User learning progress policies
-CREATE POLICY "Users can view their own progress" 
-ON public.user_learning_progress 
+DROP POLICY IF EXISTS "Users can view their own progress" ON public.user_learning_progress; CREATE POLICY "Users can view their own progress" ON public.user_learning_progress 
 FOR SELECT 
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can manage their own progress" 
-ON public.user_learning_progress 
+DROP POLICY IF EXISTS "Users can manage their own progress" ON public.user_learning_progress; CREATE POLICY "Users can manage their own progress" ON public.user_learning_progress 
 FOR INSERT 
 WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update their own progress" 
-ON public.user_learning_progress 
+DROP POLICY IF EXISTS "Users can update their own progress" ON public.user_learning_progress; CREATE POLICY "Users can update their own progress" ON public.user_learning_progress 
 FOR UPDATE 
 USING (auth.uid() = user_id);
 
-CREATE POLICY "Admins can view all progress" 
-ON public.user_learning_progress 
+DROP POLICY IF EXISTS "Admins can view all progress" ON public.user_learning_progress; CREATE POLICY "Admins can view all progress" ON public.user_learning_progress 
 FOR SELECT 
 USING (is_user_admin());
 
 -- Organizations policies (public read access)
-CREATE POLICY "Anyone can view organizations" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Anyone can view organizations" ON public.organizations; CREATE POLICY "Anyone can view organizations" ON public.organizations 
 FOR SELECT 
 USING (true);
 
-CREATE POLICY "Admins can manage organizations" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Admins can manage organizations" ON public.organizations; CREATE POLICY "Admins can manage organizations" ON public.organizations 
 FOR ALL 
 USING (is_user_admin());
 
 -- Create triggers for updated_at columns
-CREATE TRIGGER update_profiles_updated_at
-BEFORE UPDATE ON public.profiles
+DROP TRIGGER IF EXISTS update_profiles_updated_at ON public.profiles; CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON public.profiles
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_resources_updated_at
-BEFORE UPDATE ON public.resources
+DROP TRIGGER IF EXISTS update_resources_updated_at ON public.resources; CREATE TRIGGER update_resources_updated_at BEFORE UPDATE ON public.resources
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_learning_pathways_updated_at
-BEFORE UPDATE ON public.learning_pathways
+DROP TRIGGER IF EXISTS update_learning_pathways_updated_at ON public.learning_pathways; CREATE TRIGGER update_learning_pathways_updated_at BEFORE UPDATE ON public.learning_pathways
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_learning_modules_updated_at
-BEFORE UPDATE ON public.learning_modules
+DROP TRIGGER IF EXISTS update_learning_modules_updated_at ON public.learning_modules; CREATE TRIGGER update_learning_modules_updated_at BEFORE UPDATE ON public.learning_modules
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_user_learning_progress_updated_at
-BEFORE UPDATE ON public.user_learning_progress
+DROP TRIGGER IF EXISTS update_user_learning_progress_updated_at ON public.user_learning_progress; CREATE TRIGGER update_user_learning_progress_updated_at BEFORE UPDATE ON public.user_learning_progress
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_organizations_updated_at
-BEFORE UPDATE ON public.organizations
+DROP TRIGGER IF EXISTS update_organizations_updated_at ON public.organizations; CREATE TRIGGER update_organizations_updated_at BEFORE UPDATE ON public.organizations
 FOR EACH ROW
 EXECUTE FUNCTION public.update_updated_at_column();
 
@@ -236,4 +213,4 @@ INSERT INTO public.states (code, name, active, coming_soon) VALUES
 ('CA', 'California', false, true),
 ('FL', 'Florida', false, true),
 ('PA', 'Pennsylvania', false, true),
-('IL', 'Illinois', false, true);
+('IL', 'Illinois', false, true) ON CONFLICT DO NOTHING;

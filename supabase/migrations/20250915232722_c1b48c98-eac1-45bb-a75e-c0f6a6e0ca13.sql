@@ -1,6 +1,6 @@
 -- Additional security measures for contact data protection
--- Create function to add additional verification for admin contact access
-CREATE OR REPLACE FUNCTION public.verify_admin_contact_access(admin_user_id uuid, operation_type text)
+-- CREATE OR REPLACE FUNCTION to add additional verification for admin contact access
+CREATE OR REPLACE FUNCTION public.verify_admin_contact_access(admin_user_id uuid, p_action_type text)
  RETURNS boolean
  LANGUAGE plpgsql
  SECURITY DEFINER
@@ -41,16 +41,16 @@ BEGIN
     INSERT INTO public.audit_log (
         user_id,
         action,
-        table_name,
+        p_table_name,
         sensitive_data_accessed,
         created_at
     ) VALUES (
         admin_user_id,
-        'ADMIN_CONTACT_VERIFICATION_' || upper(operation_type),
+        'ADMIN_CONTACT_VERIFICATION_' || upper(p_action_type),
         'security_verification',
         true,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
     
     RETURN true;
 END;
@@ -81,8 +81,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -96,7 +96,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return the contact information
   RETURN QUERY SELECT 
@@ -117,17 +117,17 @@ BEGIN
   -- Archive referrals older than 2 years and mark as archived instead of deleting
   UPDATE public.partner_referrals
   SET 
-    contact_info = 'ARCHIVED - Data retention policy applied',
+    contact_text = 'ARCHIVED - Data retention policy applied',
     notes = COALESCE(notes, '') || ' [ARCHIVED - ' || now()::date || ']',
     status = 'archived'
   WHERE created_at < NOW() - INTERVAL '2 years'
     AND status != 'archived';
     
-  -- Log the cleanup operation
+  -- Log the cleanup p_action
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -136,6 +136,6 @@ BEGIN
     'partner_referrals',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $function$;

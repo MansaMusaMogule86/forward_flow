@@ -1,5 +1,5 @@
 -- Fix search path security issues for existing functions
-DROP FUNCTION IF EXISTS public.is_user_admin(uuid);
+-- Removed DROP FUNCTION to avoid dependency issues
 
 CREATE OR REPLACE FUNCTION public.is_user_admin(p_user_id uuid DEFAULT auth.uid())
 RETURNS boolean

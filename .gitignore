@@ -7,12 +7,31 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
+
+# Build outputs
 dist
 dist-ssr
+.next
+.out
+
+# Environment files (NEVER commit secrets)
+.env
+.env.*
+!.env.example
+
+# Local dev files
 *.local
 
-# Editor directories and files
+# Supabase
+.supabase
+supabase/.temp
+
+# Vercel
+.vercel
+
+# Editor / OS
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -23,10 +42,8 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment files
-.env
-.env.local
-.env.development
-.env.production
+# TypeScript
+*.tsbuildinfo
 
-.vercel
+# Deno (sometimes appears)
+deno.lock

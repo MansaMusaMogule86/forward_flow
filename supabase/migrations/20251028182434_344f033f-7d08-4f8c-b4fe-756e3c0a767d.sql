@@ -1,4 +1,4 @@
--- Create function to handle new user profile creation
+-- CREATE OR REPLACE FUNCTION to handle new user profile creation
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -13,7 +13,7 @@ BEGIN
     NEW.email,
     NOW(),
     NOW()
-  );
+  ) ON CONFLICT DO NOTHING;
   RETURN NEW;
 END;
 $$;

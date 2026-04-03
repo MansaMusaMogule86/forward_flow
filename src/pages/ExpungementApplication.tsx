@@ -1,4 +1,3 @@
-import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { 
   Lock, ArrowLeft, CheckCircle, AlertCircle, 
@@ -69,11 +68,53 @@ export default function ExpungementApplication() {
     );
   };
 
+  const validateStep = (step: number) => {
+    switch (step) {
+      case 1:
+        return formData.isOhioResident && formData.hasCompletedSentence && formData.convictionType && formData.noPendingCharges;
+      case 2:
+        return formData.firstName && formData.lastName && formData.email && formData.phone && formData.city && formData.county;
+      case 3:
+        return formData.convictionDate && formData.offenseDescription && formData.convictionCounty && formData.completedProbation && formData.restitutionPaid;
+      default:
+        return true;
+    }
+  };
+
+  const nextStep = () => {
+    if (validateStep(currentStep)) {
+      setCurrentStep(prev => prev + 1);
+      window.scrollTo(0, 0);
+    } else {
+      toast({
+        title: "Missing Information",
+        description: "Please complete all required fields on this page before continuing.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const prevStep = () => {
+    setCurrentStep(prev => prev - 1);
+    window.scrollTo(0, 0);
+  };
+
   const handleSubmit = async () => {
+    // Check consent checkbox
+    const consentCheckbox = document.getElementById('consent') as HTMLInputElement;
+    if (consentCheckbox && !consentCheckbox.checked) {
+      toast({
+        title: "Consent Required",
+        description: "Please agree to the processing of your information to continue.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
-      // Store application in database
+      // 1. Store application in database
       const { error } = await supabase
         .from('expungement_applications')
         .insert({
@@ -85,7 +126,7 @@ export default function ExpungementApplication() {
           city: formData.city,
           annual_income: formData.annualIncome,
           conviction_type: formData.convictionType,
-          conviction_date: formData.convictionDate,
+          conviction_date: formData.convictionDate || new Date().toISOString().split('T')[0],
           offense_description: formData.offenseDescription,
           court_case_number: formData.courtCaseNumber || null,
           conviction_county: formData.convictionCounty,
@@ -97,16 +138,20 @@ export default function ExpungementApplication() {
 
       if (error) throw error;
 
-      // Send notification email
-      await supabase.functions.invoke('send-contact-email', {
-        body: {
-          name: `${formData.firstName} ${formData.lastName}`,
-          email: formData.email,
-          subject: 'New Expungement Program Application',
-          message: `New application received from ${formData.firstName} ${formData.lastName} in ${formData.county} County.`,
-          type: 'expungement_application'
-        }
-      });
+      // 2. Try to send notification email (non-blocking)
+      try {
+        await supabase.functions.invoke('send-contact-email', {
+          body: {
+            name: `${formData.firstName} ${formData.lastName}`,
+            email: formData.email,
+            subject: 'New Expungement Program Application',
+            message: `New application received from ${formData.firstName} ${formData.lastName} in ${formData.county} County.\n\nType: ${formData.convictionType}\nOffense: ${formData.offenseDescription}`,
+            type: 'expungement_application'
+          }
+        });
+      } catch (emailError) {
+        console.error('Email notification failed (non-critical):', emailError);
+      }
 
       setIsSubmitted(true);
       toast({
@@ -116,8 +161,8 @@ export default function ExpungementApplication() {
     } catch (error) {
       console.error('Error submitting application:', error);
       toast({
-        title: "Error",
-        description: "There was an error submitting your application. Please try again.",
+        title: "Submission Failed",
+        description: "There was an error saving your application. Please check your data and try again.",
         variant: "destructive"
       });
     } finally {
@@ -561,7 +606,7 @@ export default function ExpungementApplication() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setCurrentStep(prev => prev - 1)}
+                  onClick={prevStep}
                   className="border-white/20 text-[#e8e4dc] hover:bg-white/5"
                 >
                   Previous
@@ -573,7 +618,7 @@ export default function ExpungementApplication() {
               {currentStep < 4 ? (
                 <Button
                   type="button"
-                  onClick={() => setCurrentStep(prev => prev + 1)}
+                  onClick={nextStep}
                   className="bg-[#bf8c4e] hover:bg-[#bf8c4e]/90 text-[#0a1628]"
                 >
                   Continue
@@ -595,8 +640,8 @@ export default function ExpungementApplication() {
           <div className="mt-8 text-center">
             <p className="text-sm text-[#e8e4dc]/50">
               Have questions? Contact us at{" "}
-              <a href="mailto:support@forwardfocuselevation.org" className="text-[#bf8c4e] hover:underline">
-                support@forwardfocuselevation.org
+              <a href="mailto:support@forward-focus-elevation.org" className="text-[#bf8c4e] hover:underline">
+                support@forward-focus-elevation.org
               </a>
             </p>
           </div>

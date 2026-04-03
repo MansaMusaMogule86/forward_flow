@@ -1,5 +1,5 @@
 -- Create login_attempts table for rate limiting and security tracking
-CREATE TABLE public.login_attempts (
+CREATE TABLE IF NOT EXISTS public.login_attempts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT,
   ip_address TEXT,
@@ -15,7 +15,7 @@ CREATE INDEX idx_login_attempts_ip_created ON public.login_attempts(ip_address, 
 CREATE INDEX idx_login_attempts_email_created ON public.login_attempts(email, created_at DESC);
 
 -- Create account_lockouts table
-CREATE TABLE public.account_lockouts (
+CREATE TABLE IF NOT EXISTS public.account_lockouts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   email TEXT NOT NULL UNIQUE,
   locked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -29,7 +29,7 @@ CREATE TABLE public.account_lockouts (
 CREATE INDEX idx_account_lockouts_email ON public.account_lockouts(email);
 
 -- Create admin_ip_whitelist table for admin access control
-CREATE TABLE public.admin_ip_whitelist (
+CREATE TABLE IF NOT EXISTS public.admin_ip_whitelist (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   ip_address TEXT NOT NULL,
   description TEXT,
@@ -47,36 +47,30 @@ ALTER TABLE public.account_lockouts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_ip_whitelist ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies for login_attempts (service role only for writes, admins can read)
-CREATE POLICY "Service role can insert login attempts"
-ON public.login_attempts FOR INSERT
+DROP POLICY IF EXISTS "Service role can insert login attempts" ON public.login_attempts; CREATE POLICY "Service role can insert login attempts" ON public.login_attempts FOR INSERT
 TO service_role
 WITH CHECK (true);
 
-CREATE POLICY "Admins can view login attempts"
-ON public.login_attempts FOR SELECT
+DROP POLICY IF EXISTS "Admins can view login attempts" ON public.login_attempts; CREATE POLICY "Admins can view login attempts" ON public.login_attempts FOR SELECT
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- RLS Policies for account_lockouts
-CREATE POLICY "Service role can manage lockouts"
-ON public.account_lockouts FOR ALL
+DROP POLICY IF EXISTS "Service role can manage lockouts" ON public.account_lockouts; CREATE POLICY "Service role can manage lockouts" ON public.account_lockouts FOR ALL
 TO service_role
 USING (true)
 WITH CHECK (true);
 
-CREATE POLICY "Admins can view lockouts"
-ON public.account_lockouts FOR SELECT
+DROP POLICY IF EXISTS "Admins can view lockouts" ON public.account_lockouts; CREATE POLICY "Admins can view lockouts" ON public.account_lockouts FOR SELECT
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::app_role));
 
-CREATE POLICY "Admins can delete lockouts"
-ON public.account_lockouts FOR DELETE
+DROP POLICY IF EXISTS "Admins can delete lockouts" ON public.account_lockouts; CREATE POLICY "Admins can delete lockouts" ON public.account_lockouts FOR DELETE
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::app_role));
 
 -- RLS Policies for admin_ip_whitelist
-CREATE POLICY "Admins can manage IP whitelist"
-ON public.admin_ip_whitelist FOR ALL
+DROP POLICY IF EXISTS "Admins can manage IP whitelist" ON public.admin_ip_whitelist; CREATE POLICY "Admins can manage IP whitelist" ON public.admin_ip_whitelist FOR ALL
 TO authenticated
 USING (public.has_role(auth.uid(), 'admin'::app_role))
 WITH CHECK (public.has_role(auth.uid(), 'admin'::app_role));
@@ -199,7 +193,7 @@ BEGIN
     p_attempt_type,
     p_success,
     p_failure_reason
-  ) RETURNING id INTO v_attempt_id;
+  ) RETURNING id INTO v_attempt_id ON CONFLICT DO NOTHING;
 
   -- If failed, check if we need to lock the account
   IF NOT p_success AND p_email IS NOT NULL THEN
@@ -227,7 +221,7 @@ BEGIN
         failed_attempts = EXCLUDED.failed_attempts,
         unlock_at = NOW() + v_lockout_duration,
         locked_at = NOW(),
-        updated_at = NOW();
+        updated_at = NOW() ON CONFLICT DO NOTHING;
 
       -- Log security alert
       INSERT INTO public.security_alerts (
@@ -245,7 +239,7 @@ BEGIN
           'ip_address', p_ip_address,
           'locked_until', NOW() + v_lockout_duration
         )
-      );
+      ) ON CONFLICT DO NOTHING;
     END IF;
   END IF;
 

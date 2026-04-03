@@ -8,19 +8,19 @@ DROP POLICY IF EXISTS "orgs_read_authenticated_own" ON public.organizations;
 
 -- Create secure, consolidated RLS policies for organizations
 -- Policy 1: Allow owners to manage their own organizations
-CREATE POLICY "owners_can_manage_own_orgs" ON public.organizations
+DROP POLICY IF EXISTS "owners_can_manage_own_orgs" ON public.organizations; CREATE POLICY "owners_can_manage_own_orgs" ON public.organizations
 FOR ALL 
 USING (auth.uid() = owner_id)
 WITH CHECK (auth.uid() = owner_id);
 
 -- Policy 2: Allow admins to manage all organizations
-CREATE POLICY "admins_can_manage_all_orgs" ON public.organizations
+DROP POLICY IF EXISTS "admins_can_manage_all_orgs" ON public.organizations; CREATE POLICY "admins_can_manage_all_orgs" ON public.organizations
 FOR ALL 
 USING (is_user_admin())
 WITH CHECK (is_user_admin());
 
 -- Policy 3: Allow public access to basic organization info (NO contact details)
-CREATE POLICY "public_basic_org_info" ON public.organizations
+DROP POLICY IF EXISTS "public_basic_org_info" ON public.organizations; CREATE POLICY "public_basic_org_info" ON public.organizations
 FOR SELECT 
 USING (
   verified = true AND 
@@ -28,7 +28,7 @@ USING (
 );
 
 -- Policy 4: Allow authenticated users to access contact info with rate limiting and audit logging
-CREATE POLICY "authenticated_contact_access" ON public.organizations
+DROP POLICY IF EXISTS "authenticated_contact_access" ON public.organizations; CREATE POLICY "authenticated_contact_access" ON public.organizations
 FOR SELECT 
 USING (
   verified = true AND 
@@ -58,7 +58,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -67,7 +67,7 @@ BEGIN
     'organizations',
     false,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN QUERY
   SELECT 
@@ -112,7 +112,7 @@ BEGIN
   END IF;
 
   -- Enhanced rate limiting for contact access
-  IF NOT check_enhanced_rate_limit(auth.uid(), 'contact_data_access', 10) THEN
+  IF NOT check_enhanced_rate_limit(auth.uid(), 'contact_text_access', 10) THEN
     RAISE EXCEPTION 'Rate limit exceeded for contact access';
   END IF;
 
@@ -120,20 +120,20 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     ip_address,
     user_agent,
     created_at
   ) VALUES (
     auth.uid(),
-    'CONTACT_DATA_ACCESS',
+    'contact_text_ACCESS',
     'organizations',
     true,
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Check for suspicious activity patterns
   PERFORM detect_suspicious_activity();
@@ -149,11 +149,11 @@ BEGIN
     o.verified,
     CASE 
       WHEN is_user_admin() THEN o.email
-      ELSE mask_contact_info(o.email)
+      ELSE mask_contact_text(o.email)
     END as email,
     CASE 
       WHEN is_user_admin() THEN o.phone
-      ELSE mask_contact_info(o.phone)
+      ELSE mask_contact_text(o.phone)
     END as phone,
     o.address,
     o.created_at,
@@ -178,9 +178,9 @@ BEGIN
     RAISE EXCEPTION 'Admin privileges required';
   END IF;
 
-  -- Check admin operation limits
-  IF NOT check_admin_operation_limit('contact_reveal') THEN
-    RAISE EXCEPTION 'Admin operation rate limit exceeded';
+  -- Check admin p_action limits
+  IF NOT check_admin_p_action_limit('contact_reveal') THEN
+    RAISE EXCEPTION 'Admin p_action rate limit exceeded';
   END IF;
 
   -- Validate contact type
@@ -199,8 +199,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -214,7 +214,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN COALESCE(contact_value, 'Not available');
 END;
@@ -232,8 +232,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -247,7 +247,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
   
   RETURN COALESCE(NEW, OLD);
 END;

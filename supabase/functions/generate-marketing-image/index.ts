@@ -1,11 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "@std/http/server";
+import { callOpenRouter } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,9 +24,9 @@ serve(async (req) => {
     const validStyles = ['professional', 'inspirational', 'community', 'celebration'];
     const safeStyle = validStyles.includes(style) ? style : 'professional';
     
-    const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    if (!OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY not configured');
+    const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
+    if (!OPENROUTER_API_KEY) {
+      throw new Error('OPENROUTER_API_KEY not configured');
     }
 
     // Enhance prompt based on style
@@ -36,27 +37,19 @@ serve(async (req) => {
       celebration: 'celebratory, joyful, achievement, success story'
     };
 
-    const enhancedPrompt = `${prompt.substring(0, 1000)}. Style: ${styleEnhancements[safeStyle as keyof typeof styleEnhancements] || styleEnhancements.professional}. 
-    High resolution, suitable for social media and marketing materials. Include diverse representation.`;
+    const enhancedPrompt = `${prompt.substring(0, 1000)}. Style: ${styleEnhancements[safeStyle as keyof typeof styleEnhancements] || styleEnhancements.professional}. High resolution, suitable for social media and marketing materials. Include diverse representation.`;
 
     console.log('Generating image with prompt:', enhancedPrompt);
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash-image-preview',
-        messages: [
-          {
-            role: 'user',
-            content: enhancedPrompt
-          }
-        ],
-        modalities: ['image', 'text']
-      }),
+    // Using black-forest-labs/flux-schnell through OpenRouter for high-quality image generation
+    const response = await callOpenRouter(OPENROUTER_API_KEY, {
+      model: 'black-forest-labs/flux-schnell',
+      messages: [
+        {
+          role: 'user',
+          content: enhancedPrompt
+        }
+      ]
     });
 
     if (!response.ok) {
@@ -66,19 +59,14 @@ serve(async (req) => {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI service requires payment. Please contact support.' }), {
-          status: 402,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
       const errorText = await response.text();
-      console.error('AI API error:', response.status, errorText);
+      console.error('OpenRouter error:', response.status, errorText);
       throw new Error(`AI API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+    // OpenRouter for image models usually returns the image URL in the content or as a separate field
+    const imageUrl = data.choices?.[0]?.message?.content || data.choices?.[0]?.message?.image_url;
 
     if (!imageUrl) {
       throw new Error('No image generated');
@@ -101,3 +89,4 @@ serve(async (req) => {
     });
   }
 });
+

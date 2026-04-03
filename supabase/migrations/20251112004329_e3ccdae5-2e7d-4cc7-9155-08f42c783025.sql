@@ -3,8 +3,7 @@ DROP POLICY IF EXISTS "Users can update own subscription" ON public.newsletter_s
 
 -- Create a properly scoped policy that only allows users to update their own subscriptions
 -- by matching the subscription email with the authenticated user's profile email
-CREATE POLICY "Users can update own subscription"
-ON public.newsletter_subscriptions FOR UPDATE
+DROP POLICY IF EXISTS "Users can update own subscription" ON public.newsletter_subscriptions; CREATE POLICY "Users can update own subscription" ON public.newsletter_subscriptions FOR UPDATE
 USING (
   email IN (
     SELECT email FROM public.profiles WHERE id = auth.uid()

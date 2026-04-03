@@ -20,13 +20,11 @@ CREATE TABLE IF NOT EXISTS public.contact_access_justifications (
 ALTER TABLE public.contact_access_justifications ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for justifications
-CREATE POLICY "Admins can view contact justifications"
-ON public.contact_access_justifications
+DROP POLICY IF EXISTS "Admins can view contact justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can view contact justifications" ON public.contact_access_justifications
 FOR SELECT
 USING (is_user_admin(auth.uid()));
 
-CREATE POLICY "Admins can create contact justifications"
-ON public.contact_access_justifications
+DROP POLICY IF EXISTS "Admins can create contact justifications" ON public.contact_access_justifications; CREATE POLICY "Admins can create contact justifications" ON public.contact_access_justifications
 FOR INSERT
 WITH CHECK (
   is_user_admin(auth.uid()) 
@@ -34,13 +32,12 @@ WITH CHECK (
   AND check_enhanced_rate_limit(auth.uid(), 'justification_request', 3)
 );
 
-CREATE POLICY "Senior admins can approve justifications"
-ON public.contact_access_justifications
+DROP POLICY IF EXISTS "Senior admins can approve justifications" ON public.contact_access_justifications; CREATE POLICY "Senior admins can approve justifications" ON public.contact_access_justifications
 FOR UPDATE
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
 
--- Create function to request contact access with business justification
+-- CREATE OR REPLACE FUNCTION to request contact access with business justification
 CREATE OR REPLACE FUNCTION public.request_admin_contact_access(
   p_organization_id uuid,
   p_business_justification text,
@@ -90,14 +87,14 @@ BEGIN
     p_organization_id,
     p_business_justification,
     p_access_purpose
-  ) RETURNING id INTO justification_id;
+  ) RETURNING id INTO justification_id ON CONFLICT DO NOTHING;
 
   -- Log the request
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -107,13 +104,13 @@ BEGIN
     justification_id,
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   RETURN justification_id;
 END;
 $$;
 
--- Create function to approve/deny access requests
+-- CREATE OR REPLACE FUNCTION to approve/deny access requests
 CREATE OR REPLACE FUNCTION public.approve_admin_contact_access(
   p_justification_id uuid,
   p_decision text, -- 'approved' or 'denied'
@@ -168,8 +165,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -179,11 +176,11 @@ BEGIN
     p_justification_id,
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 
--- Create function to check if admin has approved access to organization
+-- CREATE OR REPLACE FUNCTION to check if admin has approved access to organization
 CREATE OR REPLACE FUNCTION public.has_approved_admin_access(
   p_admin_user_id uuid,
   p_organization_id uuid
@@ -247,8 +244,8 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
-    record_id,
+    p_table_name,
+    p_record_id,
     sensitive_data_accessed,
     ip_address,
     user_agent,
@@ -262,7 +259,7 @@ BEGIN
     inet_client_addr(),
     current_setting('request.header.user-agent', true),
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return the contact information
   RETURN QUERY SELECT 
@@ -307,7 +304,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -316,7 +313,7 @@ BEGIN
     'organizations',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 
   -- Return data with enhanced access control for admins
   RETURN QUERY
@@ -332,12 +329,12 @@ BEGIN
       -- Admins now need approved justification for each organization's contact data
       WHEN is_user_admin(auth.uid()) AND has_approved_admin_access(auth.uid(), o.id) THEN o.email
       WHEN has_contact_access_permission(auth.uid(), o.id) THEN o.email
-      ELSE mask_contact_info(o.email)
+      ELSE mask_contact_text(o.email)
     END as email,
     CASE 
       WHEN is_user_admin(auth.uid()) AND has_approved_admin_access(auth.uid(), o.id) THEN o.phone
       WHEN has_contact_access_permission(auth.uid(), o.id) THEN o.phone
-      ELSE mask_contact_info(o.phone)
+      ELSE mask_contact_text(o.phone)
     END as phone,
     CASE 
       WHEN is_user_admin(auth.uid()) AND has_approved_admin_access(auth.uid(), o.id) THEN o.address
@@ -369,7 +366,7 @@ BEGIN
   INSERT INTO public.audit_log (
     user_id,
     action,
-    table_name,
+    p_table_name,
     sensitive_data_accessed,
     created_at
   ) VALUES (
@@ -378,20 +375,19 @@ BEGIN
     'contact_access_justifications',
     true,
     now()
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 
 -- Add trigger to automatically update timestamps
-CREATE TRIGGER update_justifications_updated_at
-BEFORE UPDATE ON public.contact_access_justifications
+DROP TRIGGER IF EXISTS update_justifications_updated_at ON public.contact_access_justifications; CREATE TRIGGER update_justifications_updated_at BEFORE UPDATE ON public.contact_access_justifications
 FOR EACH ROW EXECUTE FUNCTION public.update_updated_at_column();
 
 -- Log this enhanced security implementation
 INSERT INTO public.audit_log (
   user_id,
   action,
-  table_name,
+  p_table_name,
   sensitive_data_accessed,
   created_at
 ) VALUES (
@@ -400,4 +396,4 @@ INSERT INTO public.audit_log (
   'organizations',
   true,
   now()
-);
+) ON CONFLICT DO NOTHING;

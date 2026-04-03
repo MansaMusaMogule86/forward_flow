@@ -1,7 +1,7 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
+import "xhr";
+import { serve } from "@std/http/server";
+import { createClient } from '@supabase/supabase-js';
+import { OPENROUTER_MODELS, callOpenRouterWithFallback, OpenRouterMessage } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -93,7 +93,7 @@ serve(async (req) => {
     if (rateLimit.limited) {
       console.log(`Rate limit exceeded for ${identifier}`);
       
-      await supabase.from('audit_logs').insert({
+      await supabase.from('audit_log').insert({
         action: 'AI_RATE_LIMIT_EXCEEDED',
         resource_type: 'ai_endpoint',
         details: { endpoint, identifier },
@@ -177,7 +177,7 @@ Remember: You are the companion for second chances and healing. Be the "Google a
     const openRouterResponse = await callOpenRouterWithFallback(
       OPENROUTER_API_KEY,
       {
-        messages,
+        messages: messages as OpenRouterMessage[],
         max_tokens: 1000,
       },
       OPENROUTER_MODELS.CRISIS_SUPPORT,
@@ -356,3 +356,4 @@ I am continuing to search for local Ohio resources to assist you.`;
     });
   }
 });
+

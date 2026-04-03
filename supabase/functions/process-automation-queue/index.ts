@@ -1,11 +1,7 @@
-import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
-import { Resend } from "https://esm.sh/resend@4.0.0";
-import React from 'https://esm.sh/react@18.3.1';
-import { renderAsync } from 'https://esm.sh/@react-email/components@0.0.22';
-import { WelcomeEmail } from '../_shared/email-templates/WelcomeEmail.tsx';
-import { MilestoneEmail } from '../_shared/email-templates/MilestoneEmail.tsx';
-import { InactivityEmail } from '../_shared/email-templates/InactivityEmail.tsx';
+import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
+import { Resend } from "resend";
+import { SITE_CONFIG } from '../_shared/site-config.ts';
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
@@ -16,6 +12,228 @@ const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+// Brand colors
+const OSU_SCARLET = '#BB0000';
+const OSU_DARK_RED = '#990000';
+const TEXT_DARK = '#2B2B2B';
+
+// Email template functions (plain HTML, no React)
+function getWelcomeEmail(name: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to ${SITE_CONFIG.name}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+    body { margin: 0; padding: 0; font-family: 'Outfit', Arial, sans-serif; background-color: #F4F4F4; -webkit-font-smoothing: antialiased; }
+    table { border-collapse: collapse; }
+    .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border: 1px solid #D6D6D6; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    .header { background: linear-gradient(135deg, ${OSU_SCARLET} 0%, ${OSU_DARK_RED} 100%); padding: 48px 32px; text-align: center; }
+    .header-title { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; }
+    .content { padding: 40px 32px; }
+    .greeting { font-size: 24px; font-weight: 700; color: ${TEXT_DARK}; margin: 0 0 24px 0; }
+    .text { color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0; }
+    .highlight-box { background-color: #f9fafb; border: 2px solid #e5e7eb; border-radius: 8px; padding: 24px; margin: 24px 0; }
+    .highlight-title { color: #1f2937; font-size: 18px; font-weight: bold; margin: 0 0 12px 0; }
+    .highlight-text { color: #4b5563; font-size: 15px; line-height: 24px; margin: 0; }
+    .cta-section { text-align: center; margin: 32px 0; }
+    .button { background-color: ${OSU_SCARLET}; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; }
+    .small-text { color: #6b7280; font-size: 14px; margin: 24px 0 0 0; }
+    .footer { background: #FAFAFA; padding: 40px 32px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #E0E0E0; }
+    @media only screen and (max-width: 600px) {
+      .container { margin: 0; width: 100%; border-radius: 0; }
+      .content { padding: 32px 20px; }
+      .greeting { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0">
+          <tr>
+            <td class="header">
+              <h1 class="header-title">${SITE_CONFIG.name}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td class="content">
+              <h2 class="greeting">Welcome to Forward Focus Elevation, ${name}!</h2>
+              <p class="text">We're thrilled to have you join our community dedicated to empowering justice-impacted families. You've taken an important first step toward growth, healing, and success.</p>
+              
+              <div class="highlight-box">
+                <p class="highlight-title">🎯 What's Next?</p>
+                <p class="highlight-text">• Explore our AI-powered learning pathways<br />• Connect with support resources in your area<br />• Join our healing and wellness programs<br />• Engage with a supportive community</p>
+              </div>
+              
+              <p class="text">Our platform is designed with you in mind—combining cutting-edge AI technology with compassionate support to help you navigate your journey with confidence.</p>
+              
+              <div class="cta-section">
+                <a href="${SITE_CONFIG.baseUrl}/learn" class="button">Start Your Journey</a>
+              </div>
+              
+              <p class="small-text">Need help getting started? Reply to this email or visit our Help Center anytime.</p>
+            </td>
+          </tr>
+          <tr>
+            <td class="footer">
+              <p style="margin: 0 0 12px 0;"><strong>${SITE_CONFIG.name}</strong> • ${new Date().getFullYear()}</p>
+              <p style="margin: 0; color: #9A9A9A; line-height: 1.5;">Empowering Ohio's 88 counties with healing, growth, and second chances.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function getMilestoneEmail(name: string, milestoneTitle: string): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Milestone Achieved - ${SITE_CONFIG.name}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+    body { margin: 0; padding: 0; font-family: 'Outfit', Arial, sans-serif; background-color: #F4F4F4; -webkit-font-smoothing: antialiased; }
+    table { border-collapse: collapse; }
+    .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border: 1px solid #D6D6D6; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    .header { background: linear-gradient(135deg, ${OSU_SCARLET} 0%, ${OSU_DARK_RED} 100%); padding: 48px 32px; text-align: center; }
+    .header-title { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; }
+    .content { padding: 40px 32px; }
+    .greeting { font-size: 24px; font-weight: 700; color: ${TEXT_DARK}; margin: 0 0 24px 0; }
+    .text { color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0; }
+    .achievement-box { background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%); border: 2px solid ${OSU_SCARLET}; border-radius: 12px; padding: 32px; margin: 24px 0; text-align: center; }
+    .achievement-emoji { font-size: 48px; margin-bottom: 12px; }
+    .achievement-title { color: ${OSU_SCARLET}; font-size: 20px; font-weight: bold; margin: 0 0 8px 0; }
+    .achievement-text { color: #4b5563; font-size: 16px; margin: 0; }
+    .cta-section { text-align: center; margin: 32px 0; }
+    .button { background-color: ${OSU_SCARLET}; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; }
+    .footer { background: #FAFAFA; padding: 40px 32px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #E0E0E0; }
+    @media only screen and (max-width: 600px) {
+      .container { margin: 0; width: 100%; border-radius: 0; }
+      .content { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0">
+          <tr>
+            <td class="header">
+              <h1 class="header-title">${SITE_CONFIG.name}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td class="content">
+              <h2 class="greeting">Great work, ${name}!</h2>
+              <p class="text">You've reached an important milestone in your journey with us.</p>
+              
+              <div class="achievement-box">
+                <div class="achievement-emoji">🏆</div>
+                <p class="achievement-title">${milestoneTitle}</p>
+                <p class="achievement-text">Completed</p>
+              </div>
+              
+              <p class="text">Keep up the momentum! Every step forward is progress toward your goals. What's next on your learning path?</p>
+              
+              <div class="cta-section">
+                <a href="${SITE_CONFIG.baseUrl}/learn" class="button">Continue Learning</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="footer">
+              <p style="margin: 0 0 12px 0;"><strong>${SITE_CONFIG.name}</strong> • ${new Date().getFullYear()}</p>
+              <p style="margin: 0; color: #9A9A9A; line-height: 1.5;">Celebrating your success every step of the way.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+function getInactivityEmail(name: string, daysInactive: number): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>We Miss You - ${SITE_CONFIG.name}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap');
+    body { margin: 0; padding: 0; font-family: 'Outfit', Arial, sans-serif; background-color: #F4F4F4; -webkit-font-smoothing: antialiased; }
+    table { border-collapse: collapse; }
+    .container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border: 1px solid #D6D6D6; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    .header { background: linear-gradient(135deg, ${OSU_SCARLET} 0%, ${OSU_DARK_RED} 100%); padding: 48px 32px; text-align: center; }
+    .header-title { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; }
+    .content { padding: 40px 32px; }
+    .greeting { font-size: 24px; font-weight: 700; color: ${TEXT_DARK}; margin: 0 0 24px 0; }
+    .text { color: #666666; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0; }
+    .reminder-box { background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 24px 0; border-radius: 4px; }
+    .reminder-title { color: #92400e; font-size: 16px; font-weight: bold; margin: 0 0 8px 0; }
+    .reminder-text { color: #a16207; font-size: 14px; margin: 0; }
+    .cta-section { text-align: center; margin: 32px 0; }
+    .button { background-color: ${OSU_SCARLET}; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block; }
+    .footer { background: #FAFAFA; padding: 40px 32px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #E0E0E0; }
+    @media only screen and (max-width: 600px) {
+      .container { margin: 0; width: 100%; border-radius: 0; }
+      .content { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+  <table width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+      <td align="center">
+        <table class="container" width="600" cellpadding="0" cellspacing="0">
+          <tr>
+            <td class="header">
+              <h1 class="header-title">${SITE_CONFIG.name}</h1>
+            </td>
+          </tr>
+          <tr>
+            <td class="content">
+              <h2 class="greeting">We miss you, ${name}!</h2>
+              <p class="text">It's been ${daysInactive} days since you last visited Forward Focus Elevation. Your journey matters to us, and we're here to support you every step of the way.</p>
+              
+              <div class="reminder-box">
+                <p class="reminder-title">🌟 Don't forget why you started</p>
+                <p class="reminder-text">Every small step counts. Whether it's exploring a new resource or connecting with our community, we're here to help you move forward.</p>
+              </div>
+              
+              <p class="text">Ready to pick up where you left off? Your personalized dashboard is waiting for you.</p>
+              
+              <div class="cta-section">
+                <a href="${SITE_CONFIG.baseUrl}/learn" class="button">Return to Learning</a>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <td class="footer">
+              <p style="margin: 0 0 12px 0;"><strong>${SITE_CONFIG.name}</strong> • ${new Date().getFullYear()}</p>
+              <p style="margin: 0; color: #9A9A9A; line-height: 1.5;">Here whenever you're ready to continue.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("Processing automation queue:", req.method);
@@ -79,32 +297,20 @@ const handler = async (req: Request): Promise<Response> => {
           continue;
         }
 
-        // Render appropriate template
+        // Generate appropriate template (no React!)
         let emailHtml: string;
         
         switch (rule.email_type) {
           case 'welcome':
-            emailHtml = await renderAsync(
-              React.createElement(WelcomeEmail, { name: recipientName })
-            );
+            emailHtml = getWelcomeEmail(recipientName);
             break;
             
           case 'milestone':
-            emailHtml = await renderAsync(
-              React.createElement(MilestoneEmail, {
-                name: recipientName,
-                milestoneTitle: triggerData.module_id || 'Learning Module',
-              })
-            );
+            emailHtml = getMilestoneEmail(recipientName, triggerData.module_id || 'Learning Module');
             break;
             
           case 'inactivity':
-            emailHtml = await renderAsync(
-              React.createElement(InactivityEmail, {
-                name: recipientName,
-                daysSinceLastActivity: triggerData.days_inactive || 7,
-              })
-            );
+            emailHtml = getInactivityEmail(recipientName, triggerData.days_inactive || 7);
             break;
             
           default:
@@ -215,3 +421,4 @@ const handler = async (req: Request): Promise<Response> => {
 };
 
 serve(handler);
+

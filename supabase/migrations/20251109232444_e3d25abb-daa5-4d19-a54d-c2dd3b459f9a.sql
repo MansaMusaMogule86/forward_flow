@@ -3,8 +3,7 @@
 -- This fix ensures only verified organizations are visible to regular users
 DROP POLICY IF EXISTS "Anyone can view verified organizations" ON public.organizations;
 
-CREATE POLICY "Public can view verified organizations only" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Public can view verified organizations only" ON public.organizations; CREATE POLICY "Public can view verified organizations only" ON public.organizations 
 FOR SELECT 
 USING (verified = true);
 
@@ -37,7 +36,7 @@ BEGIN
       'access_type', 'view'
     ),
     'info'
-  );
+  ) ON CONFLICT DO NOTHING;
 END;
 $$;
 

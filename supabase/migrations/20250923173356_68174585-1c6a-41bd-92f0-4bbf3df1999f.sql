@@ -3,15 +3,13 @@
 
 -- Update learning_pathways policy to require authentication
 DROP POLICY IF EXISTS "Authenticated users can view learning pathways" ON public.learning_pathways;
-CREATE POLICY "Authenticated users can view learning pathways"
-ON public.learning_pathways
+DROP POLICY IF EXISTS "Authenticated users can view learning pathways" ON public.learning_pathways; CREATE POLICY "Authenticated users can view learning pathways" ON public.learning_pathways
 FOR SELECT
 USING (auth.uid() IS NOT NULL);
 
 -- Update learning_modules policy to require authentication  
 DROP POLICY IF EXISTS "Authenticated users can view learning modules" ON public.learning_modules;
-CREATE POLICY "Authenticated users can view learning modules"
-ON public.learning_modules  
+DROP POLICY IF EXISTS "Authenticated users can view learning modules" ON public.learning_modules; CREATE POLICY "Authenticated users can view learning modules" ON public.learning_modules  
 FOR SELECT
 USING (auth.uid() IS NOT NULL);
 

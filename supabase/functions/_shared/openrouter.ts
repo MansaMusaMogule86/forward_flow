@@ -4,32 +4,38 @@
 export const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 // Model selection based on use case - optimized for cost vs performance
+// STRATEGY: Free/cheap for 95% of traffic, Claude ONLY for crisis detection
 export const OPENROUTER_MODELS = {
-  // Ultra-cheap, fast for general chat and streaming
+  // Ultra-cheap, fast for general chat and streaming (FREE tier)
   CHAT_STREAMING: 'google/gemini-flash-1.5:free',
   
-  // Slightly better quality for important conversations
+  // Slightly better quality for important conversations (CHEAP - $0.10/1M)
   CHAT_STANDARD: 'qwen/qwen-2.5-7b-instruct',
   
-  // Best for crisis/emergency - safety focused
-  CRISIS_SUPPORT: 'anthropic/claude-3-haiku:beta',
+  // Crisis/emergency - ONLY use Claude for actual crisis situations
+  // Safety-tuned, trauma-informed responses for vulnerable users
+  CRISIS_SUPPORT: 'anthropic/claude-3-haiku',
   
-  // Complex reasoning and structured output
-  COMPLEX_REASONING: 'google/gemini-2.0-flash-exp:free',
+  // Complex reasoning and structured output (FREE tier)
+  COMPLEX_REASONING: 'google/gemini-flash-1.5:free',
   
-  // Resource discovery - structured JSON output
+  // Resource discovery - structured JSON output (CHEAP - $0.10/1M)
   RESOURCE_DISCOVERY: 'mistral/ministral-8b',
   
-  // Fallback - always available
-  FALLBACK: 'google/gemini-flash-1.5:free',
+  // Fallback - always available (CHEAP)
+  FALLBACK: 'qwen/qwen-2.5-7b-instruct',
 };
 
 // Pricing reference (per 1M tokens as of 2026):
-// google/gemini-flash-1.5:free - $0 (free tier, limited)
-// qwen/qwen-2.5-7b-instruct - $0.10/$0.10 (input/output)
-// mistral/ministral-8b - $0.10/$0.10
-// anthropic/claude-3-haiku - $0.25/$1.25
-// google/gemini-2.0-flash-exp:free - $0 (free tier)
+// google/gemini-flash-1.5:free - $0 (free tier, rate limited) - 90% of traffic
+// qwen/qwen-2.5-7b-instruct - $0.10/$0.10 (input/output) - fallback
+// mistral/ministral-8b - $0.10/$0.10 - structured output
+// anthropic/claude-3-haiku - $0.25/$1.25 - CRISIS ONLY (rare)
+//
+// HYBRID STRATEGY:
+// - 90% of calls = FREE (Gemini Flash)
+// - 9% of calls = CHEAP $0.10 (Qwen fallback)
+// - 1% of calls = Claude (only for detected crisis situations)
 
 export interface OpenRouterMessage {
   role: 'system' | 'user' | 'assistant';
@@ -44,6 +50,7 @@ export interface OpenRouterRequest {
   max_tokens?: number;
   tools?: any[];
   tool_choice?: any;
+  response_format?: { type: 'json_object' };
 }
 
 export async function callOpenRouter(
@@ -55,7 +62,7 @@ export async function callOpenRouter(
     headers: {
       'Authorization': `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://forwardfocuselevation.org',
+      'HTTP-Referer': 'https://forward-focus-elevation.org',
       'X-Title': 'Forward Focus Elevation',
     },
     body: JSON.stringify(request),
@@ -94,3 +101,4 @@ export async function callOpenRouterWithFallback(
   console.log(`Using fallback model: ${fallbackModel}`);
   return callOpenRouter(apiKey, { ...request, model: fallbackModel });
 }
+

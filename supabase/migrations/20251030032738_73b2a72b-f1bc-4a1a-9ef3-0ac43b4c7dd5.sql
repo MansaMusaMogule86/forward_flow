@@ -11,8 +11,7 @@ BEGIN
       AND tablename = 'profiles'
       AND policyname = 'Users can create own profile'
   ) THEN
-    CREATE POLICY "Users can create own profile"
-    ON public.profiles
+    DROP POLICY IF EXISTS "Users can create own profile" ON public.profiles; CREATE POLICY "Users can create own profile" ON public.profiles
     FOR INSERT
     WITH CHECK (auth.uid() = id);
   END IF;

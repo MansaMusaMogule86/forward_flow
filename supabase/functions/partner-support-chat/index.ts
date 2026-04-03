@@ -1,5 +1,5 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.2";
+import { serve } from "@std/http/server";
+import { createClient } from "@supabase/supabase-js";
 import { OPENROUTER_MODELS, callOpenRouterWithFallback } from '../_shared/openrouter.ts';
 
 const corsHeaders = {
@@ -30,15 +30,15 @@ serve(async (req) => {
     });
 
     const token = authHeader.replace('Bearer ', '');
-    const { data, error: authError } = await supabase.auth.getClaims(token);
-    if (authError || !data?.claims) {
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid or expired token' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const userId = data.claims.sub;
+    const userId = user.id;
 
     const { messages } = await req.json();
 
@@ -229,3 +229,4 @@ Be warm, professional, and solution-oriented. Provide specific navigation paths 
     });
   }
 });
+

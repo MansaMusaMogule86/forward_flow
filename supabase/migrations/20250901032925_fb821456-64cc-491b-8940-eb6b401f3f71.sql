@@ -1,8 +1,8 @@
 -- Fix the Function Search Path Mutable security warnings
 -- Set explicit search_path on all functions to prevent SQL injection attacks
 
--- Fix mask_contact_info function
-CREATE OR REPLACE FUNCTION public.mask_contact_info(contact_text text)
+-- Fix mask_contact_text function
+CREATE OR REPLACE FUNCTION public.mask_contact_text(contact_text text)
 RETURNS text
 LANGUAGE plpgsql
 SECURITY INVOKER
@@ -25,10 +25,10 @@ $$;
 
 -- Fix log_sensitive_access function
 CREATE OR REPLACE FUNCTION public.log_sensitive_access(
-    p_table_name text,
-    p_action text,
-    p_record_id uuid DEFAULT NULL,
-    p_sensitive_data boolean DEFAULT true
+    table_name text,
+    action text,
+    record_id uuid DEFAULT NULL,
+    sensitive_data_accessed boolean DEFAULT true
 )
 RETURNS void
 LANGUAGE plpgsql
@@ -38,9 +38,9 @@ AS $$
 BEGIN
     INSERT INTO public.audit_log (
         user_id,
-        table_name,
+        p_table_name,
         action,
-        record_id,
+        p_record_id,
         sensitive_data_accessed,
         created_at
     ) VALUES (
@@ -50,14 +50,14 @@ BEGIN
         p_record_id,
         p_sensitive_data,
         now()
-    );
+    ) ON CONFLICT DO NOTHING;
 END;
 $$;
 
 -- Fix check_rate_limit function
 CREATE OR REPLACE FUNCTION public.check_rate_limit(
     p_user_id uuid DEFAULT auth.uid(),
-    p_table_name text DEFAULT 'organizations',
+    table_name text DEFAULT 'organizations',
     p_limit_per_hour integer DEFAULT 100
 )
 RETURNS boolean
@@ -72,7 +72,7 @@ BEGIN
     SELECT COUNT(*) INTO request_count
     FROM public.audit_log
     WHERE user_id = p_user_id
-    AND table_name = p_table_name
+    AND p_table_name = p_table_name
     AND created_at > (now() - interval '1 hour');
     
     -- Return false if limit exceeded

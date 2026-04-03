@@ -5,11 +5,10 @@ DROP POLICY IF EXISTS "Authenticated users can view organizations through secure
 DROP POLICY IF EXISTS "Secure organization access with field-level control" ON public.organizations;
 
 -- Create final secure policy for organizations - only allow access through secure functions
-CREATE POLICY "Organizations require secure function access only"
-ON public.organizations
+DROP POLICY IF EXISTS "Organizations require secure function access only" ON public.organizations; CREATE POLICY "Organizations require secure function access only" ON public.organizations
 FOR SELECT
 USING (
-  -- Only allow direct access for admin operations, all other access must go through secure functions
+  -- Only allow direct access for admin p_actions, all other access must go through secure functions
   auth.uid() IS NOT NULL 
   AND is_user_admin(auth.uid())
   AND check_admin_rate_limit()
@@ -20,8 +19,7 @@ DROP POLICY IF EXISTS "Admins can manage resources" ON public.resources;
 DROP POLICY IF EXISTS "Secure resource access with contact protection" ON public.resources;
 
 -- Create final secure policy for resources - admin access only for direct table access
-CREATE POLICY "Resources require admin access for direct table queries"
-ON public.resources
+DROP POLICY IF EXISTS "Resources require admin access for direct table queries" ON public.resources; CREATE POLICY "Resources require admin access for direct table queries" ON public.resources
 FOR SELECT
 USING (
   -- Only admins can directly query the resources table
@@ -31,15 +29,13 @@ USING (
 );
 
 -- Allow admins to manage resources
-CREATE POLICY "Admins can manage resources securely"
-ON public.resources
+DROP POLICY IF EXISTS "Admins can manage resources securely" ON public.resources; CREATE POLICY "Admins can manage resources securely" ON public.resources
 FOR ALL
 USING (is_user_admin(auth.uid()))
 WITH CHECK (is_user_admin(auth.uid()));
 
 -- Create restrictive policies for anonymous users on both tables
-CREATE POLICY "Block anonymous resource access completely"
-ON public.resources
+DROP POLICY IF EXISTS "Block anonymous resource access completely" ON public.resources; CREATE POLICY "Block anonymous resource access completely" ON public.resources
 FOR ALL
 TO anon
 USING (false)
@@ -52,7 +48,7 @@ WITH CHECK (false);
 INSERT INTO public.audit_log (
   user_id,
   action,
-  table_name,
+  p_table_name,
   sensitive_data_accessed,
   created_at
 ) VALUES (
@@ -61,7 +57,7 @@ INSERT INTO public.audit_log (
   'organizations_and_resources',
   true,
   now()
-);
+) ON CONFLICT DO NOTHING;
 
 -- Create information about secure access methods for developers
 COMMENT ON FUNCTION public.get_organizations_secure() IS 'Secure function for authenticated organization access with field-level contact masking';

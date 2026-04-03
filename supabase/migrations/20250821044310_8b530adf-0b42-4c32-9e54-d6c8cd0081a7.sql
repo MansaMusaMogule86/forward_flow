@@ -9,8 +9,7 @@ DROP POLICY IF EXISTS "Anyone can view basic organization info" ON public.organi
 DROP POLICY IF EXISTS "Authenticated users can view organization contacts" ON public.organizations;
 
 -- Create new policies that allow public basic info but protect sensitive data
-CREATE POLICY "Public can view basic organization info" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Public can view basic organization info" ON public.organizations; CREATE POLICY "Public can view basic organization info" ON public.organizations 
 FOR SELECT 
 USING (true);
 
@@ -24,7 +23,7 @@ AS $$
 $$;
 
 -- Update existing functions that were missing search_path
-DROP FUNCTION IF EXISTS public.handle_new_user();
+-- Removed DROP FUNCTION to avoid dependency issues: public.handle_new_user();
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
@@ -36,7 +35,7 @@ BEGIN
   VALUES (
     NEW.id, 
     COALESCE(NEW.raw_user_meta_data ->> 'display_name', NEW.email)
-  );
+  ) ON CONFLICT DO NOTHING;
   RETURN NEW;
 END;
 $$;

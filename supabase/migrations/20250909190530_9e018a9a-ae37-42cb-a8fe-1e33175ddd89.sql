@@ -5,8 +5,7 @@
 DROP POLICY IF EXISTS "Allow referral submissions" ON public.partner_referrals;
 
 -- Add secure policy requiring authentication for referral submissions with rate limiting
-CREATE POLICY "Authenticated users can submit referrals with rate limit" 
-ON public.partner_referrals 
+DROP POLICY IF EXISTS "Authenticated users can submit referrals with rate limit" ON public.partner_referrals; CREATE POLICY "Authenticated users can submit referrals with rate limit" ON public.partner_referrals 
 FOR INSERT 
 WITH CHECK (
   auth.uid() IS NOT NULL 
@@ -19,8 +18,7 @@ ALTER TABLE public.organizations ENABLE ROW LEVEL SECURITY;
 
 -- Add policy for public access to verified organizations only
 -- This will affect the views organizations_public and organizations_public_secure
-CREATE POLICY "Public can view verified organizations only" 
-ON public.organizations 
+DROP POLICY IF EXISTS "Public can view verified organizations only" ON public.organizations; CREATE POLICY "Public can view verified organizations only" ON public.organizations 
 FOR SELECT 
 USING (verified = true);
 
@@ -28,7 +26,7 @@ USING (verified = true);
 INSERT INTO public.audit_log (
   user_id,
   action,
-  table_name,
+  p_table_name,
   sensitive_data_accessed,
   created_at
 ) VALUES (
@@ -44,4 +42,4 @@ INSERT INTO public.audit_log (
   'partner_referrals',
   true,
   now()
-);
+) ON CONFLICT DO NOTHING;
