@@ -12,7 +12,7 @@ const config: AntiWhiteLabelConfig = {
     '127.0.0.1',
     'forward-focus-elevation.org',
     'www.forward-focus-elevation.org',
-    'mdwkkgancoocvkmecwkm.supabase.co',
+    'peckmhkxhgkgopmjthmp.supabase.co',
     'github.io',
     'netlify.app',
     'vercel.app',

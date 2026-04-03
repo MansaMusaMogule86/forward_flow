@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, Home, Briefcase, GraduationCap, Heart, Scale, DollarSign, User, FileText, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import EmailChatHistoryModal from './EmailChatHistoryModal';
 import ReactMarkdown from 'react-markdown';
@@ -51,9 +51,50 @@ interface ReentryNavigatorAIProps {
   };
 }
 
+interface ReentryNavigatorResponse {
+  response?: string;
+  resources?: Message['resources'];
+  webResources?: Message['webResources'];
+  degraded?: boolean;
+  error?: string;
+}
+
+type ResourceMessage = NonNullable<Message['resources']>[number];
+
+const LEGACY_REENTRY_FALLBACK_SNIPPETS = [
+  "i'm having some trouble connecting right now",
+  'please try again in a moment or visit our resources page for immediate information',
+];
+
 const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose, initialQuery, selectedCoach }) => {
   const prevCoachNameRef = useRef<string | null>(selectedCoach?.name ?? 'Coach Kay');
   const pendingCloseRef = useRef(false);
+
+  const normalizeResources = (resources: any[] | null | undefined): ResourceMessage[] => {
+    return (resources || []).map((resource) => ({
+      id: resource.id,
+      name: resource.name || resource.title || resource.organization || 'Resource',
+      organization: resource.organization || '',
+      phone: resource.phone || resource.contact_info || undefined,
+      email: resource.email || undefined,
+      website: resource.website || resource.website_url || undefined,
+      address: resource.address || undefined,
+      type: resource.type || resource.category || 'Resource',
+      description: resource.description || undefined,
+      justice_friendly: resource.justice_friendly,
+      city: resource.city || undefined,
+      county: resource.county || undefined,
+    }));
+  };
+
+  const isLegacyFallbackResponse = (response: string | undefined) => {
+    const normalizedResponse = response?.toLowerCase().trim();
+    if (!normalizedResponse) {
+      return true;
+    }
+
+    return LEGACY_REENTRY_FALLBACK_SNIPPETS.every((snippet) => normalizedResponse.includes(snippet));
+  };
 
   const getInitialMessage = (): Message => ({
     id: 'initial',
@@ -68,7 +109,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
   const [showEmailModal, setShowEmailModal] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationContext, setConversationContext] = useState<Array<{role: string, content: string}>>([]);
+  const [conversationContext, setConversationContext] = useState<Array<{ role: string, content: string }>>([]);
   const [reentryStage, setReentryStage] = useState<'preparing' | 'recently_released' | 'long_term' | 'family_member'>('recently_released');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -128,21 +169,31 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
           previousContext: conversationContext.slice(-6),
         }
       });
+      const responseData = data as ReentryNavigatorResponse | null;
 
       if (error) {
         logger.error('Reentry Navigator AI error:', error);
         throw new Error(error.message);
       }
 
-      const formattedResponse = data.response;
-      
+      if (
+        !responseData?.response ||
+        responseData.degraded ||
+        responseData.error ||
+        isLegacyFallbackResponse(responseData.response)
+      ) {
+        throw new Error(responseData?.error || 'Reentry Navigator returned an invalid response');
+      }
+
+      const formattedResponse = responseData.response;
+
       setMessages(prev => {
         const newMessages = [...prev];
         const lastMessage = newMessages[newMessages.length - 1];
         if (lastMessage.type === 'ai') {
           lastMessage.content = formattedResponse;
-          lastMessage.resources = data.resources || [];
-          lastMessage.webResources = data.webResources || [];
+          lastMessage.resources = responseData.resources || [];
+          lastMessage.webResources = responseData.webResources || [];
         }
         return newMessages;
       });
@@ -157,8 +208,8 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
       toast.error("I'm having trouble connecting to the AI. Switching to fallback resources.");
 
       try {
-        const { data: resources } = await supabase
-          .from('resources')
+        const resourcesTable = supabase.from('resources') as any;
+        const { data: resources } = await resourcesTable
           .select('*')
           .or('type.ilike.%housing%,type.ilike.%employment%,type.ilike.%job training%,type.ilike.%education%,type.ilike.%reentry%,type.ilike.%legal aid%,type.ilike.%mental health%,type.ilike.%substance abuse%,type.ilike.%healthcare%,type.ilike.%transportation%')
           .eq('verified', true)
@@ -170,7 +221,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
           const lastMessage = newMessages[newMessages.length - 1];
           if (lastMessage.type === 'ai') {
             lastMessage.content = content;
-            lastMessage.resources = resources || [];
+            lastMessage.resources = normalizeResources(resources);
           }
           return newMessages;
         });
@@ -270,10 +321,10 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
         "Community support and peer connections"
       ]
     };
-    
+
     return coachActions[coachName as keyof typeof coachActions] || [
       "I need housing options that accept my background",
-      "Help me find employers who hire people with records", 
+      "Help me find employers who hire people with records",
       "What documents do I need to get started?",
       "How can I clear my record?",
       "I need job training and skills programs",
@@ -281,16 +332,16 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
     ];
   };
 
-  const quickActions = selectedCoach 
+  const quickActions = selectedCoach
     ? getCoachSpecificActions(selectedCoach.name)
     : [
-        "I need housing options that accept my background",
-        "Help me find employers who hire people with records", 
-        "What documents do I need to get started?",
-        "How can I clear my record?",
-        "I need job training and skills programs",
-        "Help me rebuild relationships with my family"
-      ];
+      "I need housing options that accept my background",
+      "Help me find employers who hire people with records",
+      "What documents do I need to get started?",
+      "How can I clear my record?",
+      "I need job training and skills programs",
+      "Help me rebuild relationships with my family"
+    ];
 
   const reentryAreas = [
     { icon: Home, label: "Housing", color: "text-primary" },
@@ -306,10 +357,10 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleCloseRequest(false); }}>
       <DialogContent className="max-w-4xl max-h-[90vh] p-0 flex flex-col overflow-hidden">
-        <div className="sr-only">
-          <h2 id="reentry-navigator-dialog-title">Reentry Navigator AI Chat</h2>
-        </div>
         <DialogTitle className="sr-only">{selectedCoach ? `${selectedCoach.name} Chat` : 'Coach Kay Chat'}</DialogTitle>
+        <DialogDescription className="sr-only">
+          Ask for reentry guidance on housing, employment, legal support, education, family reconnection, and financial stability.
+        </DialogDescription>
         {/* Header */}
         <div className="flex items-center justify-between bg-secondary p-4 text-secondary-foreground">
           <div className="flex items-center gap-3">
@@ -326,7 +377,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
             </div>
           </div>
           <Button
-            variant="ghost" 
+            variant="ghost"
             size="sm"
             onClick={() => handleCloseRequest(true)}
             className="text-secondary-foreground hover:bg-secondary-foreground/20"
@@ -372,11 +423,11 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
-                            a: ({node, ...props}) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
-                            p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
-                            ul: ({node, ...props}) => <ul {...props} className="list-disc ml-4 mb-2" />,
-                            ol: ({node, ...props}) => <ol {...props} className="list-decimal ml-4 mb-2" />,
-                            li: ({node, ...props}) => <li {...props} className="mb-1" />,
+                            a: ({ node, ...props }) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
+                            p: ({ node, ...props }) => <p {...props} className="mb-2 last:mb-0" />,
+                            ul: ({ node, ...props }) => <ul {...props} className="list-disc ml-4 mb-2" />,
+                            ol: ({ node, ...props }) => <ol {...props} className="list-decimal ml-4 mb-2" />,
+                            li: ({ node, ...props }) => <li {...props} className="mb-1" />,
                           }}
                         >
                           {message.content}
@@ -391,8 +442,8 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
                           </div>
                           <div className="space-y-3">
                             {message.resources.map((resource, resourceIndex) => (
-                              <div 
-                                key={resourceIndex} 
+                              <div
+                                key={resourceIndex}
                                 className="bg-background/80 border border-border/60 rounded-xl p-4 text-sm hover:shadow-sm transition-shadow"
                               >
                                 <div className="font-semibold text-foreground mb-2 text-base">{resource.name}</div>
@@ -414,7 +465,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
                                     <div className="flex items-center gap-2 text-foreground">
                                       <Phone className="h-3 w-3 text-green-600" />
                                       <span className="font-medium">Phone:</span>
-                                      <a 
+                                      <a
                                         href={`tel:${resource.phone.replace(/[^\d]/g, '')}`}
                                         className="text-primary hover:text-primary/80 underline underline-offset-2 font-medium"
                                       >
@@ -426,7 +477,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
                                     <div className="flex items-center gap-2 text-foreground">
                                       <span className="text-blue-600">✉️</span>
                                       <span className="font-medium">Email:</span>
-                                      <a 
+                                      <a
                                         href={`mailto:${resource.email}`}
                                         className="text-primary hover:text-primary/80 underline underline-offset-2 font-medium"
                                       >
@@ -438,7 +489,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
                                     <div className="flex items-center gap-2 text-foreground">
                                       <span className="text-purple-600">🌐</span>
                                       <span className="font-medium">Website:</span>
-                                      <a 
+                                      <a
                                         href={resource.website.startsWith('http') ? resource.website : `https://${resource.website}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
@@ -530,7 +581,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
               </Button>
             ))}
           </div>
-          
+
           {/* Input */}
           <div className="space-y-1">
             <div className="flex gap-2">
@@ -555,18 +606,18 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
               Your success matters • Justice-friendly resources • Encouraging guidance every step
             </p>
             <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-xs" 
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs"
                 onClick={resetConversation}
               >
                 New Chat
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs" 
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs"
                 onClick={() => setShowEmailModal(true)}
               >
                 Email Chat History

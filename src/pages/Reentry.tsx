@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Home, Briefcase, GraduationCap, Heart, Scale, DollarSign, Bot, ArrowRight, ShieldCheck, CheckCircle2 } from "lucide-react";
@@ -57,13 +56,13 @@ const Reentry = () => {
   ];
 
   return (
-    <Layout>
-      <SEOHead 
-        title="Reentry Navigator | Second Chances Start Here" 
+    <>
+      <SEOHead
+        title="Reentry Navigator | Second Chances Start Here"
         description="Forward Focus Foundation's AI-powered Reentry Navigator provides justice-friendly resources for housing, employment, and legal support in Ohio."
         path="/reentry"
       />
-      
+
       <main id="main" className="min-h-screen bg-slate-50">
         <section className="relative py-20 overflow-hidden bg-navy text-white">
           <div className="absolute inset-0 opacity-10 bg-[url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&q=80')] bg-cover bg-center" />
@@ -79,16 +78,16 @@ const Reentry = () => {
               Navigate the challenges of reentry with personalized, justice-friendly resources and the support of Coach Kay.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button 
-                size="lg" 
+              <Button
+                size="lg"
                 className="bg-osu-scarlet hover:bg-osu-scarlet/90 text-white px-8 h-12 text-lg rounded-full font-bold"
                 onClick={() => handleStartNavigating()}
               >
                 Start Your Navigation
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline" 
+              <Button
+                size="lg"
+                variant="outline"
                 className="border-white/20 text-white hover:bg-white/10 px-8 h-12 text-lg rounded-full"
                 onClick={() => {
                   const element = document.getElementById('priority-needs');
@@ -139,8 +138,8 @@ const Reentry = () => {
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="pt-6">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       className="w-full justify-between group-hover:bg-slate-50 text-navy"
                       onClick={() => handleStartNavigating(need.query)}
                     >
@@ -180,8 +179,8 @@ const Reentry = () => {
                     <span>Personalized roadmap for housing stability and professional growth.</span>
                   </div>
                 </div>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   className="bg-white text-navy hover:bg-slate-200 px-8 rounded-full font-bold"
                   onClick={() => handleStartNavigating("Tell me about my legal rights and expungement options in Ohio")}
                 >
@@ -190,9 +189,9 @@ const Reentry = () => {
               </div>
               <div className="lg:w-1/2 relative">
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                  <img 
-                    src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80" 
-                    alt="Team collaboration" 
+                  <img
+                    src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&q=80"
+                    alt="Team collaboration"
                     className="w-full object-cover aspect-video"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent" />
@@ -209,12 +208,12 @@ const Reentry = () => {
         </section>
       </main>
 
-      <ReentryNavigatorAI 
-        isOpen={isNavigatorOpen} 
-        onClose={() => setIsNavigatorOpen(false)} 
+      <ReentryNavigatorAI
+        isOpen={isNavigatorOpen}
+        onClose={() => setIsNavigatorOpen(false)}
         initialQuery={initialQuery}
       />
-    </Layout>
+    </>
   );
 };
 

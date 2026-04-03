@@ -16,7 +16,7 @@ interface ReentryQuery {
     specialty: string;
     description: string;
   };
-  previousContext?: Array<{role: string, content: string}>;
+  previousContext?: Array<{ role: string, content: string }>;
 }
 
 serve(async (req) => {
@@ -46,9 +46,9 @@ serve(async (req) => {
     if (rateLimit.limited) {
       await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: rateLimit.message || 'Rate limit exceeded.',
-          rateLimitExceeded: true 
+          rateLimitExceeded: true
         }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -111,12 +111,12 @@ serve(async (req) => {
   } catch (error) {
     console.error(`[${endpoint}] Error:`, error);
     await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
-    
-    return successResponse({ 
-      response: "I'm having some trouble connecting right now, but I'm dedicated to your success. Please try again in a moment or visit our Resources page for immediate information.",
-      resources: [],
-      reentryStage: 'recently_released'
-    });
+
+    return errorResponse(
+      'Reentry Navigator is temporarily unavailable. Please try again in a moment.',
+      503,
+      error instanceof Error ? error.message : error,
+    );
   }
 });
 

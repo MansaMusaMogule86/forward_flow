@@ -18,7 +18,7 @@ This guide explains how to set up automated email tracking with Resend webhooks 
 2. Click "Add Webhook"
 3. Enter the webhook URL:
    ```
-   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/resend-webhook
+   https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/resend-webhook
    ```
 4. Select the following events to track:
    - ✅ `email.sent` - Email successfully sent

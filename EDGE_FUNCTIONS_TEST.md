@@ -120,7 +120,7 @@ Here's a step-by-step guide on how to submit a referral:
 ### 1. AI Recommend Resources
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/ai-recommend-resources \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/ai-recommend-resources \
   -H "Content-Type: application/json" \
   -d '{
     "userNeeds": "I need mental health support",
@@ -136,7 +136,7 @@ curl -X POST \
 ### 2. Partner Support Chat
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/partner-support-chat \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/partner-support-chat \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer <SUPABASE_USER_JWT>" \
   -d '{
@@ -153,7 +153,7 @@ curl -X POST \
 ### 3. Generate Success Story
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/generate-success-story \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/generate-success-story \
   -H "Content-Type: application/json" \
   -d '{
     "basicInfo": "Participant completed a 6-month job readiness and interview coaching pathway.",
@@ -169,7 +169,7 @@ curl -X POST \
 ### 4. Generate Marketing Image
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/generate-marketing-image \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/generate-marketing-image \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "Professional image of community support group meeting"
@@ -183,7 +183,7 @@ curl -X POST \
 ### 5. Chat (Multi-topic AI)
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/chat \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/chat \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -200,7 +200,7 @@ curl -X POST \
 ### 6. Crisis Support AI
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/crisis-support-ai \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/crisis-support-ai \
   -H "Content-Type: application/json" \
   -d '{
     "query": "I am feeling overwhelmed and need immediate support",
@@ -216,7 +216,7 @@ curl -X POST \
 ### 7. Victim Support AI
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/victim-support-ai \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/victim-support-ai \
   -H "Content-Type: application/json" \
   -d '{
     "query": "I need legal assistance and counseling resources",
@@ -233,7 +233,7 @@ curl -X POST \
 ### 8. Reentry Navigator AI
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/reentry-navigator-ai \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/reentry-navigator-ai \
   -H "Content-Type: application/json" \
   -d '{
     "query": "How do I get my record expunged?",
@@ -250,7 +250,7 @@ curl -X POST \
 ### 9. Coach K
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/coach-k \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/coach-k \
   -H "Content-Type: application/json" \
   -d '{
     "messages": [
@@ -266,7 +266,7 @@ curl -X POST \
 ### 10. AI Resource Discovery
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/ai-resource-discovery \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/ai-resource-discovery \
   -H "Content-Type: application/json" \
   -d '{
     "query": "I need rental assistance and legal aid",
@@ -282,7 +282,7 @@ curl -X POST \
 ### 11. Crisis Emergency AI
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/crisis-emergency-ai \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/crisis-emergency-ai \
   -H "Content-Type: application/json" \
   -d '{
     "query": "I need immediate crisis support",
@@ -302,7 +302,7 @@ Send multiple rapid requests to trigger 429 response:
 
 ```bash
 for i in {1..50}; do
-  curl -X POST https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/chat \
+  curl -X POST https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/chat \
     -H "Content-Type: application/json" \
     -d '{"messages": [{"role": "user", "content": "test"}], "topic": "crisis-support"}' &
 done
@@ -315,7 +315,7 @@ done
 ### Test Invalid Input
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/ai-recommend-resources \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/ai-recommend-resources \
   -H "Content-Type: application/json" \
   -d '{}'
 ```

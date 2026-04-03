@@ -22,7 +22,7 @@ export const SITE_CONFIG = {
   },
 
   // Logo URL (hosted on Supabase storage)
-  logoUrl: "https://mdwkkgancoocvkmecwkm.supabase.co/storage/v1/object/public/assets/logo-new.png",
+  logoUrl: "https://peckmhkxhgkgopmjthmp.supabase.co/storage/v1/object/public/assets/logo-new.png",
   
   // Routes
   routes: {

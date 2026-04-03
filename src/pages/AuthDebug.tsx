@@ -35,11 +35,11 @@ const AuthDebug = () => {
     // Test 1: Environment Variables
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-    
+
     updateTest(0, {
       status: supabaseUrl && supabaseKey ? "success" : "error",
-      message: supabaseUrl && supabaseKey 
-        ? "Environment variables loaded correctly" 
+      message: supabaseUrl && supabaseKey
+        ? "Environment variables loaded correctly"
         : "Missing environment variables",
       details: {
         url: supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : "MISSING",
@@ -56,11 +56,11 @@ const AuthDebug = () => {
           'apikey': supabaseKey,
         }
       });
-      
+
       updateTest(1, {
         status: response.ok ? "success" : "error",
-        message: response.ok 
-          ? `Connection successful (${response.status})` 
+        message: response.ok
+          ? `Connection successful (${response.status})`
           : `Connection failed (${response.status})`,
         details: {
           status: response.status,
@@ -88,13 +88,13 @@ const AuthDebug = () => {
           'apikey': supabaseKey,
         }
       });
-      
+
       const data = await response.json();
-      
+
       updateTest(2, {
         status: response.ok ? "success" : "error",
-        message: response.ok 
-          ? "Auth service is accessible" 
+        message: response.ok
+          ? "Auth service is accessible"
           : `Auth service error (${response.status})`,
         details: {
           status: response.status,
@@ -121,16 +121,16 @@ const AuthDebug = () => {
         email: 'test@example.com',
         password: 'invalid-password-for-testing'
       });
-      
+
       // We expect this to fail with "Invalid login credentials" which means the connection works
-      const isConnectivityError = error?.message?.toLowerCase().includes('fetch') || 
-                                   error?.message?.toLowerCase().includes('network') ||
-                                   error?.message?.toLowerCase().includes('cors');
-      
+      const isConnectivityError = error?.message?.toLowerCase().includes('fetch') ||
+        error?.message?.toLowerCase().includes('network') ||
+        error?.message?.toLowerCase().includes('cors');
+
       updateTest(3, {
         status: isConnectivityError ? "error" : "success",
-        message: isConnectivityError 
-          ? "SDK cannot reach auth service" 
+        message: isConnectivityError
+          ? "SDK cannot reach auth service"
           : "SDK connection working (credentials rejected as expected)",
         details: {
           errorMessage: error?.message || 'No error',
@@ -152,7 +152,7 @@ const AuthDebug = () => {
   };
 
   const updateTest = (index: number, update: Partial<TestResult>) => {
-    setTests(prev => prev.map((test, i) => 
+    setTests(prev => prev.map((test, i) =>
       i === index ? { ...test, ...update } : test
     ));
   };
@@ -211,7 +211,7 @@ const AuthDebug = () => {
             {allTestsComplete && (
               <Alert variant={hasErrors ? "destructive" : "default"}>
                 <AlertDescription>
-                  {hasErrors 
+                  {hasErrors
                     ? "⚠️ Issues detected. Review the failed tests below and check your network connection."
                     : "✅ All tests passed! Authentication should be working correctly."}
                 </AlertDescription>

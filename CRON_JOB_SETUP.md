@@ -27,7 +27,7 @@ Your cron secret token has been securely stored in Supabase. You'll use this in 
 
 **URL:**
 ```
-https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/send-reminder-emails
+https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/send-reminder-emails
 ```
 
 **Schedule (Cron Expression):**
@@ -62,7 +62,7 @@ x-cron-token: [YOUR_CRON_SECRET_TOKEN]
 
 **URL:**
 ```
-https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/send-reminder-emails
+https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/send-reminder-emails
 ```
 
 **Schedule (Cron Expression):**
@@ -97,7 +97,7 @@ x-cron-token: [YOUR_CRON_SECRET_TOKEN]
 
 **URL:**
 ```
-https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/send-reminder-emails
+https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/send-reminder-emails
 ```
 
 **Schedule (Cron Expression):**
@@ -132,7 +132,7 @@ x-cron-token: [YOUR_CRON_SECRET_TOKEN]
 
 **URL:**
 ```
-https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/send-reminder-emails
+https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/send-reminder-emails
 ```
 
 **Schedule (Cron Expression):**
@@ -172,7 +172,7 @@ x-cron-token: [YOUR_CRON_SECRET_TOKEN]
 
 **URL:**
 ```
-https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/process-email-queue
+https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/process-email-queue
 ```
 
 **Schedule (Cron Expression):**
@@ -216,7 +216,7 @@ x-cron-token: [YOUR_CRON_SECRET_TOKEN]
 
 3. **URL:** Paste the function URL
    ```
-   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/send-reminder-emails
+   https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/send-reminder-emails
    ```
 
 4. **Schedule:**
@@ -272,7 +272,7 @@ Test with `curl` to simulate cron-job.org:
 
 ```bash
 curl -X POST \
-  https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/send-reminder-emails \
+  https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/send-reminder-emails \
   -H "Content-Type: application/json" \
   -H "x-cron-token: YOUR_ACTUAL_TOKEN" \
   -d '{

@@ -1,4 +1,4 @@
-project_id = "mdwkkgancoocvkmecwkm"
+project_id = "peckmhkxhgkgopmjthmp"
 
 # Public contact/signup forms - Should have rate limiting
 [functions.send-contact-email]

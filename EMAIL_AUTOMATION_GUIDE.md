@@ -158,7 +158,7 @@ Access automation controls in **Admin Dashboard → Email tab → Automation**:
 2. Click "Add Webhook"
 3. Enter webhook URL:
    ```
-   https://mdwkkgancoocvkmecwkm.supabase.co/functions/v1/resend-webhook
+   https://peckmhkxhgkgopmjthmp.supabase.co/functions/v1/resend-webhook
    ```
 4. Select events:
    - email.sent
