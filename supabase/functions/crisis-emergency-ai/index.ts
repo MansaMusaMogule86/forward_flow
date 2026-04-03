@@ -97,10 +97,6 @@ ${JSON.stringify(resources || [])}`;
       OPENROUTER_MODELS.CHAT_STANDARD
     );
 
-    if (!response.ok) {
-      throw new Error(`OpenRouter error: ${response.status}`);
-    }
-
     const aiData = await response.json();
     const aiMessage = aiData.choices[0].message.content;
 

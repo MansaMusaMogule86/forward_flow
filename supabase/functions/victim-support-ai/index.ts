@@ -1,4 +1,3 @@
-import "xhr";
 import { serve } from "@std/http/server";
 import { createClient } from '@supabase/supabase-js';
 import { corsHeaders, handleCorsPreFlight, logAiUsage, parseRequestBody, errorResponse, successResponse } from "../_shared/utils.ts";
@@ -11,12 +10,12 @@ interface VictimSupportQuery {
   county?: string;
   victimType?: 'domestic_violence' | 'sexual_assault' | 'violent_crime' | 'property_crime' | 'other';
   traumaLevel?: 'recent' | 'ongoing' | 'past' | 'complex';
-  previousContext?: Array<{role: string, content: string}>;
+  previousContext?: Array<{ role: string, content: string }>;
 }
 
 const SUPPORT_SERVICES = {
   domesticViolence: "1-800-799-7233",
-  sexualAssault: "1-800-656-4673", 
+  sexualAssault: "1-800-656-4673",
   crisisSupport: "988",
   ohioVictimCompensation: "https://www.ohioattorneygeneral.gov/Individuals-and-Families/Victims"
 };
@@ -57,23 +56,14 @@ serve(async (req) => {
       });
     }
 
-    // Fetch local resources from DB
-    let resourceQuery = supabase
-      .from('resources')
-      .select('*')
-      .or('type.ilike.%victim%,type.ilike.%legal aid%,type.ilike.%compensation%,type.ilike.%counseling%,type.ilike.%trauma%,type.ilike.%advocacy%,type.ilike.%domestic violence%,type.ilike.%sexual assault%')
-      .eq('verified', true)
-      .limit(10);
-
-    if (location || county) {
-      const searchLocation = location || county;
-      resourceQuery = resourceQuery.or(`city.ilike.%${searchLocation}%,county.ilike.%${searchLocation}%`);
-    }
-
-    const { data: dbResources } = await resourceQuery;
-
     // Victim support system prompt
     const systemPrompt = `You are Coach Kay, the trauma-informed navigator for the Healing Hub at Forward Focus Elevation. You serve all 88 counties across Ohio, specializing in support for crime victims and survivors.
+
+  ### User Context
+  - User request: ${query}
+  - Reported location: ${location || county || 'not provided'}
+  - Victim type hint: ${victimType || 'not specified'}
+  - Trauma context: ${traumaLevel}
 
 ### Tone and Style
 - Use clear markdown headers (##) for structure.
@@ -85,8 +75,12 @@ serve(async (req) => {
 2. **Trauma-Informed Care**: Acknowledge strength, validate experiences without judgment, and emphasize that what happened was not their fault.
 3. **Ohio-Wide Expertise**: Provide guidance on legal rights, victim compensation, trauma counseling, and safety planning.
 
-### Available Ohio Resources
-${JSON.stringify(dbResources || [])}
+### Response Quality Rules
+- Respond directly to the user's specific request first. Do not default to victim compensation unless the user asks for compensation, costs, reimbursement, bills, or financial recovery.
+- If the user asks for counseling/therapy/emotional support, prioritize trauma-informed counseling options and immediate emotional stabilization steps.
+- If the user asks for legal help/advocacy, prioritize legal rights, reporting options, protective orders, and advocacy pathways.
+- If location is not provided and local recommendations are needed, ask for city/county as the guided question.
+- Keep response concise and practical (3 to 6 short sections max).
 
 ### Communication Guidelines
 - Use "survivor" language when appropriate.
@@ -103,41 +97,55 @@ Remember: You are the guide for healing and second chances. Provide clear, actio
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not configured');
 
-    const openRouterResponse = await callOpenRouterWithFallback(
-      OPENROUTER_API_KEY,
-      {
-        messages: messages as OpenRouterMessage[],
-        max_tokens: 1200,
-        temperature: 0.7
-      },
-      OPENROUTER_MODELS.CRISIS_SPECIALIZED,
-      OPENROUTER_MODELS.CHAT_STANDARD
-    );
+    let aiMessage = '';
+    let degraded = false;
+    let degradedReason: string | null = null;
 
-    if (!openRouterResponse.ok) throw new Error(`OpenRouter API error: ${openRouterResponse.status}`);
+    try {
+      const openRouterResponse = await callOpenRouterWithFallback(
+        OPENROUTER_API_KEY,
+        {
+          messages: messages as OpenRouterMessage[],
+          max_tokens: 1200,
+          temperature: 0.7
+        },
+        OPENROUTER_MODELS.CRISIS_SPECIALIZED,
+        OPENROUTER_MODELS.CHAT_STANDARD
+      );
 
-    const aiData = await openRouterResponse.json();
-    const aiMessage = aiData.choices[0].message.content;
+      const aiData = await openRouterResponse.json();
+      aiMessage = aiData?.choices?.[0]?.message?.content || '';
+
+      if (!aiMessage) {
+        throw new Error('OpenRouter response did not include message content');
+      }
+    } catch (providerError) {
+      console.error(`[${endpoint}] Provider fallback engaged:`, providerError);
+      degraded = true;
+      degradedReason = providerError instanceof Error ? providerError.message : String(providerError);
+      aiMessage = 'I am having trouble reaching the AI service right now, but you are not alone. Please use the support resources below, and for immediate help call 988 or 911.';
+    }
 
     // Log success
     await logAiUsage(supabase, endpoint, Date.now() - startTime, 0, userId);
 
     return successResponse({
       response: aiMessage,
-      resources: dbResources || [],
       supportServices: SUPPORT_SERVICES,
       victimType,
-      traumaLevel
+      traumaLevel,
+      degraded,
+      degradedReason
     });
 
   } catch (error) {
     console.error(`[${endpoint}] Error:`, error);
     await logAiUsage(supabase, endpoint, Date.now() - startTime, 1, userId);
-    
-    return successResponse({ 
-      response: 'I apologize for the technical difficulty. Let me connect you with local Ohio victim services and family justice centers in your area that can provide immediate support.',
-      supportServices: SUPPORT_SERVICES,
-      resources: []
-    });
+
+    return errorResponse(
+      'Victim Support AI is temporarily unavailable. Please try again in a moment.',
+      503,
+      error instanceof Error ? error.message : error,
+    );
   }
 });

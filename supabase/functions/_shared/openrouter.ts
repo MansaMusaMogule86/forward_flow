@@ -3,30 +3,29 @@
 
 export const OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
-// Model selection - RELIABLE options on OpenRouter
-// Prioritizing models that are consistently available
+// Model selection - verified working with this project's OpenRouter key
 export const OPENROUTER_MODELS = {
-  // Primary: Google's Gemma 3 4B - reliable free tier, fast
-  CHAT_STREAMING: 'google/gemma-3-4b-it:free',
+  // Primary: fast, low-latency general chat
+  CHAT_STREAMING: 'openai/gpt-4o-mini',
 
-  // Standard: Mistral 7B Instruct - good instruction following
-  CHAT_STANDARD: 'mistralai/mistral-7b-instruct:free',
+  // Standard: free model fallback target for broad availability
+  CHAT_STANDARD: 'meta-llama/llama-3.1-8b-instruct:free',
 
   // Crisis/emergency: Claude Haiku - reliable paid option for safety
-  CRISIS_SUPPORT: 'anthropic/claude-3-haiku',
-  CRISIS_SPECIALIZED: 'anthropic/claude-3-haiku',
+  CRISIS_SUPPORT: 'anthropic/claude-3.5-haiku',
+  CRISIS_SPECIALIZED: 'anthropic/claude-3.5-haiku',
 
-  // Complex reasoning: Use Gemma or Mistral
-  COMPLEX_REASONING: 'google/gemma-3-4b-it:free',
+  // Complex reasoning: keep strong-but-efficient default
+  COMPLEX_REASONING: 'anthropic/claude-3.5-haiku',
 
-  // Resource discovery: Mistral is good at structured output
-  RESOURCE_DISCOVERY: 'mistralai/mistral-7b-instruct:free',
+  // Resource discovery: reliable structured responses
+  RESOURCE_DISCOVERY: 'openai/gpt-4o-mini',
 
   // Multiple fallbacks in order of preference
-  FALLBACK_1: 'mistralai/mistral-7b-instruct:free',
-  FALLBACK_2: 'google/gemma-3-4b-it:free',
-  FALLBACK_3: 'gryphe/mythomax-l2-13b:free',
-  FALLBACK: 'mistralai/mistral-7b-instruct:free',
+  FALLBACK_1: 'openai/gpt-4o-mini',
+  FALLBACK_2: 'meta-llama/llama-3.1-8b-instruct:free',
+  FALLBACK_3: 'google/gemma-2-9b-it:free',
+  FALLBACK: 'openai/gpt-4o-mini',
 };
 
 export interface OpenRouterMessage {

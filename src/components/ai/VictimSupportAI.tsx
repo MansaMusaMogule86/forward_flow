@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Send, Heart, Shield, Scale, DollarSign, Mail, Phone, Bot } from 'lucide-react';
+import { X, Send, Heart, Shield, Scale, DollarSign, Mail, Bot, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -43,6 +43,19 @@ interface VictimSupportAIProps {
   initialQuery?: string;
 }
 
+interface VictimSupportResponse {
+  response?: string;
+  resources?: Message['resources'];
+  webResources?: Message['webResources'];
+  degraded?: boolean;
+  error?: string;
+}
+
+const LEGACY_VICTIM_FALLBACK_SNIPPETS = [
+  'i apologize for the technical difficulty',
+  'family justice centers',
+];
+
 const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, initialQuery }) => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -54,9 +67,16 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [conversationContext, setConversationContext] = useState<Array<{role: string, content: string}>>([]);
+  const [conversationContext, setConversationContext] = useState<Array<{ role: string, content: string }>>([]);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showSupportAreas, setShowSupportAreas] = useState(false);
+  const [selectedSupportAction, setSelectedSupportAction] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const setSupportPrompt = (value: string) => {
+    setSelectedSupportAction(value);
+    setInput(value);
+  };
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -72,7 +92,16 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
     }
   }, [initialQuery, isOpen]);
 
-  const sendMessage = async (messages: {role: string, content: string}[]) => {
+  const isLegacyFallbackResponse = (response: string | undefined) => {
+    const normalizedResponse = response?.toLowerCase().trim();
+    if (!normalizedResponse) {
+      return true;
+    }
+
+    return LEGACY_VICTIM_FALLBACK_SNIPPETS.every((snippet) => normalizedResponse.includes(snippet));
+  };
+
+  const sendMessage = async (messages: { role: string, content: string }[]) => {
     try {
       const { data, error } = await supabase.functions.invoke('victim-support-ai', {
         body: {
@@ -82,22 +111,47 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
           previousContext: messages.slice(0, -1)
         }
       });
-      
+      const responseData = data as VictimSupportResponse | null;
+
       if (error) throw error;
-      
+      if (
+        !responseData?.response ||
+        responseData.degraded ||
+        responseData.error
+      ) {
+        throw new Error(responseData?.error || 'Victim Support AI returned an invalid response');
+      }
+
       // Update AI message with the response
       setMessages(prev => {
         const newMessages = [...prev];
         const lastMessage = newMessages[newMessages.length - 1];
         if (lastMessage.type === 'ai') {
-          lastMessage.content = data.response;
-          lastMessage.resources = data.resources;
-          lastMessage.webResources = data.webResources;
+          lastMessage.content = responseData.response;
+          lastMessage.resources = responseData.resources;
+          lastMessage.webResources = responseData.webResources;
         }
         return newMessages;
       });
     } catch (error) {
       console.error('Victim Support AI error:', error);
+
+      const status = (error as any)?.context?.status ?? (error as any)?.status;
+      const isRateLimited = status === 429 || String((error as any)?.message || '').includes('429');
+
+      if (isRateLimited) {
+        setMessages(prev => {
+          const newMessages = [...prev];
+          const lastMessage = newMessages[newMessages.length - 1];
+          if (lastMessage.type === 'ai') {
+            lastMessage.content = "You've reached the temporary message limit for this support assistant. Please wait about a minute and try again. If you need immediate help, call **988** or **911**.";
+          }
+          return newMessages;
+        });
+        toast.error('Message limit reached. Please wait about a minute and try again.');
+        return;
+      }
+
       toast.error("I'm having trouble connecting. Showing offline resources.");
 
       // Fallback: update existing AI placeholder instead of adding new message
@@ -106,7 +160,7 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
           .from('resources')
           .select('*')
           .or('category.ilike.%victim%,category.ilike.%legal aid%,category.ilike.%compensation%,category.ilike.%counseling%,category.ilike.%trauma%,category.ilike.%advocacy%,category.ilike.%domestic violence%,category.ilike.%sexual assault%')
-          .eq('verified', true)
+          .eq('is_active', true)
           .limit(8);
 
         const content = "I'm having trouble connecting to the AI right now, but here are trauma-informed victim services I found that may help:";
@@ -168,14 +222,14 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
     // Update conversation context and send message
     const newContext = [...conversationContext, { role: 'user', content: userInput }];
     await sendMessage(newContext);
-    
+
     setConversationContext([...newContext, { role: 'assistant', content: '' }]);
     setIsLoading(false);
   };
 
   const quickActions = [
     "Help me understand my legal rights",
-    "I need financial assistance for medical bills", 
+    "I need financial assistance for medical bills",
     "Find me trauma-informed counseling",
     "I need help with victim compensation",
     "Connect me to support groups",
@@ -193,7 +247,7 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl h-[700px] p-0 overflow-hidden">
+      <DialogContent hideClose className="w-[96vw] max-w-5xl h-[88vh] md:h-[86vh] p-0 overflow-hidden">
         <DialogHeader className="sr-only">
           <DialogTitle>Healing & Support Navigator</DialogTitle>
           <DialogDescription>Trauma-informed victim services and healing resources.</DialogDescription>
@@ -210,7 +264,7 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
             </div>
           </div>
           <Button
-            variant="ghost" 
+            variant="ghost"
             size="sm"
             onClick={onClose}
             className="text-primary-foreground hover:bg-primary-foreground/20"
@@ -251,28 +305,27 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message) => (
             <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] rounded-lg p-3 ${
-                message.type === 'user' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'bg-muted text-foreground border'
-              }`}>
+              <div className={`max-w-[80%] rounded-lg p-3 ${message.type === 'user'
+                ? 'bg-primary text-primary-foreground'
+                : 'bg-muted text-foreground border'
+                }`}>
                 <div className="text-sm leading-relaxed prose dark:prose-invert max-w-none">
-                   {message.type === 'user' ? (
-                      message.content
-                    ) : (
-                      <ReactMarkdown
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          a: ({node, ...props}) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
-                          p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
-                          ul: ({node, ...props}) => <ul {...props} className="list-disc ml-4 mb-2" />,
-                          ol: ({node, ...props}) => <ol {...props} className="list-decimal ml-4 mb-2" />,
-                          li: ({node, ...props}) => <li {...props} className="mb-1" />,
-                        }}
-                      >
-                        {message.content}
-                      </ReactMarkdown>
-                    )}
+                  {message.type === 'user' ? (
+                    message.content
+                  ) : (
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({ node, ...props }) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
+                        p: ({ node, ...props }) => <p {...props} className="mb-2 last:mb-0" />,
+                        ul: ({ node, ...props }) => <ul {...props} className="list-disc ml-4 mb-2" />,
+                        ol: ({ node, ...props }) => <ol {...props} className="list-decimal ml-4 mb-2" />,
+                        li: ({ node, ...props }) => <li {...props} className="mb-1" />,
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  )}
                 </div>
 
                 {message.resources && message.resources.length > 0 && (
@@ -353,7 +406,7 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
         </div>
 
         {/* Quick Actions */}
-        <div className="border-t p-4">
+        <div className="border-t p-4 pt-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-medium">Common support areas:</p>
             <div className="flex gap-2">
@@ -383,22 +436,54 @@ const VictimSupportAI: React.FC<VictimSupportAIProps> = ({ isOpen, onClose, init
                 <Mail className="h-3 w-3 mr-1" />
                 Email History
               </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setShowSupportAreas((prev) => !prev)}
+                className="text-xs"
+              >
+                Support Picker
+                <ChevronDown className={`h-3 w-3 ml-1 transition-transform ${showSupportAreas ? 'rotate-180' : ''}`} />
+              </Button>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2 mb-4">
-            {quickActions.map((action, index) => (
-              <Button
-                key={index}
-                variant="outline"
-                size="sm"
-                className="text-xs p-2 h-auto text-left justify-start"
-                onClick={() => setInput(action)}
+
+          {showSupportAreas && (
+            <div className="mb-4 mt-2 rounded-lg border bg-muted/30 p-3 space-y-3">
+              <label htmlFor="support-picker" className="text-xs font-medium text-foreground/80 block">
+                Choose a common support request
+              </label>
+              <select
+                id="support-picker"
+                value={selectedSupportAction}
+                onChange={(e) => setSupportPrompt(e.target.value)}
+                className="w-full h-10 rounded-md border bg-background px-3 text-sm"
+                aria-label="Support request picker"
               >
-                {action}
-              </Button>
-            ))}
-          </div>
-          
+                <option value="">Select support area...</option>
+                {quickActions.map((action) => (
+                  <option key={action} value={action}>
+                    {action}
+                  </option>
+                ))}
+              </select>
+
+              <div className="flex flex-wrap gap-2">
+                {quickActions.slice(0, 3).map((action) => (
+                  <Button
+                    key={action}
+                    variant="outline"
+                    size="sm"
+                    className="text-[11px] h-7"
+                    onClick={() => setSupportPrompt(action)}
+                  >
+                    {action}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Input */}
           <div className="space-y-1">
             <div className="flex gap-2">

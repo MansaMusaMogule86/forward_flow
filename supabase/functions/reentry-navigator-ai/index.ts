@@ -1,4 +1,3 @@
-import "xhr";
 import { serve } from "@std/http/server";
 import { createClient } from '@supabase/supabase-js';
 import { corsHeaders, handleCorsPreFlight, logAiUsage, parseRequestBody, errorResponse, successResponse } from "../_shared/utils.ts";
@@ -54,17 +53,17 @@ serve(async (req) => {
       );
     }
 
-    // Enhanced resource filtering
+    // Enhanced resource filtering (production schema uses category/is_active)
     let resourceQuery = supabase
       .from('resources')
       .select('*')
-      .or('type.ilike.%housing%,type.ilike.%employment%,type.ilike.%job training%,type.ilike.%education%,type.ilike.%reentry%,type.ilike.%legal aid%,type.ilike.%mental health%,type.ilike.%substance abuse%,type.ilike.%healthcare%,type.ilike.%transportation%')
-      .eq('verified', true)
+      .or('category.ilike.%housing%,category.ilike.%employment%,category.ilike.%job training%,category.ilike.%education%,category.ilike.%reentry%,category.ilike.%legal aid%,category.ilike.%mental health%,category.ilike.%substance abuse%,category.ilike.%healthcare%,category.ilike.%transportation%')
+      .eq('is_active', true)
       .limit(10);
 
     if (location || county) {
       const searchLocation = location || county;
-      resourceQuery = resourceQuery.or(`city.ilike.%${searchLocation}%,county.ilike.%${searchLocation}%`);
+      resourceQuery = resourceQuery.or(`state_code.ilike.%${searchLocation}%,title.ilike.%${searchLocation}%,organization.ilike.%${searchLocation}%`);
     }
 
     const { data: resources } = await resourceQuery;
@@ -79,32 +78,44 @@ serve(async (req) => {
     const OPENROUTER_API_KEY = Deno.env.get('OPENROUTER_API_KEY');
     if (!OPENROUTER_API_KEY) throw new Error('OPENROUTER_API_KEY is not configured');
 
-    const response = await callOpenRouterWithFallback(
-      OPENROUTER_API_KEY,
-      {
-        messages: messages as OpenRouterMessage[],
-        max_tokens: 1500,
-        temperature: 0.7,
-      },
-      OPENROUTER_MODELS.CHAT_STREAMING,
-      OPENROUTER_MODELS.CHAT_STANDARD
-    );
+    let aiMessage = '';
+    let degraded = false;
+    let degradedReason: string | null = null;
 
-    if (!response.ok) {
-      throw new Error(`OpenRouter error: ${response.status}`);
+    try {
+      const response = await callOpenRouterWithFallback(
+        OPENROUTER_API_KEY,
+        {
+          messages: messages as OpenRouterMessage[],
+          max_tokens: 1500,
+          temperature: 0.7,
+        },
+        OPENROUTER_MODELS.CHAT_STREAMING,
+        OPENROUTER_MODELS.CHAT_STANDARD
+      );
+
+      const aiData = await response.json();
+      aiMessage = aiData?.choices?.[0]?.message?.content || '';
+
+      if (!aiMessage) {
+        throw new Error('OpenRouter response did not include message content');
+      }
+    } catch (providerError) {
+      console.error(`[${endpoint}] Provider fallback engaged:`, providerError);
+      degraded = true;
+      degradedReason = providerError instanceof Error ? providerError.message : String(providerError);
+      aiMessage = "I am having trouble reaching the AI service right now, but I can still help with trusted reentry resources. Use the resources below to get immediate support for housing, employment, legal aid, healthcare, and transportation. If this is urgent, call 2-1-1 for local guidance.";
     }
-
-    const aiData = await response.json();
-    const aiMessage = aiData.choices[0].message.content;
 
     // Log success
     await logAiUsage(supabase, endpoint, Date.now() - startTime, 0, userId);
 
     return successResponse({
       response: aiMessage,
-      resources: resources || [],
       reentryStage,
       priorityNeeds,
+      degraded,
+      degradedReason,
       rateLimitRemaining: rateLimit.remaining - 1,
     });
 

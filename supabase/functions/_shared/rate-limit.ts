@@ -7,6 +7,18 @@ export const GUEST_MAX_REQUESTS = 5;
 export const AUTHED_MAX_REQUESTS = 50;
 export const RATE_LIMIT_WINDOW_MINUTES = 1440; // 24 hours
 
+const ENDPOINT_LIMIT_OVERRIDES: Record<string, {
+  guestMaxRequests: number;
+  authedMaxRequests: number;
+  windowMinutes: number;
+}> = {
+  // Safety endpoints should not hard-lock users after a handful of attempts.
+  'reentry-navigator-ai': { guestMaxRequests: 30, authedMaxRequests: 150, windowMinutes: 60 },
+  'victim-support-ai': { guestMaxRequests: 30, authedMaxRequests: 150, windowMinutes: 60 },
+  'crisis-support-ai': { guestMaxRequests: 30, authedMaxRequests: 150, windowMinutes: 60 },
+  'crisis-emergency-ai': { guestMaxRequests: 60, authedMaxRequests: 300, windowMinutes: 60 },
+};
+
 export interface RateLimitResult {
   limited: boolean;
   identifier: string;
@@ -20,12 +32,15 @@ export async function checkAiRateLimit(
   req: Request,
   endpoint: string
 ): Promise<RateLimitResult> {
+  const endpointLimits = ENDPOINT_LIMIT_OVERRIDES[endpoint];
+  const windowMinutes = endpointLimits?.windowMinutes ?? RATE_LIMIT_WINDOW_MINUTES;
+
   // Extract user IP or fallback to unknown
   const forwarded = req.headers.get('x-forwarded-for');
   const ip = forwarded ? forwarded.split(',')[0].trim() : 'unknown';
 
   let identifier = `ip:${ip}`;
-  let maxRequests = GUEST_MAX_REQUESTS;
+  let maxRequests = endpointLimits?.guestMaxRequests ?? GUEST_MAX_REQUESTS;
 
   // Try to authenticate the user for higher limits
   const authHeader = req.headers.get('authorization');
@@ -36,7 +51,7 @@ export async function checkAiRateLimit(
 
       if (!error && user) {
         identifier = `user:${user.id}`;
-        maxRequests = AUTHED_MAX_REQUESTS;
+        maxRequests = endpointLimits?.authedMaxRequests ?? AUTHED_MAX_REQUESTS;
       }
     } catch (e) {
       console.warn('Silent failure in rate-limit auth check:', e);
@@ -48,7 +63,7 @@ export async function checkAiRateLimit(
     p_identifier: identifier,
     p_endpoint: endpoint,
     p_max_requests: maxRequests,
-    p_window_minutes: RATE_LIMIT_WINDOW_MINUTES
+    p_window_minutes: windowMinutes
   });
 
   if (error) {

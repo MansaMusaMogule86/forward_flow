@@ -179,8 +179,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
       if (
         !responseData?.response ||
         responseData.degraded ||
-        responseData.error ||
-        isLegacyFallbackResponse(responseData.response)
+        responseData.error
       ) {
         throw new Error(responseData?.error || 'Reentry Navigator returned an invalid response');
       }
@@ -192,7 +191,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
         const lastMessage = newMessages[newMessages.length - 1];
         if (lastMessage.type === 'ai') {
           lastMessage.content = formattedResponse;
-          lastMessage.resources = responseData.resources || [];
+          lastMessage.resources = normalizeResources(responseData.resources);
           lastMessage.webResources = responseData.webResources || [];
         }
         return newMessages;
@@ -211,8 +210,8 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
         const resourcesTable = supabase.from('resources') as any;
         const { data: resources } = await resourcesTable
           .select('*')
-          .or('type.ilike.%housing%,type.ilike.%employment%,type.ilike.%job training%,type.ilike.%education%,type.ilike.%reentry%,type.ilike.%legal aid%,type.ilike.%mental health%,type.ilike.%substance abuse%,type.ilike.%healthcare%,type.ilike.%transportation%')
-          .eq('verified', true)
+          .or('category.ilike.%housing%,category.ilike.%employment%,category.ilike.%job training%,category.ilike.%education%,category.ilike.%reentry%,category.ilike.%legal aid%,category.ilike.%mental health%,category.ilike.%substance abuse%,category.ilike.%healthcare%,category.ilike.%transportation%')
+          .eq('is_active', true)
           .limit(10);
 
         const content = `I'm experiencing a technical hiccup right now, but don't worry - I've still got your back! Here are some solid reentry resources that can help with common needs. Your success matters, and there are people ready to support you!`;

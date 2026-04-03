@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
-import { Loader2, Send, Bot, User, Phone, Globe, MapPin, Star, Shield, Mail, RotateCcw, History } from 'lucide-react';
+import { Loader2, Send, Bot, User, Phone, Globe, MapPin, Star, Shield, Mail, RotateCcw, History, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import EmailChatHistoryModal from './EmailChatHistoryModal';
@@ -483,20 +483,31 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] h-[90vh] p-0 flex flex-col" aria-describedby="ai-discovery-description">
+      <DialogContent hideClose className="max-w-5xl max-h-[90vh] h-[90vh] p-0 flex flex-col" aria-describedby="ai-discovery-description">
         <div className="sr-only">
           <h2 id="ai-discovery-dialog-title">AI Resource Discovery Chat</h2>
         </div>
         <DialogHeader className="p-6 pb-0">
-          <DialogTitle className="flex items-center gap-2">
-            <Bot className="h-5 w-5 text-osu-scarlet" />
-            AI Resource Discovery
-            {(location || county) && (
-              <Badge variant="outline" className="ml-2 border-osu-scarlet/30 text-osu-scarlet bg-osu-scarlet/5">
-                {location || county}
-              </Badge>
-            )}
-          </DialogTitle>
+          <div className="flex items-start justify-between gap-4">
+            <DialogTitle className="flex items-center gap-2">
+              <Bot className="h-5 w-5 text-osu-scarlet" />
+              AI Resource Discovery
+              {(location || county) && (
+                <Badge variant="outline" className="ml-2 border-osu-scarlet/30 text-osu-scarlet bg-osu-scarlet/5">
+                  {location || county}
+                </Badge>
+              )}
+            </DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              aria-label="Close AI Resource Discovery"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
           <DialogDescription id="ai-discovery-description">
             Get personalized resource recommendations using AI based on your specific needs and location
           </DialogDescription>
