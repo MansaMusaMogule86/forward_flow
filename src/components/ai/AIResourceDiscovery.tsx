@@ -120,6 +120,12 @@ const buildResourceOrFilter = (tokens: string[]) => {
     .join(',');
 };
 
+const sanitizeQueryForDisplay = (query: string) => {
+  const normalized = query.replace(/[“”]/g, '"').trim();
+  const unwrapped = normalized.replace(/^['"]+|['"]+$/g, '').trim();
+  return unwrapped || normalized;
+};
+
 const matchesLocation = (resource: Resource, location?: string, county?: string) => {
   const countyValue = county?.toLowerCase().trim();
   const locationValue = location?.toLowerCase().trim();
@@ -170,9 +176,11 @@ const scoreResource = (resource: Resource, tokens: string[]) => {
 };
 
 const formatFallbackResponse = (resources: Resource[], query: string, location?: string, county?: string) => {
+  const displayQuery = sanitizeQueryForDisplay(query);
+
   if (resources.length === 0) {
     return [
-      `I could not find a strong match for "${query}" in our current resource directory.`,
+      `I could not find a strong match for "${displayQuery}" in our current resource directory.`,
       county || location ? `I checked for matches near ${county ?? location}.` : 'I checked our current Ohio resource directory.',
       'Try using a more specific need like housing, legal aid, counseling, expungement, victim services, food assistance, or job training.'
     ].join(' ');
@@ -263,6 +271,8 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
   };
 
   const handleSend = async (queryText?: string) => {
+    if (isLoading) return;
+
     const query = queryText || inputValue.trim();
     if (!query) return;
 
@@ -535,6 +545,7 @@ const AIResourceDiscovery: React.FC<AIResourceDiscoveryProps> = ({
                         variant="outline"
                         size="sm"
                         className="text-left justify-start h-auto p-3 text-sm hover:bg-primary/10"
+                        disabled={isLoading}
                         onClick={() => handleSend(query)}
                       >
                         {query}
