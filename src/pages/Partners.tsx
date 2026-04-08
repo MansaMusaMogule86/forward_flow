@@ -6,13 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { 
-  Users, 
-  FileText, 
-  Plus, 
-  TrendingUp, 
-  CheckCircle, 
-  Clock, 
+import {
+  Users,
+  FileText,
+  Plus,
+  TrendingUp,
+  CheckCircle,
+  Clock,
   AlertCircle,
   BarChart3,
   UserCheck,
@@ -49,7 +49,7 @@ const Partners = () => {
     impactScore: 0,
   });
   const [loading, setLoading] = useState(true);
-  
+
   // Check URL params for active tab
   const urlParams = new URLSearchParams(window.location.search);
   const initialTab = urlParams.get('tab') || 'dashboard';
@@ -66,14 +66,9 @@ const Partners = () => {
   const fetchPartnerStats = async () => {
     try {
       const { data, error } = await supabase.rpc('get_partner_stats');
-      
-      if (error) {
-        console.error("Error fetching partner stats:", error);
-        throw error;
-      }
-      
-      if (data && typeof data === 'object') {
-        const statsData = data as any; // Cast to any to access properties
+
+      if (!error && data && typeof data === 'object') {
+        const statsData = data as any;
         setStats({
           totalReferrals: statsData.totalReferrals || 0,
           activeReferrals: statsData.activeReferrals || 0,
@@ -82,13 +77,10 @@ const Partners = () => {
           impactScore: statsData.impactScore || 0,
         });
       }
+      // Silently ignore errors - stats display as 0 if unavailable
     } catch (error) {
       console.error("Error fetching partner stats:", error);
-      toast({
-        title: "Error", 
-        description: "Failed to load partner statistics.",
-        variant: "destructive",
-      });
+      // Stats show as 0 rather than surfacing an error to the user
     } finally {
       setLoading(false);
     }
@@ -165,8 +157,8 @@ const Partners = () => {
         {/* Header with Hero Image */}
         <div className="mb-6">
           <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-            <img 
-              src={partnershipCollaboration} 
+            <img
+              src={partnershipCollaboration}
               alt="Diverse team of professionals working together on community partnerships"
               className="w-full h-48 md:h-64 object-cover"
             />
@@ -203,7 +195,7 @@ const Partners = () => {
               <>
                 {/* Verification Status */}
                 <PartnerVerificationStatus />
-                
+
                 {/* Stats Overview */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <Card className="hover:shadow-lg transition-all duration-300 border-osu-gray/20 shadow-md">
@@ -364,7 +356,7 @@ const Partners = () => {
               </Card>
             )}
             <PartnerSupportChatbot />
-            
+
             <div className="max-w-4xl mx-auto">
               <Card className="border-osu-gray/20 shadow-lg">
                 <CardHeader className="bg-gradient-to-r from-osu-scarlet/5 to-osu-gray/5 text-center pb-3">

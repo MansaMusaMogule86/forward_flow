@@ -42,24 +42,18 @@ export const PartnerVerificationStatus = () => {
         .limit(1)
         .maybeSingle();
 
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned"
+      if (error && error.code !== 'PGRST116') {
+        // Log but don't surface to user - show "not verified" state instead
         console.error('Error fetching verification status:', error);
-        throw error;
-      }
-
-      if (data) {
+      } else if (data) {
         setVerificationStatus({
           ...data,
           verification_type: data.organization_type
         } as VerificationStatus);
       }
     } catch (error) {
+      // Silently fail - component shows "Not Verified" as the fallback state
       console.error('Error fetching verification status:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load verification status.",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
@@ -95,7 +89,7 @@ export const PartnerVerificationStatus = () => {
 
   const getStatusIcon = () => {
     if (!verificationStatus) return <Shield className="h-5 w-5 text-osu-gray" />;
-    
+
     switch (verificationStatus.status) {
       case 'approved':
         return <CheckCircle className="h-5 w-5 text-green-600" />;
@@ -112,7 +106,7 @@ export const PartnerVerificationStatus = () => {
     if (!verificationStatus) {
       return <Badge variant="outline" className="text-osu-gray border-osu-gray/30">Not Verified</Badge>;
     }
-    
+
     // Check expiration status if approved
     if (verificationStatus.status === 'approved' && verificationStatus.expires_at) {
       const daysLeft = Math.ceil((new Date(verificationStatus.expires_at).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -124,7 +118,7 @@ export const PartnerVerificationStatus = () => {
         return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">Expiring ({daysLeft} days)</Badge>;
       }
     }
-    
+
     switch (verificationStatus.status) {
       case 'approved':
         return <Badge className="bg-green-100 text-green-800 border-green-200">Verified Partner</Badge>;
@@ -143,7 +137,7 @@ export const PartnerVerificationStatus = () => {
     if (!verificationStatus) {
       return "You haven't submitted a verification request yet. Apply to become a verified partner to access additional features.";
     }
-    
+
     switch (verificationStatus.status) {
       case 'approved':
         return "Congratulations! You are a verified partner with full access to all partner features.";
@@ -173,11 +167,11 @@ export const PartnerVerificationStatus = () => {
             <span className="font-medium text-osu-scarlet">Status:</span>
             {getStatusBadge()}
           </div>
-          
+
           <p className="text-sm text-osu-gray">
             {getStatusMessage()}
           </p>
-          
+
           {verificationStatus?.verified_at && (
             <div className="space-y-1">
               <p className="text-xs text-osu-gray">
@@ -190,7 +184,7 @@ export const PartnerVerificationStatus = () => {
               )}
             </div>
           )}
-          
+
           {!verificationStatus && (
             <div className="pt-2">
               <Button asChild size="sm" className="bg-osu-scarlet hover:bg-osu-scarlet-dark">
@@ -200,7 +194,7 @@ export const PartnerVerificationStatus = () => {
               </Button>
             </div>
           )}
-          
+
           {verificationStatus?.status === 'denied' && (
             <div className="pt-2">
               <Button asChild size="sm" variant="outline" className="border-osu-scarlet text-osu-scarlet hover:bg-osu-scarlet/10">

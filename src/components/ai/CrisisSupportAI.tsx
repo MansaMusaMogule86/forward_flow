@@ -56,7 +56,7 @@ const initialState = {
   ] as Message[],
   input: '',
   isLoading: false,
-  conversationContext: [] as Array<{role: string, content: string}>,
+  conversationContext: [] as Array<{ role: string, content: string }>,
   hasAskedSafety: false,
   userResponse: [] as string[],
   showEmailModal: false,
@@ -68,7 +68,7 @@ type Action =
   | { type: 'ADD_MESSAGE'; payload: Message }
   | { type: 'SET_INPUT'; payload: string }
   | { type: 'SET_LOADING'; payload: boolean }
-  | { type: 'SET_CONVERSATION_CONTEXT'; payload: Array<{role: string, content: string}> }
+  | { type: 'SET_CONVERSATION_CONTEXT'; payload: Array<{ role: string, content: string }> }
   | { type: 'SET_HAS_ASKED_SAFETY'; payload: boolean }
   | { type: 'SET_USER_RESPONSE'; payload: string[] }
   | { type: 'TOGGLE_EMAIL_MODAL' };
@@ -175,7 +175,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
     }
     return 'informational';
   };
-  
+
   const createPersonalizedQuery = (query: string): string => {
     const safetyQuestions = !state.hasAskedSafety ? " Alex should ask about immediate safety and current situation." : "";
     const context = state.userResponse.length > 0 ? ` Previous responses: ${state.userResponse.join(', ')}` : "";
@@ -225,7 +225,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
 
   const quickActions = [
     "I'm having thoughts of suicide",
-    "I'm in an abusive relationship", 
+    "I'm in an abusive relationship",
     "I need emergency shelter",
     "I'm having a panic attack",
     "Someone is threatening me",
@@ -236,12 +236,12 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="w-[95vw] sm:w-full sm:max-w-4xl max-h-[90vh] p-0 flex flex-col">
+      <DialogContent hideClose className="w-[96vw] sm:w-full sm:max-w-4xl max-h-[90vh] p-0 flex flex-col">
         <DialogHeader className="sr-only">
           <DialogTitle>Crisis Support AI Chat</DialogTitle>
           <DialogDescription>Your compassionate crisis companion, available 24/7.</DialogDescription>
         </DialogHeader>
-        
+
         {/* Header */}
         <div className="flex items-center justify-between bg-destructive p-4 text-destructive-foreground shrink-0">
           <div className="flex items-center gap-3">
@@ -291,11 +291,10 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
           <div className="space-y-4">
             {state.messages.map((message) => (
               <div key={message.id} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[85%] rounded-lg p-4 ${
-                  message.type === 'user' 
-                    ? 'bg-primary text-primary-foreground' 
-                    : 'bg-muted text-foreground'
-                }`}>
+                <div className={`max-w-[85%] rounded-lg p-4 ${message.type === 'user'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-foreground'
+                  }`}>
                   <div className="text-sm leading-relaxed prose dark:prose-invert max-w-none">
                     {message.type === 'user' ? (
                       message.content
@@ -303,22 +302,22 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
                       <ReactMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          a: ({node, ...props}) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
-                          p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
-                          ul: ({node, ...props}) => <ul {...props} className="list-disc ml-4 mb-2" />,
-                          ol: ({node, ...props}) => <ol {...props} className="list-decimal ml-4 mb-2" />,
-                          li: ({node, ...props}) => <li {...props} className="mb-1" />,
+                          a: ({ node, ...props }) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
+                          p: ({ node, ...props }) => <p {...props} className="mb-2 last:mb-0" />,
+                          ul: ({ node, ...props }) => <ul {...props} className="list-disc ml-4 mb-2" />,
+                          ol: ({ node, ...props }) => <ol {...props} className="list-decimal ml-4 mb-2" />,
+                          li: ({ node, ...props }) => <li {...props} className="mb-1" />,
                         }}
                       >
                         {message.content}
                       </ReactMarkdown>
                     )}
                   </div>
-                  
+
                   {message.urgencyLevel && (
-                    <Badge 
-                      variant={message.urgencyLevel === 'immediate' ? 'destructive' : 
-                              message.urgencyLevel === 'urgent' ? 'secondary' : 'outline'} 
+                    <Badge
+                      variant={message.urgencyLevel === 'immediate' ? 'destructive' :
+                        message.urgencyLevel === 'urgent' ? 'secondary' : 'outline'}
                       className="mt-2"
                     >
                       {message.urgencyLevel} priority
@@ -413,13 +412,13 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
               <Heart className="h-4 w-4 text-destructive" />
               How can Coach Kay help you right now?
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+            <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-hide">
               {quickActions.map((action, index) => (
                 <Button
                   key={index}
                   variant="outline"
                   size="sm"
-                  className="text-xs p-3 h-auto text-left justify-start hover:bg-destructive/5"
+                  className="text-xs px-2.5 py-1.5 h-auto whitespace-nowrap flex-shrink-0 hover:bg-destructive/5"
                   onClick={() => dispatch({ type: 'SET_INPUT', payload: action })}
                 >
                   {action}
@@ -427,7 +426,7 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
               ))}
             </div>
           </div>
-          
+
           {/* Input */}
           <div className="space-y-1">
             <div className="flex gap-2">
@@ -437,13 +436,13 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
                 placeholder="Tell Alex what's on your mind..."
                 onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
                 disabled={state.isLoading}
-                className="flex-1 h-11 sm:h-12"
+                className="flex-1 h-10 sm:h-12"
                 maxLength={MAX_MESSAGE_LENGTH}
               />
               <Button
                 onClick={handleSend}
                 disabled={state.isLoading || !state.input.trim()}
-                className="shrink-0 h-11 w-11 sm:h-12 sm:w-12"
+                className="shrink-0 h-10 w-10 sm:h-12 sm:w-12"
               >
                 <Send className="h-4 w-4" />
               </Button>
@@ -452,19 +451,21 @@ const CrisisSupportAI: React.FC<CrisisSupportAIProps> = ({ isOpen, onClose, init
               {state.input.length} / {MAX_MESSAGE_LENGTH}
             </div>
           </div>
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
-            <span>Coach Kay is here 24/7 • Confidential • Trauma-informed support</span>
-            <div className="flex gap-2">
+          <div className="flex items-center justify-between text-xs text-muted-foreground gap-2">
+            <span className="hidden sm:block">Coach Kay is here 24/7 • Confidential • Trauma-informed support</span>
+            <div className="flex gap-2 ml-auto">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  dispatch({ type: 'ADD_MESSAGE', payload: {
-                    id: '1',
-                    type: 'ai',
-                    content: "Hi, I'm Alex, your crisis support companion at Forward Focus Elevation. I'm here to listen and help you find immediate support. Your safety matters deeply to me. Can you tell me what's bringing you here today? I want to understand so I can help you best.",
-                    timestamp: new Date(),
-                  }});
+                  dispatch({
+                    type: 'ADD_MESSAGE', payload: {
+                      id: '1',
+                      type: 'ai',
+                      content: "Hi, I'm Alex, your crisis support companion at Forward Focus Elevation. I'm here to listen and help you find immediate support. Your safety matters deeply to me. Can you tell me what's bringing you here today? I want to understand so I can help you best.",
+                      timestamp: new Date(),
+                    }
+                  });
                   dispatch({ type: 'SET_CONVERSATION_CONTEXT', payload: [] });
                   dispatch({ type: 'SET_INPUT', payload: '' });
                 }}

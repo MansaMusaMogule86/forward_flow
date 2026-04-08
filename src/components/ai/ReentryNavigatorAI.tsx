@@ -355,7 +355,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => { if (!open) handleCloseRequest(false); }}>
-      <DialogContent className="max-w-4xl max-h-[90vh] p-0 flex flex-col overflow-hidden">
+      <DialogContent hideClose className="max-w-4xl w-[96vw] max-h-[90vh] p-0 flex flex-col overflow-hidden">
         <DialogTitle className="sr-only">{selectedCoach ? `${selectedCoach.name} Chat` : 'Coach Kay Chat'}</DialogTitle>
         <DialogDescription className="sr-only">
           Ask for reentry guidance on housing, employment, legal support, education, family reconnection, and financial stability.
@@ -565,15 +565,15 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
         </div>
 
         {/* Quick Actions */}
-        <div className="border-t p-4 bg-background">
-          <p className="text-sm font-medium mb-3">Quick help with common needs:</p>
-          <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className="border-t p-3 sm:p-4 bg-background shrink-0">
+          <p className="text-xs sm:text-sm font-medium mb-2">Quick help with common needs:</p>
+          <div className="flex gap-1.5 overflow-x-auto pb-2 mb-3 scrollbar-hide">
             {quickActions.map((action, index) => (
               <Button
                 key={index}
                 variant="outline"
                 size="sm"
-                className="text-xs p-2 h-auto text-left justify-start"
+                className="text-xs px-2 py-1.5 h-auto whitespace-nowrap flex-shrink-0"
                 onClick={() => setInput(action)}
               >
                 {action}
@@ -591,8 +591,9 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
                 onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
                 disabled={isLoading}
                 maxLength={MAX_MESSAGE_LENGTH}
+                className="h-10 sm:h-11"
               />
-              <Button onClick={handleSend} disabled={isLoading || !input.trim()}>
+              <Button onClick={handleSend} disabled={isLoading || !input.trim()} className="h-10 w-10 sm:h-11 sm:w-11 shrink-0">
                 <Send className="h-4 w-4" />
               </Button>
             </div>
@@ -600,15 +601,15 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
               {input.length} / {MAX_MESSAGE_LENGTH}
             </div>
           </div>
-          <div className="flex items-center justify-between mt-3">
-            <p className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between mt-2 gap-2">
+            <p className="text-xs text-muted-foreground hidden sm:block">
               Your success matters • Justice-friendly resources • Encouraging guidance every step
             </p>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 ml-auto">
               <Button
                 variant="outline"
                 size="sm"
-                className="text-xs"
+                className="text-xs h-7 px-2"
                 onClick={resetConversation}
               >
                 New Chat
@@ -616,7 +617,7 @@ const ReentryNavigatorAI: React.FC<ReentryNavigatorAIProps> = ({ isOpen, onClose
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-xs"
+                className="text-xs h-7 px-2"
                 onClick={() => setShowEmailModal(true)}
               >
                 Email Chat History

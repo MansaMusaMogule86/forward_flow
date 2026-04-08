@@ -48,7 +48,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
   const [isListening, setIsListening] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
-  const [conversationContext, setConversationContext] = useState<Array<{role: string, content: string}>>([]);
+  const [conversationContext, setConversationContext] = useState<Array<{ role: string, content: string }>>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -72,13 +72,13 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
   const connectToCrisisBot = async () => {
     try {
       setIsLoading(true);
-      
+
       // Initialize with crisis support greeting focused on Ohio resources
       addMessage(
         "Hi, I'm your Crisis Emergency Support AI Assistant serving all 88 counties across Ohio.\n\nI'm here to provide immediate, compassionate support with:\n\n*   **AI-Enhanced Crisis Support** - Intelligent guidance tailored to your specific situation\n*   **Trauma-Informed Care** - Every interaction designed with safety, trust, and empowerment\n*   **Ohio-Wide Resources** - Access to crisis services across all Ohio counties\n*   **Immediate Connection** - Direct links to local support in your area\n\nI'm here to listen and help you find the right support. What's bringing you here today?",
         false
       );
-      
+
       setIsConnected(true);
     } catch (error) {
       console.error('Error connecting to crisis bot:', error);
@@ -109,7 +109,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
       if (error) {
         throw new Error(error.message);
       }
-      
+
       // Add AI response message with resources
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -119,21 +119,21 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
         resources: data.resources,
         webResources: data.webResources
       };
-      
+
       setMessages(prev => [...prev, aiMessage]);
-      
+
       // Update conversation context
       setConversationContext(prev => [
         ...prev,
         { role: 'user', content: userMessage },
         { role: 'assistant', content: data.response }
       ]);
-      
+
     } catch (error) {
       console.error('Crisis Emergency AI error:', error);
       addMessage("I apologize for the technical difficulty. Let me help connect you with local Ohio crisis resources and support services.", false);
     }
-    
+
     setIsLoading(false);
   }, [inputValue, isConnected, conversationContext]);
 
@@ -165,7 +165,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[85vh] p-0 flex flex-col">
+      <DialogContent hideClose className="max-w-2xl w-[96vw] max-h-[85vh] p-0 flex flex-col">
         <DialogHeader className="p-4 pb-2 bg-destructive text-destructive-foreground border-b">
           <DialogTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5" />
@@ -199,11 +199,10 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
                   <div
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.isUser
+                    className={`max-w-[80%] rounded-lg p-3 ${message.isUser
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-foreground'
-                    }`}
+                      }`}
                   >
                     <div className="text-sm whitespace-pre-line leading-relaxed prose dark:prose-invert max-w-none">
                       {message.isUser ? (
@@ -212,18 +211,18 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
                         <ReactMarkdown
                           remarkPlugins={[remarkGfm]}
                           components={{
-                            a: ({node, ...props}) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
-                            p: ({node, ...props}) => <p {...props} className="mb-2 last:mb-0" />,
-                            ul: ({node, ...props}) => <ul {...props} className="list-disc ml-4 mb-2" />,
-                            ol: ({node, ...props}) => <ol {...props} className="list-decimal ml-4 mb-2" />,
-                            li: ({node, ...props}) => <li {...props} className="mb-1" />,
+                            a: ({ node, ...props }) => <a {...props} className="text-primary hover:text-primary/80 underline font-medium" target="_blank" rel="noopener noreferrer" />,
+                            p: ({ node, ...props }) => <p {...props} className="mb-2 last:mb-0" />,
+                            ul: ({ node, ...props }) => <ul {...props} className="list-disc ml-4 mb-2" />,
+                            ol: ({ node, ...props }) => <ol {...props} className="list-decimal ml-4 mb-2" />,
+                            li: ({ node, ...props }) => <li {...props} className="mb-1" />,
                           }}
                         >
                           {message.text}
                         </ReactMarkdown>
                       )}
                     </div>
-                    
+
                     {message.resources && message.resources.length > 0 && (
                       <div className="mt-3 space-y-2">
                         <p className="text-xs font-semibold text-foreground/80">Verified Ohio Resources:</p>
@@ -277,7 +276,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
                         ))}
                       </div>
                     )}
-                    
+
                     <span className="text-xs opacity-70 mt-2 block">
                       {message.timestamp.toLocaleTimeString()}
                     </span>
@@ -330,7 +329,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
                 </Button>
               </div>
             </div>
-            
+
             <div className="space-y-1">
               <div className="flex gap-2">
                 <Input
@@ -352,7 +351,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
                 >
                   {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
                 </Button>
-                <Button 
+                <Button
                   onClick={handleSendMessage}
                   disabled={!inputValue.trim() || !isConnected || isLoading}
                   size="icon"
@@ -364,7 +363,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
                 {inputValue.length} / {MAX_MESSAGE_LENGTH}
               </div>
             </div>
-            
+
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Available 24/7 • Confidential • Ohio-wide support</span>
               <div className="flex items-center gap-1">
@@ -374,7 +373,7 @@ export const CrisisEmergencyBot = ({ trigger }: CrisisEmergencyBotProps) => {
             </div>
           </div>
         </div>
-        
+
         <EmailChatHistoryModal
           isOpen={showEmailModal}
           onClose={() => setShowEmailModal(false)}

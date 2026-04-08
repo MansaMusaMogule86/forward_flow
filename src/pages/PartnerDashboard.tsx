@@ -8,11 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/hooks/use-toast";
-import { 
-  Users, 
-  TrendingUp, 
-  CheckCircle, 
-  Clock, 
+import {
+  Users,
+  TrendingUp,
+  CheckCircle,
+  Clock,
   Share2,
   Copy,
   Award,
@@ -82,7 +82,7 @@ const PartnerDashboard = () => {
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle();
-      
+
       setHasVerificationRequest(!!data);
       if (data && data.status === 'approved' && data.expires_at) {
         setVerificationExpiry({ expires_at: data.expires_at, status: data.status });
@@ -128,7 +128,7 @@ const PartnerDashboard = () => {
         .single();
 
       if (partnerError) throw partnerError;
-      
+
       setPartner(partnerData);
       await fetchReferrals();
     } catch (error) {
@@ -223,15 +223,15 @@ const PartnerDashboard = () => {
 
   const getMonthlyData = () => {
     const monthlyStats: { [key: string]: { month: string; referrals: number; completed: number } } = {};
-    
+
     referrals.forEach(referral => {
       const date = new Date(referral.created_at);
       const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-      
+
       if (!monthlyStats[monthKey]) {
         monthlyStats[monthKey] = { month: date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' }), referrals: 0, completed: 0 };
       }
-      
+
       monthlyStats[monthKey].referrals++;
       if (referral.status === 'completed') {
         monthlyStats[monthKey].completed++;
@@ -280,13 +280,13 @@ const PartnerDashboard = () => {
   }
 
   return (
-    <main id="main" className="container py-10">
-      <div className="flex items-center justify-between mb-8">
+    <main id="main" className="container py-6 sm:py-10 px-4 sm:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-3">
         <div>
-          <h1 className="font-heading text-3xl font-semibold">{partner.organization_name}</h1>
-          <p className="text-muted-foreground">Partner Dashboard</p>
+          <h1 className="font-heading text-2xl sm:text-3xl font-semibold">{partner.organization_name}</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Partner Dashboard</p>
         </div>
-        <Badge variant={partner.verified ? "default" : "secondary"}>
+        <Badge variant={partner.verified ? "default" : "secondary"} className="self-start sm:self-auto">
           {partner.verified ? "Verified Partner" : "Pending Verification"}
         </Badge>
       </div>
@@ -307,10 +307,10 @@ const PartnerDashboard = () => {
                       </h3>
                     </div>
                     <p className={`text-sm ${daysLeft <= 7 ? 'text-red-800' : 'text-amber-800'} mb-4`}>
-                      Your partner verification expires in <strong>{daysLeft} days</strong> on {new Date(verificationExpiry.expires_at).toLocaleDateString()}. 
+                      Your partner verification expires in <strong>{daysLeft} days</strong> on {new Date(verificationExpiry.expires_at).toLocaleDateString()}.
                       Renew now to maintain uninterrupted access to the partner portal and referral system.
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => navigate('/partners/renew-verification')}
                       className={daysLeft <= 7 ? 'bg-red-600 hover:bg-red-700 text-white' : 'bg-amber-600 hover:bg-amber-700 text-white'}
                     >
@@ -334,7 +334,7 @@ const PartnerDashboard = () => {
                     <p className="text-sm text-red-800 mb-4">
                       Your partner verification has expired. Renew now to restore access to all partner features.
                     </p>
-                    <Button 
+                    <Button
                       onClick={() => navigate('/partners/renew-verification')}
                       className="bg-red-600 hover:bg-red-700 text-white"
                     >
@@ -362,7 +362,7 @@ const PartnerDashboard = () => {
                 <p className="text-sm text-amber-800 mb-4">
                   Unlock all partnership features by completing your verification request. This helps us ensure quality connections and builds trust in our network.
                 </p>
-                <Button 
+                <Button
                   onClick={() => navigate('/partners/request-verification')}
                   className="bg-amber-600 hover:bg-amber-700 text-white"
                 >
@@ -375,7 +375,7 @@ const PartnerDashboard = () => {
       )}
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-4 mb-8">
+      <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Referrals</CardTitle>
@@ -422,11 +422,11 @@ const PartnerDashboard = () => {
       </div>
 
       <Tabs defaultValue="overview" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="referrals">Referrals</TabsTrigger>
-          <TabsTrigger value="new-referral">New Referral</TabsTrigger>
-          <TabsTrigger value="share">Share & Earn</TabsTrigger>
+        <TabsList className="flex w-full overflow-x-auto bg-muted scrollbar-hide">
+          <TabsTrigger value="overview" className="flex-shrink-0">Overview</TabsTrigger>
+          <TabsTrigger value="referrals" className="flex-shrink-0">Referrals</TabsTrigger>
+          <TabsTrigger value="new-referral" className="flex-shrink-0">New Referral</TabsTrigger>
+          <TabsTrigger value="share" className="flex-shrink-0">Share & Earn</TabsTrigger>
         </TabsList>
 
         <TabsContent value="overview" className="space-y-6">
@@ -492,9 +492,9 @@ const PartnerDashboard = () => {
                         <div className="flex items-center justify-between">
                           <CardTitle className="text-lg">{referral.name}</CardTitle>
                           <Badge variant={
-                            referral.status === 'completed' ? 'default' : 
-                            referral.status === 'contacted' ? 'secondary' : 
-                            'outline'
+                            referral.status === 'completed' ? 'default' :
+                              referral.status === 'contacted' ? 'secondary' :
+                                'outline'
                           }>
                             {referral.status}
                           </Badge>
