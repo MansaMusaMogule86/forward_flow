@@ -19,66 +19,66 @@ const RequestPartnership = () => {
   const [csrfToken] = useState(generateCSRFToken());
   const rateLimiter = new RateLimiter();
 
-  useEffect(()=>{ document.title = "Request Partnership | Partner Portal"; },[]);
+  useEffect(() => { document.title = "Request Partnership | Partner Portal"; }, []);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Rate limiting check
     const clientId = `${contactEmail || 'anonymous'}_partnership`;
     if (rateLimiter.isRateLimited(clientId, 2, 600000)) { // 2 attempts per 10 minutes
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Too many attempts. Please wait 10 minutes before trying again.",
-        variant: "destructive" 
+        variant: "destructive"
       });
       return;
     }
-    
+
     // Sanitize inputs
     const sanitizedOrgName = sanitizeInput(organizationName);
     const sanitizedEmail = sanitizeInput(contactEmail);
     const sanitizedDescription = sanitizeInput(description);
-    
+
     // Validation
     if (!sanitizedOrgName || !sanitizedEmail || !partnershipType || !sanitizedDescription) {
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Please fill in all fields including partnership type",
-        variant: "destructive" 
+        variant: "destructive"
       });
       return;
     }
 
     if (sanitizedOrgName.length < 2 || sanitizedOrgName.length > 100) {
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Organization name must be between 2 and 100 characters",
-        variant: "destructive" 
+        variant: "destructive"
       });
       return;
     }
 
     if (!isValidEmail(sanitizedEmail)) {
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Please enter a valid email address",
-        variant: "destructive" 
+        variant: "destructive"
       });
       return;
     }
 
     if (sanitizedDescription.length < 10 || sanitizedDescription.length > 1000) {
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Description must be between 10 and 1000 characters",
-        variant: "destructive" 
+        variant: "destructive"
       });
       return;
     }
 
     setLoading(true);
-    
+
     try {
       // Send email notification
       const emailResponse = await supabase.functions.invoke('send-partnership-email', {
@@ -97,23 +97,22 @@ const RequestPartnership = () => {
       const { error } = await supabase
         .from('partnership_requests')
         .insert({
-          organization: sanitizedOrgName,
-          email: sanitizedEmail,
-          name: sanitizedOrgName,
-          message: `Partnership Type: ${partnershipType}\n\n${sanitizedDescription}`
+          organization_name: sanitizedOrgName,
+          contact_email: sanitizedEmail,
+          description: `Partnership Type: ${partnershipType}\n\n${sanitizedDescription}`
         });
 
       if (error) {
         console.error('Error submitting partnership request:', error);
-        toast({ 
-          title: "Error", 
+        toast({
+          title: "Error",
           description: "Failed to submit request. Please try again.",
-          variant: "destructive" 
+          variant: "destructive"
         });
       } else {
-        toast({ 
-          title: "Request sent", 
-          description: "We will contact you shortly to discuss collaboration." 
+        toast({
+          title: "Request sent",
+          description: "We will contact you shortly to discuss collaboration."
         });
         // Clear form
         setOrganizationName("");
@@ -123,10 +122,10 @@ const RequestPartnership = () => {
       }
     } catch (error) {
       console.error('Error submitting partnership request:', error);
-      toast({ 
-        title: "Error", 
+      toast({
+        title: "Error",
         description: "Failed to submit request. Please try again.",
-        variant: "destructive" 
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
@@ -145,7 +144,7 @@ const RequestPartnership = () => {
             </NavLink>
           </Button>
         </div>
-        
+
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="p-3 bg-gradient-to-br from-osu-scarlet/20 to-osu-gray/20 rounded-xl">
@@ -157,7 +156,7 @@ const RequestPartnership = () => {
             Join our network of organizations committed to supporting justice-impacted individuals and families.
           </p>
         </div>
-        
+
         <Card className="shadow-2xl border border-osu-gray/20 bg-white/95 backdrop-blur-sm">
           <CardHeader className="bg-gradient-to-r from-osu-scarlet/5 to-osu-gray/5 text-center pb-6">
             <CardTitle className="text-2xl text-osu-scarlet">Partnership Application</CardTitle>
@@ -169,32 +168,32 @@ const RequestPartnership = () => {
                   <Building2 className="h-4 w-4" />
                   Organization Name
                 </label>
-                <Input 
+                <Input
                   id="org-name"
-                  required 
-                  placeholder="Your nonprofit or program" 
+                  required
+                  placeholder="Your nonprofit or program"
                   value={organizationName}
                   onChange={(e) => setOrganizationName(e.target.value)}
                   className="h-12 text-base border-osu-gray/30 focus:border-osu-scarlet focus:ring-osu-scarlet/20"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-base font-semibold text-osu-scarlet" htmlFor="contact-email">
                   <Mail className="h-4 w-4" />
                   Contact Email
                 </label>
-                <Input 
+                <Input
                   id="contact-email"
-                  required 
-                  type="email" 
-                  placeholder="you@org.org" 
+                  required
+                  type="email"
+                  placeholder="you@org.org"
                   value={contactEmail}
                   onChange={(e) => setContactEmail(e.target.value)}
                   className="h-12 text-base border-osu-gray/30 focus:border-osu-scarlet focus:ring-osu-scarlet/20"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-base font-semibold text-osu-scarlet" htmlFor="partnership-type">
                   <Users className="h-4 w-4" />
@@ -220,26 +219,26 @@ const RequestPartnership = () => {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <label className="flex items-center gap-2 text-base font-semibold text-osu-scarlet" htmlFor="collaboration">
                   <FileText className="h-4 w-4" />
                   How would you like to collaborate?
                 </label>
-                <Textarea 
+                <Textarea
                   id="collaboration"
-                  required 
-                  placeholder="Tell us about your programs, services, and how you'd like to partner with us to support justice-impacted individuals..." 
+                  required
+                  placeholder="Tell us about your programs, services, and how you'd like to partner with us to support justice-impacted individuals..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="min-h-32 text-base resize-none border-osu-gray/30 focus:border-osu-scarlet focus:ring-osu-scarlet/20"
                 />
               </div>
-              
-              <Button 
-                type="submit" 
-                disabled={loading} 
-                size="lg" 
+
+              <Button
+                type="submit"
+                disabled={loading}
+                size="lg"
                 className="w-full bg-gradient-to-r from-osu-scarlet to-osu-gray hover:from-osu-scarlet/90 hover:to-osu-gray/90 text-white shadow-lg hover:shadow-xl transition-all duration-300 h-12"
               >
                 {loading ? (

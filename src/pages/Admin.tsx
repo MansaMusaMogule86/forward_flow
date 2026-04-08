@@ -56,13 +56,16 @@ interface PartnerReferral {
 
 interface PartnershipRequest {
   id: string;
-  organization: string;
-  email: string;
-  message: string;
+  organization?: string;
+  organization_name?: string;
+  email?: string;
+  contact_email?: string;
+  message?: string;
+  description?: string;
   status: string;
   created_at: string;
   updated_at: string;
-  name: string;
+  name?: string;
 }
 
 interface ContactSubmission {
@@ -123,27 +126,36 @@ const Admin = () => {
   const [adminExists, setAdminExists] = useState<boolean | null>(null);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
 
+  const getPartnershipOrganization = (request: PartnershipRequest) =>
+    request.organization_name || request.organization || "Unknown organization";
+
+  const getPartnershipEmail = (request: PartnershipRequest) =>
+    request.contact_email || request.email || "";
+
+  const getPartnershipMessage = (request: PartnershipRequest) =>
+    request.description || request.message || "No message provided.";
+
 
   // Loading timeout detection
   useEffect(() => {
     const timeout = setTimeout(() => setLoadingTimeout(true), 8000);
     return () => clearTimeout(timeout);
   }, []);
-  const [partnerStats, setPartnerStats] = useState({ 
-    total_partners: 0, 
-    verified_partners: 0, 
-    pending_partners: 0, 
+  const [partnerStats, setPartnerStats] = useState({
+    total_partners: 0,
+    verified_partners: 0,
+    pending_partners: 0,
     total_referrals: 0,
     total_success_stories: 0,
     published_success_stories: 0
   });
-  
+
   const referralsPagination = usePagination({ items: referrals });
   const partnershipsPagination = usePagination({ items: partnershipRequests });
   const contactsPagination = usePagination({ items: contactSubmissions });
   const supportPagination = usePagination({ items: supportRequests });
   const bookingsPagination = usePagination({ items: bookingRequests });
-  
+
   // Check if admin exists in system
   useEffect(() => {
     const checkAdmin = async () => {
@@ -267,7 +279,7 @@ const Admin = () => {
   }, [isAdmin]);
 
   const toggleContactVisibility = async (id: string, contactInfo: string) => {
-      // Check admin operation limits before proceeding
+    // Check admin operation limits before proceeding
     try {
       const { data: canProceed, error: rateLimitError } = await supabase.rpc('check_admin_operation_limit');
 
@@ -285,7 +297,7 @@ const Admin = () => {
         newRevealed.delete(id);
       } else {
         newRevealed.add(id);
-        
+
         // Log contact reveal for audit trail
       }
       setRevealedContacts(newRevealed);
@@ -329,7 +341,7 @@ const Admin = () => {
           title: "Success",
           description: "Status updated successfully",
         });
-        
+
         // Log status update for audit trail
 
         // Refresh data
@@ -459,9 +471,9 @@ const Admin = () => {
           </CardContent>
         </Card>
       </div>
-      
+
       <AdminSetupBanner />
-      
+
       <Tabs defaultValue="management" className="space-y-6">
         <TabsList className="flex flex-wrap justify-start gap-1 h-auto bg-muted/50 p-1">
           <TabsTrigger value="launch" className="data-[state=active]:bg-background">
@@ -508,7 +520,7 @@ const Admin = () => {
                   Complete these final steps to prepare your application for production launch.
                 </p>
               </div>
-              
+
               <PreLaunchChecklist />
               <AdminSetup />
               <LaunchChecklist />
@@ -519,175 +531,175 @@ const Admin = () => {
 
         <TabsContent value="management">
           <div className="grid gap-8">
-        {/* Partner Referrals Section */}
-        <section>
-          <h2 className="font-heading text-2xl font-semibold mb-4">Partner Referrals</h2>
-          {loadingData ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-            </div>
-          ) : referrals.length === 0 ? (
-            <Card>
-              <CardContent className="py-8">
-                <p className="text-center text-muted-foreground">No referrals yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="grid gap-4">
-                {referralsPagination.paginatedItems.map((referral) => (
-                <Card key={referral.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{referral.name}</CardTitle>
-                      <Badge variant={referral.status === 'new' ? 'default' : 'secondary'}>
-                        {referral.status}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      <div className="flex items-center gap-2">
-                        <span>Contact: </span>
-                        <span className="font-mono">
-                          {revealedContacts.has(referral.id) 
-                            ? referral.contact_info 
-                            : maskContactInfo(referral.contact_info)
-                          }
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => toggleContactVisibility(referral.id, referral.contact_info)}
-                          className="h-6 w-6 p-0"
-                        >
-                          {revealedContacts.has(referral.id) ? (
-                            <EyeOff className="h-3 w-3" />
-                          ) : (
-                            <Eye className="h-3 w-3" />
-                          )}
-                        </Button>
-                      </div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm mb-4">{referral.notes}</p>
-                    <div className="flex gap-2">
-                      {referral.status === 'new' && (
-                        <>
-                          <Button
-                            size="sm"
-                            onClick={() => updateStatus('partner_referrals', referral.id, 'contacted')}
-                          >
-                            Mark as Contacted
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateStatus('partner_referrals', referral.id, 'completed')}
-                          >
-                            Mark as Completed
-                          </Button>
-                        </>
-                      )}
-                    </div>
+            {/* Partner Referrals Section */}
+            <section>
+              <h2 className="font-heading text-2xl font-semibold mb-4">Partner Referrals</h2>
+              {loadingData ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                </div>
+              ) : referrals.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8">
+                    <p className="text-center text-muted-foreground">No referrals yet</p>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-            <DataPagination
-              currentPage={referralsPagination.currentPage}
-              totalPages={referralsPagination.totalPages}
-              onPageChange={referralsPagination.goToPage}
-              hasNextPage={referralsPagination.hasNextPage}
-              hasPreviousPage={referralsPagination.hasPreviousPage}
-            />
-          </>
-          )}
-        </section>
+              ) : (
+                <>
+                  <div className="grid gap-4">
+                    {referralsPagination.paginatedItems.map((referral) => (
+                      <Card key={referral.id}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg">{referral.name}</CardTitle>
+                            <Badge variant={referral.status === 'new' ? 'default' : 'secondary'}>
+                              {referral.status}
+                            </Badge>
+                          </div>
+                          <CardDescription>
+                            <div className="flex items-center gap-2">
+                              <span>Contact: </span>
+                              <span className="font-mono">
+                                {revealedContacts.has(referral.id)
+                                  ? referral.contact_info
+                                  : maskContactInfo(referral.contact_info)
+                                }
+                              </span>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => toggleContactVisibility(referral.id, referral.contact_info)}
+                                className="h-6 w-6 p-0"
+                              >
+                                {revealedContacts.has(referral.id) ? (
+                                  <EyeOff className="h-3 w-3" />
+                                ) : (
+                                  <Eye className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm mb-4">{referral.notes}</p>
+                          <div className="flex gap-2">
+                            {referral.status === 'new' && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateStatus('partner_referrals', referral.id, 'contacted')}
+                                >
+                                  Mark as Contacted
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => updateStatus('partner_referrals', referral.id, 'completed')}
+                                >
+                                  Mark as Completed
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  <DataPagination
+                    currentPage={referralsPagination.currentPage}
+                    totalPages={referralsPagination.totalPages}
+                    onPageChange={referralsPagination.goToPage}
+                    hasNextPage={referralsPagination.hasNextPage}
+                    hasPreviousPage={referralsPagination.hasPreviousPage}
+                  />
+                </>
+              )}
+            </section>
 
-        {/* Partnership Requests Section */}
-        <section>
-          <h2 className="font-heading text-2xl font-semibold mb-4">Partnership Requests</h2>
-          {loadingData ? (
-            <div className="text-center py-8">
-              <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
-            </div>
-          ) : partnershipRequests.length === 0 ? (
-            <Card>
-              <CardContent className="py-8">
-                <p className="text-center text-muted-foreground">No partnership requests yet</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <>
-              <div className="grid gap-4">
-                {partnershipsPagination.paginatedItems.map((request) => (
-                <Card key={request.id}>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{request.organization}</CardTitle>
-                      <Badge variant={request.status === 'new' ? 'default' : 'secondary'}>
-                        {request.status}
-                      </Badge>
-                    </div>
-                    <CardDescription>
-                      <div className="flex items-center gap-2">
-                        <span>Email: </span>
-                        <span className="font-mono">
-                          {revealedContacts.has(request.id) 
-                            ? request.email 
-                            : maskContactInfo(request.email)
-                          }
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => toggleContactVisibility(request.id, request.email)}
-                          className="h-6 w-6 p-0"
-                        >
-                          {revealedContacts.has(request.id) ? (
-                            <EyeOff className="h-3 w-3" />
-                          ) : (
-                            <Eye className="h-3 w-3" />
-                          )}
-                        </Button>
-                      </div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm mb-4">{request.message}</p>
-                    <div className="flex gap-2">
-                      {request.status === 'new' && (
-                        <>
-                          <Button
-                            size="sm"
-                            onClick={() => updateStatus('partnership_requests', request.id, 'reviewing')}
-                          >
-                            Mark as Reviewing
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateStatus('partnership_requests', request.id, 'approved')}
-                          >
-                            Approve
-                          </Button>
-                        </>
-                      )}
-                    </div>
+            {/* Partnership Requests Section */}
+            <section>
+              <h2 className="font-heading text-2xl font-semibold mb-4">Partnership Requests</h2>
+              {loadingData ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin h-6 w-6 border-4 border-primary border-t-transparent rounded-full mx-auto"></div>
+                </div>
+              ) : partnershipRequests.length === 0 ? (
+                <Card>
+                  <CardContent className="py-8">
+                    <p className="text-center text-muted-foreground">No partnership requests yet</p>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-            <DataPagination
-              currentPage={partnershipsPagination.currentPage}
-              totalPages={partnershipsPagination.totalPages}
-              onPageChange={partnershipsPagination.goToPage}
-              hasNextPage={partnershipsPagination.hasNextPage}
-              hasPreviousPage={partnershipsPagination.hasPreviousPage}
-            />
-          </>
-          )}
-        </section>
+              ) : (
+                <>
+                  <div className="grid gap-4">
+                    {partnershipsPagination.paginatedItems.map((request) => (
+                      <Card key={request.id}>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-lg">{getPartnershipOrganization(request)}</CardTitle>
+                            <Badge variant={request.status === 'new' || request.status === 'pending' ? 'default' : 'secondary'}>
+                              {request.status}
+                            </Badge>
+                          </div>
+                          <CardDescription>
+                            <div className="flex items-center gap-2">
+                              <span>Email: </span>
+                              <span className="font-mono">
+                                {revealedContacts.has(request.id)
+                                  ? getPartnershipEmail(request)
+                                  : maskContactInfo(getPartnershipEmail(request))
+                                }
+                              </span>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => toggleContactVisibility(request.id, getPartnershipEmail(request))}
+                                className="h-6 w-6 p-0"
+                              >
+                                {revealedContacts.has(request.id) ? (
+                                  <EyeOff className="h-3 w-3" />
+                                ) : (
+                                  <Eye className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </div>
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm mb-4">{getPartnershipMessage(request)}</p>
+                          <div className="flex gap-2">
+                            {(request.status === 'new' || request.status === 'pending') && (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => updateStatus('partnership_requests', request.id, 'reviewing')}
+                                >
+                                  Mark as Reviewing
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => updateStatus('partnership_requests', request.id, 'approved')}
+                                >
+                                  Approve
+                                </Button>
+                              </>
+                            )}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  <DataPagination
+                    currentPage={partnershipsPagination.currentPage}
+                    totalPages={partnershipsPagination.totalPages}
+                    onPageChange={partnershipsPagination.goToPage}
+                    hasNextPage={partnershipsPagination.hasNextPage}
+                    hasPreviousPage={partnershipsPagination.hasPreviousPage}
+                  />
+                </>
+              )}
+            </section>
           </div>
         </TabsContent>
 
@@ -708,56 +720,56 @@ const Admin = () => {
               <>
                 <div className="grid gap-4">
                   {contactsPagination.paginatedItems.map((submission) => (
-                  <Card key={submission.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{submission.name}</CardTitle>
-                        <div className="flex gap-2">
-                          <Badge variant={submission.status === 'new' ? 'default' : 'secondary'}>
-                            {submission.status}
-                          </Badge>
+                    <Card key={submission.id}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">{submission.name}</CardTitle>
+                          <div className="flex gap-2">
+                            <Badge variant={submission.status === 'new' ? 'default' : 'secondary'}>
+                              {submission.status}
+                            </Badge>
+                          </div>
                         </div>
-                      </div>
-                      <CardDescription>
-                        Email: {submission.email} • Subject: {submission.subject}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm mb-4">{submission.message}</p>
-                      <div className="flex gap-2 text-xs text-muted-foreground">
-                        <span>Submitted: {new Date(submission.created_at).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        {submission.status === 'new' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => updateStatus('contact_submissions', submission.id, 'responded')}
-                            >
-                              Mark as Responded
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateStatus('contact_submissions', submission.id, 'resolved')}
-                            >
-                              Mark as Resolved
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <DataPagination
-                currentPage={contactsPagination.currentPage}
-                totalPages={contactsPagination.totalPages}
-                onPageChange={contactsPagination.goToPage}
-                hasNextPage={contactsPagination.hasNextPage}
-                hasPreviousPage={contactsPagination.hasPreviousPage}
-              />
-            </>
+                        <CardDescription>
+                          Email: {submission.email} • Subject: {submission.subject}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm mb-4">{submission.message}</p>
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span>Submitted: {new Date(submission.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          {submission.status === 'new' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => updateStatus('contact_submissions', submission.id, 'responded')}
+                              >
+                                Mark as Responded
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateStatus('contact_submissions', submission.id, 'resolved')}
+                              >
+                                Mark as Resolved
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <DataPagination
+                  currentPage={contactsPagination.currentPage}
+                  totalPages={contactsPagination.totalPages}
+                  onPageChange={contactsPagination.goToPage}
+                  hasNextPage={contactsPagination.hasNextPage}
+                  hasPreviousPage={contactsPagination.hasPreviousPage}
+                />
+              </>
             )}
           </div>
         </TabsContent>
@@ -779,70 +791,70 @@ const Admin = () => {
               <>
                 <div className="grid gap-4">
                   {supportPagination.paginatedItems.map((request) => (
-                  <Card key={request.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{request.name}</CardTitle>
-                        <div className="flex gap-2">
-                          <Badge variant="outline">{request.request_type}</Badge>
-                          <Badge variant={request.status === 'new' ? 'default' : 'secondary'}>
-                            {request.status}
-                          </Badge>
-                        </div>
-                      </div>
-                      <CardDescription>
-                        Email: {request.email} • Organization: {request.organization || 'N/A'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm mb-2"><strong>Subject:</strong> {request.subject}</p>
-                      <p className="text-sm mb-4">{request.message}</p>
-                      {request.request_data && Object.keys(request.request_data).length > 0 && (
-                        <div className="mt-4 p-3 bg-secondary/20 rounded-lg">
-                          <p className="text-xs font-medium mb-2">Additional Details:</p>
-                          <div className="text-xs space-y-1">
-                            {Object.entries(request.request_data).map(([key, value]) => (
-                              <div key={key}>
-                                <strong>{key.replace(/_/g, ' ')}:</strong> {Array.isArray(value) ? value.join(', ') : String(value)}
-                              </div>
-                            ))}
+                    <Card key={request.id}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">{request.name}</CardTitle>
+                          <div className="flex gap-2">
+                            <Badge variant="outline">{request.request_type}</Badge>
+                            <Badge variant={request.status === 'new' ? 'default' : 'secondary'}>
+                              {request.status}
+                            </Badge>
                           </div>
                         </div>
-                      )}
-                      <div className="flex gap-2 text-xs text-muted-foreground mt-4">
-                        <span>Submitted: {new Date(request.created_at).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        {request.status === 'new' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => updateStatus('support_requests', request.id, 'reviewing')}
-                            >
-                              Mark as Reviewing
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateStatus('support_requests', request.id, 'approved')}
-                            >
-                              Approve Request
-                            </Button>
-                          </>
+                        <CardDescription>
+                          Email: {request.email} • Organization: {request.organization || 'N/A'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm mb-2"><strong>Subject:</strong> {request.subject}</p>
+                        <p className="text-sm mb-4">{request.message}</p>
+                        {request.request_data && Object.keys(request.request_data).length > 0 && (
+                          <div className="mt-4 p-3 bg-secondary/20 rounded-lg">
+                            <p className="text-xs font-medium mb-2">Additional Details:</p>
+                            <div className="text-xs space-y-1">
+                              {Object.entries(request.request_data).map(([key, value]) => (
+                                <div key={key}>
+                                  <strong>{key.replace(/_/g, ' ')}:</strong> {Array.isArray(value) ? value.join(', ') : String(value)}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
                         )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-              <DataPagination
-                currentPage={supportPagination.currentPage}
-                totalPages={supportPagination.totalPages}
-                onPageChange={supportPagination.goToPage}
-                hasNextPage={supportPagination.hasNextPage}
-                hasPreviousPage={supportPagination.hasPreviousPage}
-              />
-            </>
+                        <div className="flex gap-2 text-xs text-muted-foreground mt-4">
+                          <span>Submitted: {new Date(request.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          {request.status === 'new' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => updateStatus('support_requests', request.id, 'reviewing')}
+                              >
+                                Mark as Reviewing
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateStatus('support_requests', request.id, 'approved')}
+                              >
+                                Approve Request
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <DataPagination
+                  currentPage={supportPagination.currentPage}
+                  totalPages={supportPagination.totalPages}
+                  onPageChange={supportPagination.goToPage}
+                  hasNextPage={supportPagination.hasNextPage}
+                  hasPreviousPage={supportPagination.hasPreviousPage}
+                />
+              </>
             )}
           </div>
         </TabsContent>
@@ -864,69 +876,69 @@ const Admin = () => {
               <>
                 <div className="grid gap-4">
                   {bookingsPagination.paginatedItems.map((booking) => (
-                  <Card key={booking.id}>
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">{booking.name}</CardTitle>
-                        <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'}>
-                          {booking.status}
-                        </Badge>
-                      </div>
-                      <CardDescription>
-                        Email: {booking.email} • Phone: {booking.phone || 'N/A'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div>
-                          <p className="text-sm font-medium">Date</p>
-                          <p className="text-sm text-muted-foreground">
-                            {new Date(booking.scheduled_date).toLocaleDateString()}
-                          </p>
+                    <Card key={booking.id}>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between">
+                          <CardTitle className="text-lg">{booking.name}</CardTitle>
+                          <Badge variant={booking.status === 'confirmed' ? 'default' : 'secondary'}>
+                            {booking.status}
+                          </Badge>
                         </div>
-                        <div>
-                          <p className="text-sm font-medium">Time</p>
-                          <p className="text-sm text-muted-foreground">{booking.scheduled_time}</p>
+                        <CardDescription>
+                          Email: {booking.email} • Phone: {booking.phone || 'N/A'}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <p className="text-sm font-medium">Date</p>
+                            <p className="text-sm text-muted-foreground">
+                              {new Date(booking.scheduled_date).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium">Time</p>
+                            <p className="text-sm text-muted-foreground">{booking.scheduled_time}</p>
+                          </div>
                         </div>
-                      </div>
-                      {booking.notes && (
-                        <p className="text-sm mb-4">{booking.notes}</p>
-                      )}
-                      <div className="flex gap-2 text-xs text-muted-foreground">
-                        <span>Booked: {new Date(booking.created_at).toLocaleDateString()}</span>
-                      </div>
-                      <div className="flex gap-2 mt-4">
-                        {booking.status === 'confirmed' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => updateStatus('bookings', booking.id, 'completed')}
-                            >
-                              Mark as Completed
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => updateStatus('bookings', booking.id, 'cancelled')}
-                            >
-                              Mark as Cancelled
-                            </Button>
-                          </>
+                        {booking.notes && (
+                          <p className="text-sm mb-4">{booking.notes}</p>
                         )}
-                      </div>
-                    </CardContent>
-                </Card>
-              ))}
-            </div>
-            <DataPagination
-              currentPage={bookingsPagination.currentPage}
-              totalPages={bookingsPagination.totalPages}
-              onPageChange={bookingsPagination.goToPage}
-              hasNextPage={bookingsPagination.hasNextPage}
-              hasPreviousPage={bookingsPagination.hasPreviousPage}
-            />
-          </>
-          )}
+                        <div className="flex gap-2 text-xs text-muted-foreground">
+                          <span>Booked: {new Date(booking.created_at).toLocaleDateString()}</span>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                          {booking.status === 'confirmed' && (
+                            <>
+                              <Button
+                                size="sm"
+                                onClick={() => updateStatus('bookings', booking.id, 'completed')}
+                              >
+                                Mark as Completed
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => updateStatus('bookings', booking.id, 'cancelled')}
+                              >
+                                Mark as Cancelled
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <DataPagination
+                  currentPage={bookingsPagination.currentPage}
+                  totalPages={bookingsPagination.totalPages}
+                  onPageChange={bookingsPagination.goToPage}
+                  hasNextPage={bookingsPagination.hasNextPage}
+                  hasPreviousPage={bookingsPagination.hasPreviousPage}
+                />
+              </>
+            )}
           </div>
         </TabsContent>
 
@@ -998,17 +1010,17 @@ const Admin = () => {
           <Suspense fallback={<ComponentLoader />}>
             <div className="space-y-6">
               <h2 className="font-heading text-2xl font-semibold">Analytics Dashboard</h2>
-              
+
               <Tabs defaultValue="user-analytics" className="space-y-6">
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="user-analytics">User Analytics</TabsTrigger>
                   <TabsTrigger value="performance">Performance</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="user-analytics">
                   <UserAnalyticsDashboard />
                 </TabsContent>
-                
+
                 <TabsContent value="performance">
                   <WebsitePerformance />
                 </TabsContent>
@@ -1025,15 +1037,15 @@ const Admin = () => {
                 <TabsTrigger value="automation">Automation</TabsTrigger>
                 <TabsTrigger value="campaigns">Campaigns</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="deliverability">
                 <EmailDeliverabilityDashboard />
               </TabsContent>
-              
+
               <TabsContent value="automation">
                 <EmailAutomationManager />
               </TabsContent>
-              
+
               <TabsContent value="campaigns">
                 <div className="space-y-6">
                   <EmailMarketingDashboard />
@@ -1055,19 +1067,19 @@ const Admin = () => {
                   <TabsTrigger value="mfa">MFA Settings</TabsTrigger>
                   <TabsTrigger value="monitoring">Monitoring</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="login-security">
                   <LoginSecurityMonitor />
                 </TabsContent>
-                
+
                 <TabsContent value="api-keys">
                   <ApiKeyRotationManager />
                 </TabsContent>
-                
+
                 <TabsContent value="mfa">
                   <MFASettings />
                 </TabsContent>
-                
+
                 <TabsContent value="monitoring">
                   <SecurityMonitoringDashboard />
                 </TabsContent>
