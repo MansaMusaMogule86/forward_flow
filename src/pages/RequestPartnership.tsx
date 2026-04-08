@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { sanitizeInput, isValidEmail, RateLimiter, generateCSRFToken } from "@/lib/security";
+import { sanitizeInput, isValidEmail, RateLimiter } from "@/lib/security";
 import { Building2, Mail, FileText, Users, ArrowLeft } from "lucide-react";
 
 const RequestPartnership = () => {
@@ -16,8 +16,7 @@ const RequestPartnership = () => {
   const [contactEmail, setContactEmail] = useState("");
   const [partnershipType, setPartnershipType] = useState("");
   const [description, setDescription] = useState("");
-  const [csrfToken] = useState(generateCSRFToken());
-  const rateLimiter = new RateLimiter();
+  const rateLimiterRef = useRef(new RateLimiter());
 
   useEffect(() => { document.title = "Request Partnership | Partner Portal"; }, []);
 
@@ -26,7 +25,7 @@ const RequestPartnership = () => {
 
     // Rate limiting check
     const clientId = `${contactEmail || 'anonymous'}_partnership`;
-    if (rateLimiter.isRateLimited(clientId, 2, 600000)) { // 2 attempts per 10 minutes
+    if (rateLimiterRef.current.isRateLimited(clientId, 2, 600000)) { // 2 attempts per 10 minutes
       toast({
         title: "Error",
         description: "Too many attempts. Please wait 10 minutes before trying again.",
@@ -99,7 +98,8 @@ const RequestPartnership = () => {
         .insert({
           organization_name: sanitizedOrgName,
           contact_email: sanitizedEmail,
-          description: `Partnership Type: ${partnershipType}\n\n${sanitizedDescription}`
+          partnership_type: partnershipType,
+          description: sanitizedDescription
         });
 
       if (error) {

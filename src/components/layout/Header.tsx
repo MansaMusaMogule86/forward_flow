@@ -3,7 +3,7 @@ import logo from "@/assets/images/branding/logo-transparent.png";
 import { useState, useEffect } from "react";
 import { Menu, User, LogOut, X, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { NavigationMenu, NavigationMenuItem, NavigationMenuList } from "@/components/ui/navigation-menu";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +16,24 @@ interface HeaderProps {
   showUtility?: boolean;
   showCrisis?: boolean;
 }
+
+const primaryNavLinks = [
+  { to: '/', label: 'Home' },
+  { to: '/help', label: 'Get Help Now' },
+  { to: '/youth-futures', label: 'Youth Futures' },
+  { to: '/about', label: 'About Us' },
+];
+
+const resourceNavLinks = [
+  { to: '/victim-services', label: 'Healing Hub' },
+  { to: '/blog', label: 'Knowledge Hub' },
+  { to: '/learn', label: 'The Collective' },
+];
+
+const portalNavLinks = [
+  { to: '/auth', label: 'Client Portal' },
+  { to: '/partners', label: 'Partner Portal' },
+];
 
 const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
   const { user, signOut } = useAuth();
@@ -104,15 +122,49 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                   >
                     Navigation
                   </SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Browse the main navigation links, resource categories, and portal links.
+                  </SheetDescription>
                   <nav className="mt-6 space-y-1">
-                    {[
-                      { to: '/', label: 'Home' },
-                      { to: '/help', label: 'Get Help Now' },
-                      { to: '/youth-futures', label: 'Youth Futures' },
-                      { to: '/about', label: 'About Us' },
-                      { to: '/auth', label: 'Client Portal' },
-                      { to: '/partners', label: 'Partner Portal' },
-                    ].map(({ to, label }) => (
+                    {primaryNavLinks.map(({ to, label }) => (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) =>
+                          `block px-4 py-2.5 rounded-sm text-sm transition-colors ${isActive
+                            ? 'text-[#BB0000]'
+                            : 'text-foreground/65 hover:text-foreground hover:bg-accent/40'
+                          }`
+                        }
+                        style={{ fontFamily: 'Outfit, sans-serif' }}
+                      >
+                        {label}
+                      </NavLink>
+                    ))}
+                    <div className="px-4 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/40">
+                      Resources
+                    </div>
+                    {resourceNavLinks.map(({ to, label }) => (
+                      <NavLink
+                        key={to}
+                        to={to}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) =>
+                          `block px-4 py-2.5 rounded-sm text-sm transition-colors ${isActive
+                            ? 'text-[#BB0000]'
+                            : 'text-foreground/65 hover:text-foreground hover:bg-accent/40'
+                          }`
+                        }
+                        style={{ fontFamily: 'Outfit, sans-serif' }}
+                      >
+                        {label}
+                      </NavLink>
+                    ))}
+                    <div className="px-4 pt-4 pb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-foreground/40">
+                      Portal
+                    </div>
+                    {portalNavLinks.map(({ to, label }) => (
                       <NavLink
                         key={to}
                         to={to}
@@ -174,15 +226,11 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
             <nav className="hidden md:flex items-center gap-6">
               <NavigationMenu>
                 <NavigationMenuList className="flex items-center gap-6">
-                  <NavigationMenuItem>
-                    <NavLink to="/" className={navLinkCls}>Home</NavLink>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <NavLink to="/help" className={navLinkCls}>Get Help Now</NavLink>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <NavLink to="/youth-futures" className={navLinkCls}>Youth Futures</NavLink>
-                  </NavigationMenuItem>
+                  {primaryNavLinks.map(({ to, label }) => (
+                    <NavigationMenuItem key={to}>
+                      <NavLink to={to} className={navLinkCls}>{label}</NavLink>
+                    </NavigationMenuItem>
+                  ))}
                   <NavigationMenuItem>
                     <DropdownMenu>
                       <DropdownMenuTrigger
@@ -196,20 +244,13 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                         className="z-[60] w-[180px] rounded-md p-1"
                         style={{ background: '#FFFFFF', border: '1px solid rgba(214,214,214,0.9)' }}
                       >
-                        <DropdownMenuItem asChild>
-                          <NavLink to="/victim-services" className={dropdownItemCls}>Healing Hub</NavLink>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <NavLink to="/blog" className={dropdownItemCls}>Knowledge Hub</NavLink>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <NavLink to="/learn" className={dropdownItemCls}>The Collective</NavLink>
-                        </DropdownMenuItem>
+                        {resourceNavLinks.map(({ to, label }) => (
+                          <DropdownMenuItem asChild key={to}>
+                            <NavLink to={to} className={dropdownItemCls}>{label}</NavLink>
+                          </DropdownMenuItem>
+                        ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
-                  </NavigationMenuItem>
-                  <NavigationMenuItem>
-                    <NavLink to="/about" className={navLinkCls}>About Us</NavLink>
                   </NavigationMenuItem>
 
                   <NavigationMenuItem>
@@ -225,12 +266,11 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                         className="z-[60] w-[180px] rounded-md p-1"
                         style={{ background: '#FFFFFF', border: '1px solid rgba(214,214,214,0.9)' }}
                       >
-                        <DropdownMenuItem asChild>
-                          <NavLink to="/auth" className={dropdownItemCls}>Client Portal</NavLink>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <NavLink to="/partners" className={dropdownItemCls}>Partner Portal</NavLink>
-                        </DropdownMenuItem>
+                        {portalNavLinks.map(({ to, label }) => (
+                          <DropdownMenuItem asChild key={to}>
+                            <NavLink to={to} className={dropdownItemCls}>{label}</NavLink>
+                          </DropdownMenuItem>
+                        ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </NavigationMenuItem>
@@ -296,7 +336,7 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                 className="cipher-btn-gold"
                 style={{ padding: '8px 14px', fontSize: '10px' }}
               >
-                Join
+                Get Involved
               </NavLink>
             </div>
 

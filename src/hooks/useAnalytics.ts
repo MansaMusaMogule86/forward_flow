@@ -2,6 +2,7 @@ import { useEffect, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { createSupabaseStorageGuard, isMissingSupabaseTableError } from '@/lib/supabaseSchemaGuards';
 
 interface AnalyticsEvent {
   action_type: 'page_view' | 'form_submit' | 'ai_interaction' | 'download' | 'click' | 'conversion' | 'error';
@@ -10,6 +11,23 @@ interface AnalyticsEvent {
   session_id?: string;
   event_data?: Record<string, unknown>;
 }
+
+let analyticsUnavailable = false;
+const analyticsGuard = createSupabaseStorageGuard('ffe_analytics_unavailable');
+
+const isAnalyticsDisabled = () => {
+  if (analyticsUnavailable) {
+    return true;
+  }
+
+  analyticsUnavailable = analyticsGuard.isUnavailable();
+  return analyticsUnavailable;
+};
+
+const disableAnalytics = () => {
+  analyticsUnavailable = true;
+  analyticsGuard.markUnavailable();
+};
 
 const useSafeLocation = () => {
   try {
@@ -25,20 +43,28 @@ export const useAnalytics = () => {
   const lastTrackedPathRef = useRef<string | null>(null);
 
   const getSessionId = useCallback(() => {
-    let sessionId = localStorage.getItem('analytics_session_id');
-    if (!sessionId) {
-      sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localStorage.setItem('analytics_session_id', sessionId);
+    try {
+      let sessionId = localStorage.getItem('analytics_session_id');
+      if (!sessionId) {
+        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('analytics_session_id', sessionId);
+      }
+      return sessionId;
+    } catch {
+      return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     }
-    return sessionId;
   }, []);
 
   const trackEvent = useCallback(async (event: AnalyticsEvent) => {
+    if (isAnalyticsDisabled()) {
+      return;
+    }
+
     try {
       const sessionId = getSessionId();
       const pagePath = event.page_path || location?.pathname || window.location.pathname;
 
-      await supabase.from('website_analytics').insert({
+      const { error } = await supabase.from('website_analytics').insert({
         action_type: event.action_type,
         page_path: pagePath,
         referrer: event.referrer,
@@ -52,6 +78,10 @@ export const useAnalytics = () => {
           ...event.event_data
         }
       });
+
+      if (isMissingSupabaseTableError(error, 'website_analytics')) {
+        disableAnalytics();
+      }
     } catch {
       // Silently fail analytics
     }

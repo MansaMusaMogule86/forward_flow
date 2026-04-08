@@ -3,12 +3,27 @@ import { Award, CheckCircle, Target, Users, Shield, Star, Zap, Brain, Sparkles, 
 
 const FounderOnePager = () => {
   return (
-    <div className="founder-one-pager bg-white p-8 md:p-12 border border-osu-gray-light/70 shadow-sm max-w-4xl mx-auto print:shadow-none print:border-none print:p-0">
+    <div className="founder-one-pager bg-white p-8 md:p-12 border border-osu-gray-light/70 shadow-sm max-w-4xl mx-auto print-card print:shadow-none print:border-none print:p-0">
       <style>{`
         @media print {
-          body * { visibility: hidden; }
-          .founder-one-pager, .founder-one-pager * { visibility: visible; }
-          .founder-one-pager { position: absolute; left: 0; top: 0; width: 100%; }
+          @page { size: 5.5in 8.5in; margin: 0.25in; }
+          body { margin: 0; background: white; }
+          .print-card {
+            width: 100%;
+            max-width: none;
+            min-height: auto;
+            margin: 0;
+            padding: 18px !important;
+            border: none !important;
+            box-shadow: none !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
+          .print-card section,
+          .print-card div {
+            break-inside: avoid;
+            page-break-inside: avoid;
+          }
           .no-print { display: none !important; }
         }
       `}</style>
@@ -93,7 +108,7 @@ const FounderOnePager = () => {
           </section>
 
           <section className="pt-4 border-t border-osu-gray/10">
-             <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-osu-scarlet mb-4 flex items-center gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-osu-scarlet mb-4 flex items-center gap-2">
               <Linkedin className="h-4 w-4" /> Contact & Partnership
             </h2>
             <div className="space-y-2 text-xs font-medium text-foreground">
@@ -108,7 +123,7 @@ const FounderOnePager = () => {
       </div>
 
       {/* Print-only footer */}
-      <div className="hidden print:block fixed bottom-0 left-0 right-0 text-center text-[10px] text-muted-foreground border-t pt-4">
+      <div className="hidden print:block mt-6 text-center text-[10px] text-muted-foreground border-t pt-4">
         © 2024 Forward Focus Elevation. All Rights Reserved. Accredited AI Transformation Hub.
       </div>
     </div>

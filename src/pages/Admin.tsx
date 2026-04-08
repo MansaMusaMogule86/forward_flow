@@ -17,6 +17,17 @@ import { DataPagination } from "@/components/ui/data-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
 import { logger } from "@/lib/logger";
 
+type ManagedStatusTable = 'partner_referrals' | 'partnership_requests' | 'contact_submissions' | 'support_requests' | 'bookings';
+
+interface AdminAuditLogDetails {
+  actorId: string;
+  action: string;
+  resourceType: string;
+  resourceId: string;
+  severity?: 'info' | 'warn' | 'error' | 'critical';
+  details: Record<string, unknown>;
+}
+
 // Lazy load heavy components for better performance
 const SecurityMonitoringDashboard = lazy(() => import("@/components/security/SecurityMonitoringDashboard").then(m => ({ default: m.SecurityMonitoringDashboard })));
 const EmailMarketingDashboard = lazy(() => import("@/components/admin/EmailMarketingDashboard").then(m => ({ default: m.EmailMarketingDashboard })));
@@ -130,10 +141,86 @@ const Admin = () => {
     request.organization_name || request.organization || "Unknown organization";
 
   const getPartnershipEmail = (request: PartnershipRequest) =>
-    request.contact_email || request.email || "";
+    request.contact_email || request.email || null;
 
   const getPartnershipMessage = (request: PartnershipRequest) =>
     request.description || request.message || "No message provided.";
+
+  const createRequestId = () => {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+      return crypto.randomUUID();
+    }
+
+    return `req_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+  };
+
+  const logAdminAuditEvent = async ({
+    actorId,
+    action,
+    resourceType,
+    resourceId,
+    severity = 'info',
+    details,
+  }: AdminAuditLogDetails) => {
+    const requestId = createRequestId();
+
+    const { error } = await supabase.from('audit_logs').insert({
+      user_id: actorId,
+      action,
+      resource_type: resourceType,
+      resource_id: resourceId,
+      severity,
+      ip_address: null,
+      user_agent: navigator.userAgent,
+      details: {
+        ...details,
+        timestamp: new Date().toISOString(),
+        request_metadata: {
+          ipAddress: null,
+          requestId,
+          url: window.location.href,
+        },
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+  };
+
+  const getStatusResourceType = (table: ManagedStatusTable) => {
+    switch (table) {
+      case 'partner_referrals':
+        return 'partner_referral';
+      case 'partnership_requests':
+        return 'partnership';
+      case 'contact_submissions':
+        return 'contact_submission';
+      case 'support_requests':
+        return 'support';
+      case 'bookings':
+        return 'booking';
+      default:
+        return table;
+    }
+  };
+
+  const getCurrentStatus = (table: ManagedStatusTable, id: string) => {
+    switch (table) {
+      case 'partner_referrals':
+        return referrals.find((referral) => referral.id === id)?.status;
+      case 'partnership_requests':
+        return partnershipRequests.find((request) => request.id === id)?.status;
+      case 'contact_submissions':
+        return contactSubmissions.find((submission) => submission.id === id)?.status;
+      case 'support_requests':
+        return supportRequests.find((request) => request.id === id)?.status;
+      case 'bookings':
+        return bookingRequests.find((booking) => booking.id === id)?.status;
+      default:
+        return undefined;
+    }
+  };
 
 
   // Loading timeout detection
@@ -278,7 +365,7 @@ const Admin = () => {
     }
   }, [isAdmin]);
 
-  const toggleContactVisibility = async (id: string, contactInfo: string) => {
+  const toggleContactVisibility = async (id: string, contactInfo: string, resourceType: 'partner_referral' | 'partnership') => {
     // Check admin operation limits before proceeding
     try {
       const { data: canProceed, error: rateLimitError } = await supabase.rpc('check_admin_operation_limit');
@@ -299,6 +386,29 @@ const Admin = () => {
         newRevealed.add(id);
 
         // Log contact reveal for audit trail
+        if (user?.id) {
+          try {
+            await logAdminAuditEvent({
+              actorId: user.id,
+              action: 'contact_reveal',
+              resourceType,
+              resourceId: id,
+              severity: 'warn',
+              details: {
+                context: 'admin_dashboard_contact_toggle',
+                reason: 'admin requested sensitive contact details from dashboard',
+                contactPreview: maskContactInfo(contactInfo),
+              },
+            });
+          } catch (auditError) {
+            logger.error('Error logging contact reveal audit event:', auditError);
+            toast({
+              title: 'Audit log warning',
+              description: 'Contact was revealed, but the audit entry could not be recorded.',
+              variant: 'destructive',
+            });
+          }
+        }
       }
       setRevealedContacts(newRevealed);
     } catch (error) {
@@ -311,7 +421,7 @@ const Admin = () => {
     }
   };
 
-  const updateStatus = async (table: 'partner_referrals' | 'partnership_requests' | 'contact_submissions' | 'support_requests' | 'bookings', id: string, newStatus: string) => {
+  const updateStatus = async (table: ManagedStatusTable, id: string, newStatus: string) => {
     try {
       // Check admin operation limits
       const { data: canProceed, error: rateLimitError } = await supabase.rpc('check_admin_operation_limit');
@@ -324,6 +434,8 @@ const Admin = () => {
         });
         return;
       }
+
+      const previousStatus = getCurrentStatus(table, id);
 
       const { error } = await supabase
         .from(table)
@@ -343,6 +455,27 @@ const Admin = () => {
         });
 
         // Log status update for audit trail
+        if (user?.id) {
+          try {
+            await logAdminAuditEvent({
+              actorId: user.id,
+              action: 'update_status',
+              resourceType: getStatusResourceType(table),
+              resourceId: id,
+              details: {
+                previousStatus: previousStatus ?? null,
+                newStatus,
+              },
+            });
+          } catch (auditError) {
+            logger.error('Error logging status update audit event:', auditError);
+            toast({
+              title: 'Audit log warning',
+              description: 'Status updated, but the audit entry could not be recorded.',
+              variant: 'destructive',
+            });
+          }
+        }
 
         // Refresh data
         if (table === 'partner_referrals') {
@@ -568,7 +701,7 @@ const Admin = () => {
                               <Button
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => toggleContactVisibility(referral.id, referral.contact_info)}
+                                onClick={() => toggleContactVisibility(referral.id, referral.contact_info, 'partner_referral')}
                                 className="h-6 w-6 p-0"
                               >
                                 {revealedContacts.has(referral.id) ? (
@@ -635,35 +768,50 @@ const Admin = () => {
                     {partnershipsPagination.paginatedItems.map((request) => (
                       <Card key={request.id}>
                         <CardHeader className="pb-3">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg">{getPartnershipOrganization(request)}</CardTitle>
-                            <Badge variant={request.status === 'new' || request.status === 'pending' ? 'default' : 'secondary'}>
-                              {request.status}
-                            </Badge>
-                          </div>
-                          <CardDescription>
-                            <div className="flex items-center gap-2">
-                              <span>Email: </span>
-                              <span className="font-mono">
-                                {revealedContacts.has(request.id)
-                                  ? getPartnershipEmail(request)
-                                  : maskContactInfo(getPartnershipEmail(request))
-                                }
-                              </span>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => toggleContactVisibility(request.id, getPartnershipEmail(request))}
-                                className="h-6 w-6 p-0"
-                              >
-                                {revealedContacts.has(request.id) ? (
-                                  <EyeOff className="h-3 w-3" />
-                                ) : (
-                                  <Eye className="h-3 w-3" />
-                                )}
-                              </Button>
-                            </div>
-                          </CardDescription>
+                          {(() => {
+                            const partnershipEmail = getPartnershipEmail(request);
+                            const isEmailVisible = partnershipEmail ? revealedContacts.has(request.id) : false;
+
+                            return (
+                              <>
+                                <div className="flex items-center justify-between">
+                                  <CardTitle className="text-lg">{getPartnershipOrganization(request)}</CardTitle>
+                                  <Badge variant={request.status === 'new' || request.status === 'pending' ? 'default' : 'secondary'}>
+                                    {request.status}
+                                  </Badge>
+                                </div>
+                                <CardDescription>
+                                  <div className="flex items-center gap-2">
+                                    <span>Email: </span>
+                                    {partnershipEmail ? (
+                                      <>
+                                        <span className="font-mono">
+                                          {isEmailVisible
+                                            ? partnershipEmail
+                                            : maskContactInfo(partnershipEmail)
+                                          }
+                                        </span>
+                                        <Button
+                                          size="sm"
+                                          variant="ghost"
+                                          onClick={() => toggleContactVisibility(request.id, partnershipEmail, 'partnership')}
+                                          className="h-6 w-6 p-0"
+                                        >
+                                          {isEmailVisible ? (
+                                            <EyeOff className="h-3 w-3" />
+                                          ) : (
+                                            <Eye className="h-3 w-3" />
+                                          )}
+                                        </Button>
+                                      </>
+                                    ) : (
+                                      <span className="text-muted-foreground italic">No email provided</span>
+                                    )}
+                                  </div>
+                                </CardDescription>
+                              </>
+                            );
+                          })()}
                         </CardHeader>
                         <CardContent>
                           <p className="text-sm mb-4">{getPartnershipMessage(request)}</p>

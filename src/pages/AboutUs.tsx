@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Users, Shield, CheckCircle, Target, Brain, MessageSquare, BookOpen, Home, Phone, ArrowRight, Star, Calendar, Award, Linkedin, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,25 +17,103 @@ import diverseCommunityMeeting from "@/assets/images/community/community-meeting
 
 export default function AboutUs() {
   const [showConsultation, setShowConsultation] = useState(false);
+  const founderProfileRef = useRef<HTMLDivElement>(null);
+
+  const handleDownloadExpertProfile = () => {
+    const profileMarkup = founderProfileRef.current?.innerHTML;
+
+    if (!profileMarkup) {
+      return;
+    }
+
+    const printWindow = window.open('', '_blank', 'width=900,height=1100');
+    if (!printWindow) {
+      window.print();
+      return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Coach Kay Expert Profile</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+          <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+          <style>
+            :root {
+              color-scheme: light;
+              --scarlet: #bb0000;
+              --ink: #23180f;
+              --muted: #686868;
+              --line: rgba(214,214,214,0.9);
+              --surface: #ffffff;
+              --panel: #f7f5f2;
+            }
+            * { box-sizing: border-box; }
+            @page { size: 5.5in 8.5in; margin: 0.25in; }
+            body {
+              margin: 0;
+              background: var(--panel);
+              font-family: 'Outfit', sans-serif;
+              color: var(--ink);
+            }
+            .print-shell {
+              width: 5in;
+              margin: 0 auto;
+              padding: 0.15in 0;
+            }
+            .founder-one-pager, .print-card {
+              width: 100%;
+              max-width: none;
+              margin: 0;
+              background: var(--surface);
+              border: 1px solid var(--line);
+              box-shadow: none;
+            }
+            .no-print { display: none !important; }
+            @media print {
+              body { background: white; }
+              .print-shell { width: 100%; padding: 0; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="print-shell">${profileMarkup}</div>
+          <script>
+            window.addEventListener('load', () => {
+              window.print();
+              window.addEventListener('afterprint', () => window.close());
+            });
+          <\/script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return <>
-      <SEOHead
-        title="About Our Mission | Accredited AI Life Transformation Coaching"
-        description="Meet Coach Kay, an Accredited AI Life Transformation Coach and Master Certified expert. We provide trauma-informed support and AI-driven second chances."
-        path="/about"
-      />
-      <StructuredData
-        data={{
-          "@context": "https://schema.org",
-          "@type": "Organization",
-          name: SITE_CONFIG.name,
-          url: SITE_CONFIG.baseUrl,
-          description: SITE_CONFIG.description,
-          areaServed: "Ohio",
-          serviceType: ["Healing Hub", "The Collective", "Focus Flow Elevation Hub", "AI & Life Transformation", "Trauma Recovery Support"]
-        }}
-      />
-      <BreadcrumbSchema crumbs={[{ name: 'About Us', path: '/about' }]} />
-      <main id="main" className="bg-background">
+    <SEOHead
+      title="About Our Mission | Accredited AI Life Transformation Coaching"
+      description="Meet Coach Kay, an Accredited AI Life Transformation Coach and Master Certified expert. We provide trauma-informed support and AI-driven second chances."
+      path="/about"
+    />
+    <StructuredData
+      data={{
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        name: SITE_CONFIG.name,
+        url: SITE_CONFIG.baseUrl,
+        description: SITE_CONFIG.description,
+        areaServed: "Ohio",
+        serviceType: ["Healing Hub", "The Collective", "Focus Flow Elevation Hub", "AI & Life Transformation", "Trauma Recovery Support"]
+      }}
+    />
+    <BreadcrumbSchema crumbs={[{ name: 'About Us', path: '/about' }]} />
+    <main id="main" className="bg-background">
       {/* Hero Section */}
       <header className="relative bg-white overflow-hidden border-b border-osu-gray-light/60">
         <div className="relative container py-24 md:py-32 flex items-center justify-center text-center">
@@ -58,7 +136,7 @@ export default function AboutUs() {
                 Community
               </span>
             </div>
-            
+
             <div className="flex flex-col sm:flex-row gap-4 max-w-lg justify-center mx-auto">
               <Button asChild size="lg" className="get-involved-gold-button border-none flex-1">
                 <Link to="/victim-services">
@@ -126,7 +204,7 @@ export default function AboutUs() {
                 Everything we do is guided by these core principles that shape our community and platform.
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-3 gap-8 mb-16">
               <Card className="text-center p-8 border border-osu-gray-light/70 bg-white hover:shadow-md transition-shadow duration-200">
                 <CardHeader>
@@ -141,7 +219,7 @@ export default function AboutUs() {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card className="text-center p-8 border border-osu-gray-light/70 bg-white hover:shadow-md transition-shadow duration-200">
                 <CardHeader>
                   <div className="w-16 h-16 bg-osu-gray/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -155,7 +233,7 @@ export default function AboutUs() {
                   </p>
                 </CardContent>
               </Card>
-              
+
               <Card className="text-center p-8 border border-osu-gray-light/70 bg-white hover:shadow-md transition-shadow duration-200">
                 <CardHeader>
                   <div className="w-16 h-16 bg-white/20 border border-white/30 shadow-inner rounded-full flex items-center justify-center mx-auto mb-4">
@@ -170,12 +248,12 @@ export default function AboutUs() {
                 </CardContent>
               </Card>
             </div>
-            
+
             <div className="bg-white rounded-2xl p-12 text-center border border-osu-gray-light/70">
               <h3 className="text-3xl font-heading font-bold text-foreground mb-6">Our Mission</h3>
               <p className="text-xl text-foreground/80 leading-relaxed max-w-4xl mx-auto font-light">
-                To create a trauma-informed, AI-powered ecosystem where justice-impacted individuals and families 
-                can access the tools, community, and support they need to not just survive, but thrive. We're building 
+                To create a trauma-informed, AI-powered ecosystem where justice-impacted individuals and families
+                can access the tools, community, and support they need to not just survive, but thrive. We're building
                 a future where everyone has the opportunity to write their next chapter with hope and dignity.
               </p>
             </div>
@@ -205,7 +283,7 @@ export default function AboutUs() {
                   </h3>
                 </div>
                 <p className="text-foreground/70 text-base md:text-lg leading-relaxed">
-                  Accessible, inclusive, and designed for real life. We understand that every 
+                  Accessible, inclusive, and designed for real life. We understand that every
                   journey is unique and every person deserves dignity and respect.
                 </p>
               </div>
@@ -220,7 +298,7 @@ export default function AboutUs() {
                   </h3>
                 </div>
                 <p className="text-foreground/70 text-base md:text-lg leading-relaxed">
-                  Move beyond just reading information. Our platform helps you take concrete 
+                  Move beyond just reading information. Our platform helps you take concrete
                   steps toward your goals with personalized guidance and real-world resources.
                 </p>
               </div>
@@ -234,12 +312,12 @@ export default function AboutUs() {
             <h2 className="font-heading text-3xl font-bold text-foreground mb-4">The FFE Vision One-Pager</h2>
             <p className="text-muted-foreground mb-8">Download or print a summary of our mission and Coach Kay's accredited expert profile.</p>
 
-            <div className="mb-8 transform scale-[0.8] md:scale-100 origin-top">
+            <div ref={founderProfileRef} className="mb-8 transform scale-[0.8] md:scale-100 origin-top">
               <FounderOnePager />
             </div>
 
             <Button
-              onClick={() => window.print()}
+              onClick={handleDownloadExpertProfile}
               size="lg"
               className="get-involved-gold-button border-none px-8"
             >
