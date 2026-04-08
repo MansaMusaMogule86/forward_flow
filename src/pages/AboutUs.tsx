@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Users, Shield, CheckCircle, Target, Brain, MessageSquare, BookOpen, Home, Phone, ArrowRight, Star, Calendar, Award, Linkedin, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -17,14 +17,15 @@ import diverseCommunityMeeting from "@/assets/images/community/community-meeting
 
 export default function AboutUs() {
   const [showConsultation, setShowConsultation] = useState(false);
-  const founderProfileRef = useRef<HTMLDivElement>(null);
 
   const handleDownloadExpertProfile = () => {
-    const profileMarkup = founderProfileRef.current?.innerHTML;
-
-    if (!profileMarkup) {
-      return;
-    }
+    const coachName = "Coach Kay";
+    const coachTitle = "AI Life Transformation Coach";
+    const organizationName = "Forward Focus Elevation";
+    const certifications = "Master Certified Coach | Accredited AI Consultant";
+    const email = "support@ffeservices.net";
+    const website = "forward-focus-elevation.org";
+    const tagline = "Real Healing. Smart Tools. Second Chances.";
 
     const printWindow = window.open('', '_blank', 'width=900,height=1100');
     if (!printWindow) {
@@ -39,7 +40,7 @@ export default function AboutUs() {
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>Coach Kay Expert Profile</title>
+          <title>${coachName} Business Card</title>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
           <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -47,42 +48,107 @@ export default function AboutUs() {
             :root {
               color-scheme: light;
               --scarlet: #bb0000;
-              --ink: #23180f;
-              --muted: #686868;
-              --line: rgba(214,214,214,0.9);
-              --surface: #ffffff;
-              --panel: #f7f5f2;
+              --scarlet-dark: #7f0000;
+              --ink: #1b130d;
+              --muted: #5e5a55;
+              --paper: #f7f3ea;
+              --line: rgba(27, 19, 13, 0.22);
             }
-            * { box-sizing: border-box; }
-            @page { size: 5.5in 8.5in; margin: 0.25in; }
+            * { box-sizing: border-box; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            @page { size: letter; margin: 0.5in; }
             body {
               margin: 0;
-              background: var(--panel);
+              min-height: 100vh;
+              display: grid;
+              place-items: center;
+              background: radial-gradient(circle at 30% 20%, #fff, #f4ede2 60%, #ece3d6 100%);
               font-family: 'Outfit', sans-serif;
               color: var(--ink);
             }
-            .print-shell {
-              width: 5in;
-              margin: 0 auto;
-              padding: 0.15in 0;
-            }
-            .founder-one-pager, .print-card {
-              width: 100%;
-              max-width: none;
-              margin: 0;
-              background: var(--surface);
+            .card {
+              width: 3.5in;
+              height: 2in;
+              border-radius: 14px;
               border: 1px solid var(--line);
-              box-shadow: none;
+              background:
+                linear-gradient(152deg, rgba(187, 0, 0, 0.1) 0%, rgba(187, 0, 0, 0) 35%),
+                linear-gradient(18deg, rgba(27, 19, 13, 0.06) 0%, rgba(27, 19, 13, 0) 55%),
+                var(--paper);
+              box-shadow: 0 18px 40px rgba(19, 13, 9, 0.2);
+              padding: 0.18in;
+              position: relative;
+              overflow: hidden;
             }
-            .no-print { display: none !important; }
+            .card::after {
+              content: '';
+              position: absolute;
+              right: -0.55in;
+              bottom: -0.55in;
+              width: 1.25in;
+              height: 1.25in;
+              background: radial-gradient(circle, rgba(187, 0, 0, 0.22) 0%, rgba(187, 0, 0, 0) 70%);
+            }
+            .meta {
+              font-family: 'DM Mono', monospace;
+              font-size: 8px;
+              letter-spacing: 0.09em;
+              text-transform: uppercase;
+              color: var(--scarlet-dark);
+              margin-bottom: 0.05in;
+            }
+            .name {
+              font-family: 'Cormorant Garamond', serif;
+              font-size: 28px;
+              font-weight: 700;
+              line-height: 1;
+              margin: 0 0 0.03in;
+              color: var(--ink);
+            }
+            .title {
+              font-size: 11px;
+              font-weight: 600;
+              color: var(--scarlet);
+              margin-bottom: 0.06in;
+            }
+            .certs {
+              font-size: 8px;
+              color: var(--muted);
+              margin-bottom: 0.08in;
+              line-height: 1.3;
+            }
+            .divider {
+              width: 100%;
+              height: 1px;
+              background: linear-gradient(to right, var(--scarlet) 0%, rgba(187, 0, 0, 0.12) 100%);
+              margin-bottom: 0.08in;
+            }
+            .contact {
+              font-size: 8px;
+              line-height: 1.45;
+              color: var(--ink);
+            }
+            .tagline {
+              margin-top: 0.09in;
+              font-size: 8px;
+              font-style: italic;
+              color: var(--muted);
+            }
             @media print {
-              body { background: white; }
-              .print-shell { width: 100%; padding: 0; }
+              body { background: #fff; }
+              .card { box-shadow: none; }
             }
           </style>
         </head>
         <body>
-          <div class="print-shell">${profileMarkup}</div>
+          <article class="card" role="article" aria-label="${coachName} business card">
+            <div class="meta">${organizationName}</div>
+            <h1 class="name">${coachName}</h1>
+            <div class="title">${coachTitle}</div>
+            <div class="certs">${certifications}</div>
+            <div class="divider"></div>
+            <div class="contact">${email}<br/>${website}</div>
+            <div class="tagline">${tagline}</div>
+          </article>
           <script>
             window.addEventListener('load', () => {
               window.print();
@@ -312,7 +378,7 @@ export default function AboutUs() {
             <h2 className="font-heading text-3xl font-bold text-foreground mb-4">The FFE Vision One-Pager</h2>
             <p className="text-muted-foreground mb-8">Download or print a summary of our mission and Coach Kay's accredited expert profile.</p>
 
-            <div ref={founderProfileRef} className="mb-8 transform scale-[0.8] md:scale-100 origin-top">
+            <div className="mb-8 transform scale-[0.8] md:scale-100 origin-top">
               <FounderOnePager />
             </div>
 
