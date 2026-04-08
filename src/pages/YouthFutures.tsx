@@ -43,7 +43,7 @@ export default function YouthFutures() {
         name: 'Who is the Youth Futures program for?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Youth Futures is for justice-impacted or community-referred youth ages 14-26.'
+          text: 'Youth Futures is for justice-impacted or community-referred youth in two groups: ages 14-20 and ages 20-25.'
         }
       },
       {
@@ -69,7 +69,7 @@ export default function YouthFutures() {
     <div className="min-h-screen bg-background">
       <SEOHead
         title="Youth Futures Elevation Program | Empowerment for Justice-Impacted Youth"
-        description="AI-powered career tools and mentorship for justice-impacted youth ages 14-26. 100% free participation powered by sponsors."
+        description="AI-powered career tools and mentorship for justice-impacted youth in two groups: ages 14-20 and 20-25. 100% free participation powered by sponsors."
         path="/youth-futures"
       />
       <StructuredData data={faqSchema} />
@@ -80,13 +80,13 @@ export default function YouthFutures() {
         <div className="container px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-6 animate-fade-in">
-              <Badge className="bg-osu-scarlet text-white hover:bg-osu-scarlet/90 px-4 py-1">Ages 14-26</Badge>
+              <Badge className="bg-osu-scarlet text-white hover:bg-osu-scarlet/90 px-4 py-1">Ages 14-20 & 20-25</Badge>
               <h1 className="font-heading text-4xl md:text-6xl font-bold text-foreground leading-tight">
                 Youth Futures <br />
                 <span className="text-osu-scarlet">Elevation Program</span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed">
-                AI-powered career tools and mentorship for justice-impacted youth ages 14-26.
+                AI-powered career tools and mentorship for justice-impacted youth in two groups: ages 14-20 and 20-25.
                 Build your future with cutting-edge technology and community support.
               </p>
               <div className="flex flex-wrap gap-4">
@@ -215,7 +215,8 @@ export default function YouthFutures() {
               <h2 className="text-3xl font-bold">For Youth</h2>
               <ul className="space-y-4 text-lg opacity-90">
                 <li className="flex items-center gap-3"><Zap className="h-5 w-5 pro-list-icon" /> 100% FREE to participate</li>
-                <li className="flex items-center gap-3"><Users className="h-5 w-5 pro-list-icon" /> Ages 14-26</li>
+                <li className="flex items-center gap-3"><Users className="h-5 w-5 pro-list-icon" /> Age Group 1: 14-20</li>
+                <li className="flex items-center gap-3"><Users className="h-5 w-5 pro-list-icon" /> Age Group 2: 20-25</li>
                 <li className="flex items-center gap-3"><Shield className="h-5 w-5 pro-list-icon" /> Justice-impacted or community-referred</li>
                 <li className="flex items-center gap-3"><CheckCircle2 className="h-5 w-5 pro-list-icon" /> Apply online in minutes</li>
               </ul>

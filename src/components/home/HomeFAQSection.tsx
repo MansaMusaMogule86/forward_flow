@@ -16,7 +16,7 @@ const FAQ_ITEMS = [
   {
     question: 'Who does Forward Focus Elevation serve?',
     answer:
-      'We serve justice-impacted individuals, their families, crime victims, and at-risk youth ages 14–26. Our programs include reentry support, victim advocacy, career coaching, and wellness tools — all free of charge.',
+      'We serve justice-impacted individuals, their families, crime victims, and at-risk youth in two age groups: 14-20 and 20-25. Our programs include reentry support, victim advocacy, career coaching, and wellness tools - all free of charge.',
   },
   {
     question: 'How do I get help after incarceration?',
