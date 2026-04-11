@@ -40,7 +40,7 @@ export const ServiceStructuredData = () => {
     {
       '@type': 'Service',
       name: 'Youth Futures',
-      description: 'Career exploration, AI literacy, and education support program for justice-impacted youth ages 14-20 and 20-25.',
+      description: 'Career exploration, AI literacy, and education support program for justice-impacted youth ages 14-20 and 21-25.',
       provider: { '@type': 'Organization', '@id': `${baseUrl}/#organization` },
       serviceType: 'Youth Career and Education Support',
       url: `${baseUrl}/youth-futures`,

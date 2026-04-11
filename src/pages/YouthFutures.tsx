@@ -43,7 +43,7 @@ export default function YouthFutures() {
         name: 'Who is the Youth Futures program for?',
         acceptedAnswer: {
           '@type': 'Answer',
-          text: 'Youth Futures is for justice-impacted or community-referred youth in two groups: ages 14-20 and ages 20-25.'
+          text: 'Youth Futures is for justice-impacted or community-referred youth in two groups: ages 14-20 and ages 21-25. 20-year-olds should apply to the 21-25 group.'
         }
       },
       {

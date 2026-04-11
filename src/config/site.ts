@@ -31,17 +31,21 @@ export const SITE_CONFIG = {
   // Domain settings
   domains: DOMAINS,
   isProduction: IS_PRODUCTION,
-  
+
   // Get the current active domain
   get domain() {
     return getActiveDomain();
   },
-  
+
   // Get the full base URL with protocol
   get baseUrl() {
-    return `https://${this.domain}`;
+    const preview = DOMAINS.preview;
+    const protocol = IS_PRODUCTION
+      ? 'https'
+      : (this.domain === 'localhost' || this.domain === '127.0.0.1' || preview === 'localhost' || preview?.includes('localhost') ? 'http' : 'https');
+    return `${protocol}://${this.domain}`;
   },
-  
+
   // Site identity
   name: 'Forward Focus Elevation',
   shortName: 'FFE',
@@ -54,7 +58,7 @@ export const SITE_CONFIG = {
     skool: 'Focus Flow Elevation Hub',
     healing: 'Healing Hub',
   },
-  
+
   // Social media
   social: {
     twitter: '@FFEServices',
@@ -66,17 +70,17 @@ export const SITE_CONFIG = {
       'https://x.com/FFEServices'
     ],
   },
-  
+
   // Logo paths (relative to public folder)
   logo: {
     default: '/logo-primary.jpg',
     transparent: '/logo-primary.jpg',
     og: '/og-image.jpg',
   },
-  
+
   // Copyright and legal
   copyright: `© ${new Date().getFullYear()} Forward Focus Elevation. All rights reserved.`,
-  
+
   // Allowed domains for anti-whitelabel protection
   allowedDomains: [
     'localhost',
