@@ -21,7 +21,6 @@ const primaryNavLinks = [
   { to: '/', label: 'Home' },
   { to: '/help', label: 'Get Help Now' },
   { to: '/youth-futures', label: 'Youth Futures' },
-  { to: '/about', label: 'About Us' },
 ];
 
 const resourceNavLinks = [
@@ -273,6 +272,10 @@ const Header = ({ showUtility = true, showCrisis = true }: HeaderProps) => {
                         ))}
                       </DropdownMenuContent>
                     </DropdownMenu>
+                  </NavigationMenuItem>
+
+                  <NavigationMenuItem>
+                    <NavLink to="/about" className={navLinkCls}>About Us</NavLink>
                   </NavigationMenuItem>
                 </NavigationMenuList>
               </NavigationMenu>

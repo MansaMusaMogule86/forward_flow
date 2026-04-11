@@ -16,12 +16,22 @@ export const useCalendlyPopup = () => {
       return;
     }
 
+    // Dynamically load the Calendly widget script
+    const existingScript = document.getElementById('calendly-widget-script');
+    if (!existingScript) {
+      const script = document.createElement('script');
+      script.id = 'calendly-widget-script';
+      script.src = 'https://assets.calendly.com/assets/external/widget.js';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
     // Poll for Calendly with timeout
     let attempts = 0;
     const maxAttempts = 20; // 10 seconds
     const checkCalendly = setInterval(() => {
       attempts++;
-      
+
       if (window.Calendly) {
         setCalendlyReady(true);
         clearInterval(checkCalendly);
@@ -30,7 +40,7 @@ export const useCalendlyPopup = () => {
         clearInterval(checkCalendly);
       }
     }, 500);
-    
+
     return () => clearInterval(checkCalendly);
   }, []);
 
@@ -40,12 +50,12 @@ export const useCalendlyPopup = () => {
       alert('Calendly is still loading. Please wait a moment and try again.');
       return;
     }
-    
+
     if (!url || typeof url !== 'string') {
       console.error('Invalid Calendly URL provided');
       return;
     }
-    
+
     try {
       window.Calendly.initPopupWidget({ url });
     } catch (error) {

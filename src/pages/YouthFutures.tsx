@@ -222,9 +222,7 @@ export default function YouthFutures() {
               </ul>
               <Button size="lg" className="get-involved-gold-button border-none w-full sm:w-auto h-14 text-lg" asChild>
                 <a
-                  href="https://calendly.com/ffe_coach_kay/free-call"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/youth-application"
                   onClick={() => {
                     trackClick('youth_futures_apply_now');
                     trackConversion('youth_application_interest', { source: 'youth_futures_apply_section' });
@@ -268,7 +266,6 @@ export default function YouthFutures() {
                 <div className="flex items-center gap-3 text-lg">
                   <Mail className="h-6 w-6 text-osu-scarlet" />
                   <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-osu-scarlet transition-colors" onClick={() => trackClick('youth_futures_contact_email')}>{SUPPORT_EMAIL}</a>
-                  <a href="mailto:hello@coachkayelevates.org" className="hover:text-osu-scarlet transition-colors" onClick={() => trackClick('youth_futures_contact_email')}>hello@coachkayelevates.org</a>
                 </div>
                 <div className="flex items-center gap-3 text-lg">
                   <Phone className="h-6 w-6 text-osu-scarlet" />

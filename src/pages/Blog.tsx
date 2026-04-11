@@ -12,6 +12,7 @@ import {
   injectSchema
 } from "@/lib/seo-schema";
 import { useState } from "react";
+import AskCoachKay from "@/components/ui/AskCoachKay";
 
 export default function Blog() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -291,12 +292,7 @@ export default function Blog() {
               <p className="text-foreground/80 max-w-2xl mx-auto mb-8">
                 Our AI-powered Coach Kay is available 24/7 to help you find resources specific to your situation and location in Ohio.
               </p>
-              <Button
-                asChild
-                className="bg-osu-scarlet hover:bg-osu-scarlet/90 text-[#0a1628] px-8 py-6 text-base font-semibold"
-              >
-                <Link to="/discover">Talk to Coach Kay</Link>
-              </Button>
+              <AskCoachKay />
             </div>
           </div>
         </section>
