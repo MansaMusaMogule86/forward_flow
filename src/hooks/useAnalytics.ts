@@ -92,6 +92,9 @@ export const useAnalytics = () => {
     const currentPath = location?.pathname;
     if (currentPath && currentPath !== lastTrackedPathRef.current) {
       lastTrackedPathRef.current = currentPath;
+      if (typeof window !== 'undefined' && typeof (window as any).fbq === 'function') {
+        ;(window as any).fbq('track', 'PageView');
+      }
       trackEvent({
         action_type: 'page_view',
         page_path: currentPath,
